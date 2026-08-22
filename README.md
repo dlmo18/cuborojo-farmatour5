@@ -1,0 +1,59 @@
+- Administrador:
+    - login accaccesible desde una URL diferente (managment.farmatour5.com en produccion y desde http://localhost:3002/ en local)esible con usuario y clave 
+    - los usuarios de sistema deben contar inicialmente con 2 roles: 'manager' y 'reporter'
+    - los usuarios manager tiene control total, los 'reporter' pueden acceder al dashboard y a la seccion de reporteria
+    - El administrador debe contar con las siguientes secciones:
+        - usuarios de sistema: usuarisos 'manager' y 'reporter'
+        - participantes: gestor de cuentas de participantes
+        - misiones : incluye misiones, preguntas, nivels y lo relacionado a la mecanica del juego
+        - Biblioteca: gestor de imagenes, documentos, video y audios que se requieran en el sistema. Se espera que cada formulario que requiera una imagen tenga un boton para importar la ruta de la biblioteca o si se elige subir una imagen nueva se registr en la biblioteca de medios para ser reutilizada
+        - Reporteria: lista de reportes disponibles segun los KPIs
+        - Configuracion: configuraciones del sistema que pueda ser necesaria
+        - los usuarios participantes deben  tener guardado nombre, dni, correo y grupo al que pertenece (importable desde un csv, excel o editable formulario del sistema)
+    - Se debe tener un log de seguimiento de visitas al portal y registro de sus progresos accesible desde el control de usuarios de sistema
+    - todas las  grillas de registros del administrador debe estar paginadas, incluir un buscador, un selector de cantidad de registros por paginas
+    - uso de Tailwindcss para los estilos y Material Icons para los iconos
+
+- Front de participantes:
+    - inicialmente tendra un login por DNI del participante
+    - se debe tener un log para dar seguimiento a cada vez que se ha logueado y a cada logri realizado (completado nivel, mision, examen, etc)
+    - La pagina principal luego del login debe mostrar el acceso a cada mundo en la parte central. Al entrer debe habilitar un sonido de fondo y cada que se haga algun click tambien debere tenerse unos efectos de sonido
+    - en la parte inferior 3 items:
+        - Un icono de "Regalo" con un contador de tiempo, si se da click se debe mostrar un modal con el contador y el icono mas grande con el titulo "Proximamente". Pasado el tiempo, mostrar el icono de "Regalo" con un texto Lorem Ipsum de momento. En el administrador debe estar la opcion para definir este tiempo en la seccion de cofiguracion
+        - Contador de estrellas que muestre el total de estrellas (puntos de juego) del participante
+        - Un contador con el texto "Puesto en tu grupo" y un cuadro con el numero que represente el puesto segun la cantidad de estrellas obtenidas en ese momento. Al dar click debe aparecer un modal mostranto el top 10 de puestos del grupo, si no se pertenece al top 10 indicando nombre y puesto, en la parte final debe agregarse el nombre del participante con su numero de orden en el juego
+    - En la parte superior derecha de la pantalla debe estar el icono para abrir un menu de opciones. Debe abrir un modar con las siguientes opciones
+        - prender/apagar sonido de fondo
+        - prender/apagar sonido de efecto
+        - Cerrar sesion
+    - Si se da click en un mundo de sebe mostrar en pantalla la lista de niveles mostrando primero el nivel dorado del mundo, seguido del nivel en orden del mayor al menor.
+    - En la parte superior de la pantalla debe estar el titulo del nivel, una flecha atras que lleve a la pantalla de mundo y a la derecha un menu de opciones
+    - en la parte inferior un indicador de estrellas pero solo de las ganadas en ese mundo
+    - Al principio todos los niveles debe estar bloqueados excepto el nivel inferior. Conforme se superen se deshabilitara el siguiente
+    - Cada nivel dene indicar, nombre del nivel, cantidad de estrellas ganadas en el nivel y un icono que indique si esta abierto, cerrado o si ya fue completado
+    - Al dar click en un nivel se debe abrir la pantalla de misiones del nivel que debe tener un titulo indicando el nombre del mundo (fuente de texto small) y el nombre del nivel (Incluir boton para ir atras (vista de nivel) y el menu de opciones) y la lista de misiones indicando:
+        - nombre de la mision
+        - estrellas de la mision: es un maximo de 3 estrellas por mision asi que se debe mostrar 3 estrellas en gris al inicio y si se completa la mision cambian a amarillos segun la cantidad de estrellas ganadas
+    - La lista de misiones van de mayor a menor, al inicio se habilita la primera mision del nivel y al completar se habilita la siguiente. Se completar el total de misiones y se completa el nivel habilitando el nivel siguiente
+    - Al entrar a una mision se habilita la vista de "Informacion de la mision" que debe mostrar en la parte superior: nombre de la mision y los iconos de atras y menu de opciones
+    - Cada mision tiene entre 4 a mas pantallas de informacion y se debe mostrar una a una en pantalla, en la parte inferior habra flechas para cambiar el contenido de la pantalla a la siguiente informacion, debe haber un indicador en la prte inferior que indique la cantidad de items de informacion que se tiene por ejemplo, si son 4 items y se esta viendo el 2do se vera 2/4.
+    - Los items de informacion debe tener:
+        - Titulo de item
+        - Imagen del item
+        - Beneficios: texto enriquecido
+        - Contenido: badgets que solo muestrar un titulo
+        - Detalle: texto enriquecido 
+        - Miniatura: misma imagen del item en un tamaño mas pequeño al lado derecho del Detalle
+    - Si se identifica que ya se termino de ver el total de items de informacion, en la parte inferior dee verse un boton "Ir a la evaluacion" y al dar click ir a la seccion de "Preguntas de la mision"
+    - La seccion de "Preguntas de la mision" solo sera accesible si el participante no ha respondido completas las preguntas de la mision ya sea porque es la primera vez que va a realizar la evaluacion o porque salio antes de completar (en este caso solo deberia ver las preguntas que le falto completar y las preguntas que ta respondio estaria en modo lectura)
+    - Al entrar a "Preguntas de la mision" lo primero que debe ver es un anuncio "Wow, llegaste al final de la mision, estas listo para tu evaluacion" y un boton "Ya estoy listo" para mostrar las preguntas
+    - Las preguntas se debe mostrar una por una en pantalla, completada una pregunta se pasa a la siguiente y al terminar mostrar una pantalla indicando el numero de entrellas ganadas en el nivel con un boton para ir directamente al siguiente nivel
+    - En cada pregunta se debe mostrar:
+        - EN la parte superior: titulo de la mision, icono de atras y menu de opciones
+        - En la parte inferior el boton de "Enviar"
+        - El cuerpo de la pantalla debe mostrar:
+            - Contenido de pregunta
+            - opciones de respuesta (imagen y texto) seleccionables 
+        - Al responde la pregunta se debe mostrar:
+            - Si es correcta un sonido de "Correcto" y "Si correcto" seguido por la cantidad de estrellas ganadas en la mision
+            - Si es incorrecta un sonido de "Incorrecto" y "¡Ups! incorrecto" mostrando la imagen y texto de la respuesta correcta con texto extra de detalle que justifique la respuesta correcta

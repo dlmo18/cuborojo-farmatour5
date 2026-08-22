@@ -1,0 +1,306 @@
+# ============================================================
+# FARMATOUR5 - .gitignore
+# ============================================================
+
+# ============================================================
+# DEPENDENCIAS
+# ============================================================
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnp
+.pnp.js
+
+# ============================================================
+# NEXT.JS (FRONTENDS)
+# ============================================================
+.next/
+out/
+build/
+dist/
+
+# Cache de Next.js
+.next/cache/
+
+# Archivos de producción
+*.tsbuildinfo
+next-env.d.ts
+
+# ============================================================
+# NESTJS (BACKEND)
+# ============================================================
+backend/dist/
+backend/.nest/
+backend/coverage/
+
+# ============================================================
+# VARIABLES DE ENTORNO
+# ============================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Mantener .env.example
+!.env.example
+!backend/.env.example
+!frontend-participants/.env.example
+!frontend-manager/.env.example
+
+# ============================================================
+# LOGS
+# ============================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Logs de PM2
+pm2-*.log
+pm2-error*.log
+
+# ============================================================
+# TESTING
+# ============================================================
+coverage/
+.nyc_output/
+*.lcov
+.jest-cache/
+
+# ============================================================
+# SISTEMA OPERATIVO
+# ============================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================================
+# IDEs Y EDITORES
+# ============================================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (WebStorm, IntelliJ)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ============================================================
+# UPLOADS Y ARCHIVOS TEMPORALES
+# ============================================================
+uploads/
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Archivos subidos por usuarios (excepto ejemplos)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ============================================================
+# DATABASE
+# ============================================================
+# PostgreSQL
+*.sql.backup
+database/backups/*
+!database/backups/.gitkeep
+
+# SQLite (si se usa para desarrollo)
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================================
+# SSL/CERTIFICADOS
+# ============================================================
+*.pem
+*.key
+*.crt
+*.csr
+ssl/
+certs/
+!ssl/.gitkeep
+!certs/.gitkeep
+
+# Let's Encrypt (excepto configuración)
+letsencrypt/
+certbot/
+
+# ============================================================
+# NGINX
+# ============================================================
+# Logs de Nginx
+nginx/logs/*
+!nginx/logs/.gitkeep
+
+# Cache de Nginx
+nginx/cache/*
+!nginx/cache/.gitkeep
+
+# ============================================================
+# DEPLOYMENT
+# ============================================================
+# Scripts de deploy con credenciales
+deploy-secrets.sh
+*.deploy.log
+
+# Backups de deploy
+deploy-backup-*/
+
+# ============================================================
+# MISC
+# ============================================================
+# Vercel
+.vercel
+
+# Turbo
+.turbo
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# dotenv environment variables file
+.env
+.env.test
+.env.production
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Yarn Integrity file
+.yarn-integrity
+
+# ============================================================
+# PROYECTO ESPECÍFICO - FARMATOUR5
+# ============================================================
+
+# Archivos de configuración local (no compartir)
+config.local.json
+secrets.json
+
+# Reportes generados
+reports/*.pdf
+reports/*.xlsx
+!reports/.gitkeep
+
+# Archivos de sesión
+sessions/
+*.session
+
+# Cache de aplicación
+.cache/
+cache/
+
+# Archivos de monitoreo
+monitoring/*.log
+!monitoring/.gitkeep
