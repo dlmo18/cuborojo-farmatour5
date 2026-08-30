@@ -10,12 +10,23 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+// Flag para evitar múltiples redirecciones al login
+let isRedirecting = false;
+
+// Función para resetear el flag de redirección (se llama después de login)
+export const resetAuthRedirectFlag = () => {
+  isRedirecting = false;
+};
+
 // Interceptor para agregar token en cada petición
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('manager_auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Solo agregar token si está disponible en localStorage
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('manager_auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -28,11 +39,25 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token inválido o expirado
-      localStorage.removeItem('manager_auth_token');
-      localStorage.removeItem('manager_auth_user');
-      window.location.href = '/login';
+    // Solo manejar 401 si no estamos ya redirigiendo
+    if (error.response?.status === 401 && !isRedirecting && typeof window !== 'undefined') {
+      isRedirecting = true;
+      
+      // Limpiar datos de sesión
+      try {
+        localStorage.removeItem('manager_auth_token');
+        localStorage.removeItem('manager_auth_user');
+        localStorage.removeItem('manager_auth_timestamp');
+      } catch (e) {
+        console.error('Error limpiando localStorage:', e);
+      }
+      
+      // Redirigir al login después de un pequeño delay
+      setTimeout(() => {
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }, 100);
     }
     return Promise.reject(error);
   }
@@ -257,6 +282,8 @@ export const worldsApi = {
 // NIVELES
 // ============================================================
 
+export type LevelType = 'normal' | 'golden' | 'final';
+
 export interface Level {
   id: string;
   worldId: string;
@@ -264,7 +291,10 @@ export interface Level {
   description?: string;
   imageId?: string;
   orderNum: number;
+  levelType: LevelType;
   isGolden: boolean;
+  introVideoUrl?: string;
+  introVideoId?: string;
   maxStars: number;
   isActive: boolean;
   createdAt: string;
@@ -277,7 +307,10 @@ export interface CreateLevelDto {
   description?: string;
   imageId?: string;
   orderNum: number;
+  levelType?: LevelType;
   isGolden?: boolean;
+  introVideoUrl?: string;
+  introVideoId?: string;
 }
 
 export interface UpdateLevelDto {
@@ -286,8 +319,176 @@ export interface UpdateLevelDto {
   description?: string;
   imageId?: string;
   orderNum?: number;
+  levelType?: LevelType;
   isGolden?: boolean;
+  introVideoUrl?: string;
+  introVideoId?: string;
   isActive?: boolean;
+}
+
+export interface LevelItem {
+  id: string;
+  levelId: string;
+  title: string;
+  detail?: string;
+  benefits?: string;
+  imageId?: string;
+  thumbnailId?: string;
+  orderNum: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateLevelItemDto {
+  title: string;
+  detail?: string;
+  benefits?: string;
+  imageId?: string;
+  thumbnailId?: string;
+  orderNum: number;
+}
+
+// Golden Level Interfaces
+export interface GoldenLevelItem {
+  id: string;
+  levelId: string;
+  title: string;
+  detail?: string;
+  orderNum: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateGoldenLevelItemDto {
+  levelId: string;
+  title: string;
+  detail?: string;
+  orderNum: number;
+}
+
+export interface UpdateGoldenLevelItemDto {
+  title?: string;
+  detail?: string;
+  orderNum?: number;
+}
+
+export interface GoldenLevelQuestion {
+  id: string;
+  levelId: string;
+  content: string;
+  orderNum: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateGoldenLevelQuestionDto {
+  levelId: string;
+  content: string;
+  orderNum: number;
+}
+
+export interface UpdateGoldenLevelQuestionDto {
+  content?: string;
+  orderNum?: number;
+  isActive?: boolean;
+}
+
+export interface GoldenLevelAnswerOption {
+  id: string;
+  questionId: string;
+  text: string;
+  isCorrect: boolean;
+  orderNum: number;
+  createdAt: string;
+}
+
+export interface CreateGoldenLevelAnswerOptionDto {
+  questionId: string;
+  text: string;
+  isCorrect: boolean;
+  orderNum: number;
+}
+
+export interface UpdateGoldenLevelAnswerOptionDto {
+  text?: string;
+  isCorrect?: boolean;
+  orderNum?: number;
+}
+
+// Final Level Interfaces
+export interface FinalLevelQuestion {
+  id: string;
+  levelId: string;
+  content: string;
+  startVideoUrl?: string;
+  startVideoId?: string;
+  endVideoUrl?: string;
+  endVideoId?: string;
+  correctMessage?: string;
+  incorrectMessage?: string;
+  orderNum: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFinalLevelQuestionDto {
+  levelId: string;
+  content: string;
+  startVideoUrl?: string;
+  startVideoId?: string;
+  endVideoUrl?: string;
+  endVideoId?: string;
+  correctMessage?: string;
+  incorrectMessage?: string;
+  orderNum: number;
+}
+
+export interface UpdateFinalLevelQuestionDto {
+  content?: string;
+  startVideoUrl?: string;
+  startVideoId?: string;
+  endVideoUrl?: string;
+  endVideoId?: string;
+  correctMessage?: string;
+  incorrectMessage?: string;
+  orderNum?: number;
+  isActive?: boolean;
+}
+
+export interface FinalLevelAnswerOption {
+  id: string;
+  questionId: string;
+  text: string;
+  imageId?: string;
+  isCorrect: boolean;
+  orderNum: number;
+  createdAt: string;
+}
+
+export interface CreateFinalLevelAnswerOptionDto {
+  questionId: string;
+  text: string;
+  imageId?: string;
+  isCorrect: boolean;
+  orderNum: number;
+}
+
+export interface UpdateFinalLevelAnswerOptionDto {
+  text?: string;
+  imageId?: string;
+  isCorrect?: boolean;
+  orderNum?: number;
+}
+
+export interface UpdateLevelItemDto {
+  title?: string;
+  detail?: string;
+  benefits?: string;
+  imageId?: string;
+  thumbnailId?: string;
+  orderNum?: number;
 }
 
 export const levelsApi = {
@@ -308,6 +509,98 @@ export const levelsApi = {
   
   delete: (id: string) => 
     apiClient.delete(`/levels/${id}`),
+
+  // Items (Contenido)
+  getItems: (levelId: string) =>
+    apiClient.get<LevelItem[]>(`/levels/${levelId}/items`),
+
+  createItem: (levelId: string, data: CreateLevelItemDto) =>
+    apiClient.post<LevelItem>(`/levels/${levelId}/items`, data),
+
+  updateItem: (itemId: string, data: UpdateLevelItemDto) =>
+    apiClient.put<LevelItem>(`/levels/items/${itemId}`, data),
+
+  deleteItem: (itemId: string) =>
+    apiClient.delete(`/levels/items/${itemId}`),
+};
+
+// Golden Levels API
+export const goldenLevelsApi = {
+  // Items
+  getItems: (levelId: string) => 
+    apiClient.get<GoldenLevelItem[]>(`/levels/golden/${levelId}/items`),
+  
+  createItem: (data: CreateGoldenLevelItemDto) => 
+    apiClient.post<GoldenLevelItem>('/levels/golden/items', data),
+  
+  updateItem: (id: string, data: UpdateGoldenLevelItemDto) => 
+    apiClient.put<GoldenLevelItem>(`/levels/golden/items/${id}`, data),
+  
+  deleteItem: (id: string) => 
+    apiClient.delete(`/levels/golden/items/${id}`),
+
+  // Questions
+  getQuestions: (levelId: string) => 
+    apiClient.get<GoldenLevelQuestion[]>(`/levels/golden/${levelId}/questions`),
+  
+  createQuestion: (data: CreateGoldenLevelQuestionDto) => 
+    apiClient.post<GoldenLevelQuestion>('/levels/golden/questions', data),
+  
+  updateQuestion: (id: string, data: UpdateGoldenLevelQuestionDto) => 
+    apiClient.put<GoldenLevelQuestion>(`/levels/golden/questions/${id}`, data),
+  
+  deleteQuestion: (id: string) => 
+    apiClient.delete(`/levels/golden/questions/${id}`),
+
+  // Answer Options
+  getAnswers: (questionId: string) => 
+    apiClient.get<GoldenLevelAnswerOption[]>(`/levels/golden/questions/${questionId}/answers`),
+  
+  createAnswer: (data: CreateGoldenLevelAnswerOptionDto) => 
+    apiClient.post<GoldenLevelAnswerOption>('/levels/golden/answers', data),
+  
+  updateAnswer: (id: string, data: UpdateGoldenLevelAnswerOptionDto) => 
+    apiClient.put<GoldenLevelAnswerOption>(`/levels/golden/answers/${id}`, data),
+  
+  deleteAnswer: (id: string) => 
+    apiClient.delete(`/levels/golden/answers/${id}`),
+
+  // Full Content
+  getContent: (levelId: string) => 
+    apiClient.get<{ items: GoldenLevelItem[]; questions: GoldenLevelQuestion[] }>(`/levels/golden/${levelId}/content`),
+};
+
+// Final Levels API
+export const finalLevelsApi = {
+  // Questions
+  getQuestions: (levelId: string) => 
+    apiClient.get<FinalLevelQuestion[]>(`/levels/final/${levelId}/questions`),
+  
+  createQuestion: (data: CreateFinalLevelQuestionDto) => 
+    apiClient.post<FinalLevelQuestion>('/levels/final/questions', data),
+  
+  updateQuestion: (id: string, data: UpdateFinalLevelQuestionDto) => 
+    apiClient.put<FinalLevelQuestion>(`/levels/final/questions/${id}`, data),
+  
+  deleteQuestion: (id: string) => 
+    apiClient.delete(`/levels/final/questions/${id}`),
+
+  // Answer Options
+  getAnswers: (questionId: string) => 
+    apiClient.get<FinalLevelAnswerOption[]>(`/levels/final/questions/${questionId}/answers`),
+  
+  createAnswer: (data: CreateFinalLevelAnswerOptionDto) => 
+    apiClient.post<FinalLevelAnswerOption>('/levels/final/answers', data),
+  
+  updateAnswer: (id: string, data: UpdateFinalLevelAnswerOptionDto) => 
+    apiClient.put<FinalLevelAnswerOption>(`/levels/final/answers/${id}`, data),
+  
+  deleteAnswer: (id: string) => 
+    apiClient.delete(`/levels/final/answers/${id}`),
+
+  // Full Content
+  getContent: (levelId: string) => 
+    apiClient.get<{ questions: FinalLevelQuestion[] }>(`/levels/final/${levelId}/content`),
 };
 
 // ============================================================
@@ -393,6 +686,9 @@ export const missionsApi = {
   
   getDetail: (id: string) => 
     apiClient.get<Mission>(`/missions/${id}/detail`),
+  
+  getItems: (missionId: string) =>
+    apiClient.get<MissionItem[]>(`/missions/${missionId}/items`),
   
   create: (data: CreateMissionDto) => 
     apiClient.post<Mission>('/missions', data),
@@ -524,20 +820,26 @@ export interface MediaFile {
 }
 
 export const mediaApi = {
-  getAll: (params?: PaginationParams) => 
+  getAll: (params?: { page?: number; limit?: number; type?: string; search?: string }) => 
     apiClient.get<PaginatedResponse<MediaFile>>('/media', { params }),
   
   getById: (id: string) => 
     apiClient.get<MediaFile>(`/media/${id}`),
   
-  upload: (file: File, type: 'image' | 'video' | 'audio' | 'document', tags?: string[]) => {
+  upload: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('type', type);
-    if (tags && tags.length > 0) {
-      formData.append('tags', JSON.stringify(tags));
-    }
     return apiClient.post<MediaFile>('/media/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  uploadMultiple: (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    return apiClient.post<MediaFile[]>('/media/upload-multiple', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Question, AnswerOption } from './questions.service';
+import { Question, AnswerOption } from './question.entity';
 import { QuestionsService } from './questions.service';
 import { QuestionsController } from './questions.controller';
 

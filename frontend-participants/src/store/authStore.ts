@@ -21,9 +21,20 @@ interface AuthStore {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Función para obtener token de localStorage de forma segura
+const getInitialToken = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('token');
+  } catch (err) {
+    console.error('Error reading token from localStorage:', err);
+    return null;
+  }
+};
+
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
+  token: getInitialToken(),
   isLoading: false,
   error: null,
 

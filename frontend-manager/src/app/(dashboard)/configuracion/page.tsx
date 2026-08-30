@@ -46,7 +46,7 @@ export default function ConfigPage() {
   };
 
   const configGroups = {
-    'Regalos y Recompensas': ['gift_countdown_minutes'],
+    'Regalos y Recompensas': ['countdown_datetime'],
     'Sistema': ['maintenance_mode', 'sound_enabled', 'effect_sound_enabled'],
   };
 
@@ -96,12 +96,24 @@ export default function ConfigPage() {
                         {config.description && (
                           <p className="text-sm text-gray-500 mb-2">{config.description}</p>
                         )}
-                        <input
-                          type="text"
-                          value={editValues[config.key] || ''}
-                          onChange={(e) => setEditValues({ ...editValues, [config.key]: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
+                        {config.key === 'countdown_datetime' ? (
+                          <input
+                            type="datetime-local"
+                            value={editValues[config.key] ? new Date(editValues[config.key]).toISOString().slice(0, 16) : ''}
+                            onChange={(e) => {
+                              const date = new Date(e.target.value);
+                              setEditValues({ ...editValues, [config.key]: date.toISOString() });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={editValues[config.key] || ''}
+                            onChange={(e) => setEditValues({ ...editValues, [config.key]: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        )}
                       </div>
                       <button
                         onClick={() => handleSave(config.key)}

@@ -12,6 +12,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { resetAuthRedirectFlag } from '@/app/services/api';
 
 // Usar prefijo 'manager_' para todas las claves en localStorage
 // Esto garantiza que NO se cruzen con 'admin_' ni 'participant_'
@@ -23,7 +24,7 @@ export interface AdminUser {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'reporter';
+  role: 'manager' | 'reporter';
   name?: string;
 }
 
@@ -68,6 +69,8 @@ export function useManagerAuth(): UseManagerAuthReturn {
             setToken(storedToken);
             setUser(storedUser);
             setIsAuthenticated(true);
+            // Resetear el flag de redirección cuando se carga una sesión válida
+            resetAuthRedirectFlag();
           } catch (err) {
             console.error('Error al parsear usuario guardado:', err);
             localStorage.removeItem(STORAGE_KEY_TOKEN);
@@ -98,6 +101,8 @@ export function useManagerAuth(): UseManagerAuthReturn {
               setToken(e.newValue);
               setUser(storedUser);
               setIsAuthenticated(true);
+              // Resetear el flag de redirección cuando se carga una sesión válida
+              resetAuthRedirectFlag();
             } catch (err) {
               console.error('Error al sincronizar sesión:', err);
             }
@@ -158,6 +163,9 @@ export function useManagerAuth(): UseManagerAuthReturn {
         setUser(userData);
         setIsAuthenticated(true);
         setIsLoading(false);
+
+        // Resetear el flag de redirección cuando se hace login exitoso
+        resetAuthRedirectFlag();
 
         return true;
       } catch (err: any) {

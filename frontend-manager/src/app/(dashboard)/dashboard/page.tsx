@@ -57,7 +57,7 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🏆 Top 10 Participantes</h2>
           <div className="space-y-2">
             {data?.top10Participants?.map((p, idx) => (
-              <div key={p.id} className="flex justify-between p-2 bg-gray-100 rounded">
+              <div key={p.id} className="flex justify-between p-2 bg-gray-100 text-black rounded">
                 <span className="font-semibold">#{idx + 1} {p.full_name}</span>
                 <span className="text-yellow-500">⭐ {p.total_stars}</span>
               </div>
@@ -70,7 +70,7 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">🏅 Top 10 Grupos</h2>
           <div className="space-y-2">
             {data?.top10Groups?.map((g, idx) => (
-              <div key={g.group_id} className="flex justify-between p-2 bg-gray-100 rounded">
+              <div key={g.group_id} className="flex justify-between p-2 bg-gray-100 text-black rounded">
                 <span className="font-semibold">#{idx + 1} {g.group_name}</span>
                 <span className="text-yellow-500">⭐ {g.total_group_stars}</span>
               </div>
@@ -84,7 +84,7 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {data?.worldCompletion?.map((w) => (
               <div key={w.world_name} className="p-3 bg-gray-50 rounded">
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-2 text-black">
                   <span className="font-semibold">{w.world_name}</span>
                   <span className="text-blue-600">{w.completion_rate}%</span>
                 </div>

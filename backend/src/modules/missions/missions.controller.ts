@@ -28,6 +28,12 @@ export class MissionsController {
     return this.service.findWithItems(id);
   }
 
+  @Get(':id/items')
+  @ApiOperation({ summary: 'Items de contenido de una misión' })
+  getItems(@Param('id') id: string) {
+    return this.service.getItems(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener misión por ID' })
   findOne(@Param('id') id: string) {

@@ -1,20 +1,24 @@
 'use client';
 
 import { useAuthStore } from '@/store/authStore';
+import { useAuthCheck } from '@/hooks/useAuthCheck';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function LoginPage() {
   const [dni, setDni] = useState('');
   const router = useRouter();
-  const { login, isLoading, error, token } = useAuthStore();
+  const { login, isLoading, error } = useAuthStore();
+  const token = useAuthStore((state) => state.token);
+  const { isHydrated } = useAuthCheck();
 
   // Si ya está autenticado, redirigir a mundos
   useEffect(() => {
+    if (!isHydrated) return;
     if (token) {
       router.push('/game/worlds');
     }
-  }, [token, router]);
+  }, [isHydrated, token, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +48,7 @@ export default function LoginPage() {
               onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
               placeholder="12345678"
               maxLength={8}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-lg text-center"
+              className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-lg text-center"
               disabled={isLoading}
               autoFocus
             />

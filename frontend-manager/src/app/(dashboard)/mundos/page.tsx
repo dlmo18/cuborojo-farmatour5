@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DataTable, { Column } from '@/app/components/DataTable';
+import { useRouter } from 'next/navigation';
+import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
-import { worldsApi, World, CreateWorldDto, UpdateWorldDto } from '@/app/services/api';
+import { worldsApi, levelsApi, World, CreateWorldDto, UpdateWorldDto, Level } from '@/app/services/api';
+import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 
 export default function WorldsPage() {
-  const [worlds, setWorlds] = useState<World[]>([]);
+  const router = useRouter();
+  const { token, isLoading: authLoading } = useManagerAuth();
+  const [worlds, setWorlds] = useState<(World & { levelCount?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,13 +23,31 @@ export default function WorldsPage() {
   const [formData, setFormData] = useState<CreateWorldDto | UpdateWorldDto>({ name: '', description: '', orderNum: 1 });
   const [error, setError] = useState('');
 
-  useEffect(() => { fetchWorlds(); }, [currentPage, itemsPerPage, searchTerm]);
+  useEffect(() => { 
+    // Solo fetch si tenemos token y no está cargando la autenticación
+    if (token && !authLoading) {
+      fetchWorlds(); 
+    }
+  }, [currentPage, itemsPerPage, searchTerm, token, authLoading]);
 
   const fetchWorlds = async () => {
     try {
       setLoading(true);
       const response = await worldsApi.getAll({ page: currentPage, limit: itemsPerPage, search: searchTerm });
-      setWorlds(response.data.data);
+      
+      // Obtener cantidad de niveles por mundo
+      const worldsWithLevels = await Promise.all(
+        response.data.data.map(async (world) => {
+          try {
+            const levelsRes = await levelsApi.getByWorld(world.id);
+            return { ...world, levelCount: levelsRes.data.length };
+          } catch {
+            return { ...world, levelCount: 0 };
+          }
+        })
+      );
+      
+      setWorlds(worldsWithLevels);
       setTotalPages(response.data.totalPages);
       setTotalItems(response.data.total);
     } catch (err: any) {
@@ -59,6 +81,10 @@ export default function WorldsPage() {
     }
   };
 
+  const handleViewLevels = (world: World) => {
+    router.push(`/mundos/${world.id}/niveles`);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -75,17 +101,55 @@ export default function WorldsPage() {
     }
   };
 
-  const columns: Column<World>[] = [
-    { key: 'orderNum', label: 'Orden', width: '80px' },
-    { key: 'name', label: 'Nombre' },
-    { key: 'description', label: 'Descripción' },
+  const columns: Column<World & { levelCount?: number }>[] = [
+    { 
+      key: 'name', 
+      label: 'Nombre',
+      render: (value, item) => (
+        <div>
+          <div className="font-medium">{item.orderNum}. {value}</div>
+        </div>
+      )
+    },
+    { 
+      key: 'description', 
+      label: 'Descripción',
+      render: (value, item) => (
+        <div className='whitespace-break-spaces'>
+          <div className="text-gray-600">{item.description}</div>
+        </div>
+      )
+    },
+    { 
+      key: 'levelCount', 
+      label: 'Niveles',
+      width: '100px',
+      render: (value, item) => (
+        <button
+          onClick={() => handleViewLevels(item)}
+          className="text-blue-600 hover:text-blue-900 font-semibold hover:underline"
+        >
+          {value || 0}
+        </button>
+      )
+    },
     { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
+  ];
+
+  const additionalOptions: AdditionalOption<World & { levelCount?: number }>[] = [
+    {
+      label: 'Ver Niveles',
+      icon: 'layers',
+      class: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      title: 'Ver todos los niveles de este mundo',
+      callback: (world) => handleViewLevels(world),
+    },
   ];
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">🌍 Mundos</h1>
+        <h1 className="text-4xl font-bold text-gray-800"><span style={{fontSize: '2rem', width: '2rem'}} className="material-icons">public</span> Mundos</h1>
         <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
           <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
           Nuevo Mundo
@@ -96,7 +160,7 @@ export default function WorldsPage() {
         <div className="p-6 border-b border-gray-200">
           <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar mundos..." />
         </div>
-        <DataTable columns={columns} data={worlds} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+        <DataTable columns={columns} data={worlds} loading={loading} onEdit={handleEdit} onDelete={handleDelete} additionalOptions={additionalOptions} />
         <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} onItemsPerPageChange={setItemsPerPage} />
       </div>
 

@@ -50,6 +50,13 @@ export class MissionsService {
     return { ...mission, items };
   }
 
+  async getItems(missionId: string) {
+    return this.itemRepo.find({
+      where: { missionId },
+      order: { orderNum: 'ASC' },
+    });
+  }
+
   async findAll(page = 1, limit = 20, search?: string, levelId?: string) {
     const qb = this.missionRepo.createQueryBuilder('m')
       .leftJoinAndSelect('m.level', 'l')

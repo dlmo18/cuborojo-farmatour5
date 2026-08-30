@@ -1,3 +1,6 @@
+Referencia de alcance:
+https://docs.google.com/presentation/d/1ejmh1mGS8nmWqd2e9KqFcTGZWMLlaBn6i7C5kNurvKg/edit?slide=id.g3a336702de5_0_84#slide=id.g3a336702de5_0_84
+
 - Administrador:
     - login accaccesible desde una URL diferente (managment.farmatour5.com en produccion y desde http://localhost:3002/ en local)esible con usuario y clave 
     - los usuarios de sistema deben contar inicialmente con 2 roles: 'manager' y 'reporter'
@@ -57,3 +60,50 @@
         - Al responde la pregunta se debe mostrar:
             - Si es correcta un sonido de "Correcto" y "Si correcto" seguido por la cantidad de estrellas ganadas en la mision
             - Si es incorrecta un sonido de "Incorrecto" y "¡Ups! incorrecto" mostrando la imagen y texto de la respuesta correcta con texto extra de detalle que justifique la respuesta correcta
+
+Logica de Niveles
+
+Los Mundos tendran 3 tipos de niveles:
+- Nivel Normal:
+    - El formulario al momento de editar/crear requiere:
+        - titulo
+        - descripcion (texto enriquecido)
+        - Nro de orden
+    - Tendra misiones y estas a su vez tendra items con contenidos y una evaluacion con 3 a 4 preguntas
+    - Cada item de contenido tendra:
+        - Titulo de item
+        - Imagen del item
+        - Beneficios: texto enriquecido
+        - Contenido: badgets que solo muestrar un titulo
+        - Detalle: texto enriquecido 
+        - Numero de Orden 
+    - Las preguntas de la evaluaciones tendra:
+        - Texto de la preguntas
+        - opciones de respuestas (imagen y texto) indicando la correcta
+        - Solo una sera elegida como correcta
+- Nivel Dorado
+    - El formulario al momento de editar/crear requiere:
+        - titulo
+        - descripcion (texto enriquecido)
+    - No tiene misiones, solo items de contenidos y preguntas
+    - Cada item de contenido tendra:
+        - Titulo de item
+        - Detalle: texto enriquecido 
+        - Numero de Orden 
+    - Las preguntas de la evaluaciones tendra:
+        - Texto de la preguntas
+        - opciones de respuestas (texto) indicando la correcta
+        - Solo una sera elegida como correcta    
+- Nivel Final
+     - El formulario al momento de editar/crear requiere:
+        - titulo
+        - enlace de video introductorio (link vimeo)
+    - No requiere misiones ni contenido, solo preguntas
+    - Cada pregunta tendra:
+        - Contenido de pregunta
+        - enlace de video inicio (link vimeo)
+        - enlace de video cierre (link vimeo)
+        - opciones de respuesta (imagen y texto) indicando la correcta
+        - mensaje para respuestas correcta (texto enriquecido)
+        - mensaje para respuestas incorrecta (texto enriquecido)
+        - Numero de Orden 

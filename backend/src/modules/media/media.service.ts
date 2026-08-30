@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { MediaItem } from './media.entity';
-import { join } from 'path';
+import { join, isAbsolute } from 'path';
 import { unlink } from 'fs/promises';
 
 @Injectable()
 export class MediaService {
-  constructor(@InjectRepository(MediaItem) private repo: Repository<MediaItem>) {}
+  constructor(
+    @InjectRepository(MediaItem) private repo: Repository<MediaItem>,
+    private configService: ConfigService,
+  ) {}
 
   private getMediaType(mimetype: string): 'image' | 'video' | 'audio' | 'document' {
     if (mimetype.startsWith('image/')) return 'image';
@@ -17,7 +21,7 @@ export class MediaService {
   }
 
   async upload(file: Express.Multer.File, userId: string, baseUrl: string): Promise<MediaItem> {
-    const url = `${baseUrl}/uploads/${file.filename}`;
+    const url = `${baseUrl}/api/media/file/${file.filename}`;
     const item = this.repo.create({
       name: file.originalname,
       type: this.getMediaType(file.mimetype),
@@ -27,6 +31,21 @@ export class MediaService {
       uploadedBy: userId,
     });
     return this.repo.save(item);
+  }
+
+  async uploadMultiple(files: Express.Multer.File[], userId: string, baseUrl: string): Promise<MediaItem[]> {
+    const items = files.map(file => {
+      const url = `${baseUrl}/api/media/file/${file.filename}`;
+      return this.repo.create({
+        name: file.originalname,
+        type: this.getMediaType(file.mimetype),
+        url,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        uploadedBy: userId,
+      });
+    });
+    return this.repo.save(items);
   }
 
   async findAll(page = 1, limit = 20, type?: string, search?: string) {
@@ -46,8 +65,18 @@ export class MediaService {
   async remove(id: string) {
     const m = await this.findOne(id);
     const filename = m.url.split('/').pop();
-    const filePath = join(process.env.UPLOAD_DIR || './uploads', filename);
-    try { await unlink(filePath); } catch {}
+    
+    const uploadDirConfig = this.configService.get('UPLOAD_DIR', './uploads');
+    const uploadDir = isAbsolute(uploadDirConfig) ? uploadDirConfig : join(process.cwd(), uploadDirConfig);
+    const filePath = join(uploadDir, filename);
+    
+    try { 
+      await unlink(filePath);
+      console.log(`[Media] File deleted: ${filePath}`);
+    } catch (e) {
+      console.error('[Media] Error deleting file:', e);
+    }
+    
     await this.repo.delete(id);
     return { message: 'Archivo eliminado' };
   }

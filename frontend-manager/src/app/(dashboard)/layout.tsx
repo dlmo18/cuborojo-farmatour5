@@ -13,10 +13,16 @@ export default function DashboardLayout({
   const router = useRouter();
   const { isAuthenticated, logout, user, isLoading } = useManagerAuth();
   const [isMounted, setIsMounted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Asegurar que se ejecuta solo en cliente
   useEffect(() => {
     setIsMounted(true);
+    // Cargar preferencia del sidebar desde localStorage
+    const savedSidebarState = localStorage.getItem('sidebarOpen');
+    if (savedSidebarState !== null) {
+      setSidebarOpen(JSON.parse(savedSidebarState));
+    }
   }, []);
 
   // Proteger rutas: si no está autenticado, redirigir a login
@@ -33,6 +39,12 @@ export default function DashboardLayout({
     router.push('/login');
   };
 
+  const toggleSidebar = () => {
+    const newState = !sidebarOpen;
+    setSidebarOpen(newState);
+    localStorage.setItem('sidebarOpen', JSON.stringify(newState));
+  };
+
   if (!isMounted || isLoading || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -47,14 +59,18 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col">
+      <aside
+        className={`sidemenu bg-gray-900 text-white p-6 flex flex-col transition-all duration-300 ${
+          sidebarOpen ? 'w-64' : '-ml-64'
+        } overflow-hidden`}
+      >
         <div>
           <h1 className="text-2xl font-bold mb-2">⚙️ Farmatour 5</h1>
           <p className="text-xs text-gray-400 mb-8">Panel de Administración</p>
           {user && (
             <div className="mb-6 p-3 bg-gray-800 rounded-lg text-xs">
               <p className="font-semibold truncate">{user.username}</p>
-              <p className="text-gray-400 text-xs capitalize">{user.role === 'admin' ? 'Administrador' : 'Reportero'}</p>
+              <p className="text-gray-400 text-xs capitalize">{user.role === 'manager' ? 'Administrador' : 'Reportero'}</p>
             </div>
           )}
         </div>
@@ -91,18 +107,6 @@ export default function DashboardLayout({
             🌍 Mundos
           </Link>
           <Link
-            href="/misiones"
-            className="block px-4 py-2 hover:bg-gray-800 rounded transition"
-          >
-            🎯 Misiones
-          </Link>
-          <Link
-            href="/preguntas"
-            className="block px-4 py-2 hover:bg-gray-800 rounded transition"
-          >
-            ❓ Preguntas
-          </Link>
-          <Link
             href="/biblioteca"
             className="block px-4 py-2 hover:bg-gray-800 rounded transition"
           >
@@ -124,14 +128,29 @@ export default function DashboardLayout({
 
         <button
           onClick={handleLogout}
-          className="w-full text-left px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition font-semibold"
+          className="w-full text-left text-white px-4 py-2 bg-red-600 hover:bg-red-700 rounded transition font-semibold"
         >
-          🚪 Cerrar Sesión
+          <span className="material-icons align-middle">logout</span> Cerrar Sesión
         </button>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto flex flex-col">
+        {/* Toggle Button */}
+        <button
+          onClick={toggleSidebar}
+          style={{ width: '40px' }}
+          className="fixed flex overflow-hidden items-center top-4 left-3 z-40 p-2 bg-gray-900  rounded-lg hover:bg-gray-800 transition"
+          title={sidebarOpen ? 'Ocultar menú' : 'Mostrar menú'}
+        >
+          {sidebarOpen ? (<span className='text-white material-icons'>menu_open</span>) : (<span className='material-icons text-white'>menu_closed</span>)}
+        </button>
+
+        {/* Content */}
+        <div className="pt-12">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

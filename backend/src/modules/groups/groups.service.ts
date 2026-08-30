@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Group } from './group.entity';
+import { Participant } from '../participants/participant.entity';
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -12,7 +13,10 @@ export class CreateGroupDto {
 
 @Injectable()
 export class GroupsService {
-  constructor(@InjectRepository(Group) private repo: Repository<Group>) {}
+  constructor(
+    @InjectRepository(Group) private repo: Repository<Group>,
+    @InjectRepository(Participant) private participantRepo: Repository<Participant>,
+  ) {}
 
   findAll(page = 1, limit = 20, search?: string) {
     const qb = this.repo.createQueryBuilder('g').orderBy('g.name', 'ASC');
@@ -41,5 +45,21 @@ export class GroupsService {
   async remove(id: string) {
     await this.repo.update(id, { isActive: false });
     return { message: 'Grupo desactivado' };
+  }
+
+  async getRanking(groupId: string) {
+    const participants = await this.participantRepo.find({
+      where: { groupId, isActive: true },
+      order: { totalStars: 'DESC' },
+    });
+
+    return {
+      data: participants.map((p, index) => ({
+        id: p.id,
+        fullName: p.fullName,
+        totalStars: p.totalStars,
+        ranking: index + 1,
+      })),
+    };
   }
 }
