@@ -2,7 +2,7 @@
 # Daily backup script for Farmatour5
 # Backs up PostgreSQL database and application files
 
-BACKUP_DIR="/var/www/farmatour5/backups"
+BACKUP_DIR="/var/www/farmatour5/database/backups"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="/var/www/farmatour5/logs/backup.log"
 DB_USER="farmatour5"
