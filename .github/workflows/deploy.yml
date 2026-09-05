@@ -78,7 +78,7 @@ jobs:
       - name: 📦 Install participant frontend dependencies
         run: |
           cd frontend-participants
-          npm install
+          npm install --legacy-peer-deps
 
       - name: 📋 Create participant .env
         run: |
@@ -120,7 +120,7 @@ jobs:
       - name: 📦 Install manager frontend dependencies
         run: |
           cd frontend-manager
-          npm install
+          npm install --legacy-peer-deps
 
       - name: 📋 Create manager .env
         run: |
