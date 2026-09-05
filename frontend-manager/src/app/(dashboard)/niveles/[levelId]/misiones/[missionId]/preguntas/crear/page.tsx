@@ -2,8 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { questionsApi, missionsApi, levelsApi, worldsApi, Question, Mission, Level, World, CreateQuestionDto, CreateAnswerOptionDto } from '@/app/services/api';
+import ImageSelector from '@/app/components/ImageSelector';
+import ToggleSwitch from '@/app/components/ToggleSwitch';
+import { RichTextEditor } from '@/app/components/RichTextEditor';
+import { questionsApi, missionsApi, levelsApi, worldsApi, mediaApi, Question, Mission, Level, World, CreateQuestionDto, CreateAnswerOptionDto } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+const getImageUrl = (imageId?: string) => {
+  if (!imageId) return null;
+  return `${API_URL}/media/serve/${imageId}`;
+};
 
 interface AnswerOption extends CreateAnswerOptionDto {
   tempId?: string;
@@ -247,18 +257,16 @@ export default function CreateQuestionPage() {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8 space-y-8">
-        {/* Contenido de la pregunta */}
+        {/* Contenido de la pregunta - WYSIWYG */}
         <div>
           <label className="block text-lg font-semibold text-gray-700 mb-3">
-            Contenido de la Pregunta *
+            Contenido de la Pregunta * (Formato Enriquecido)
           </label>
-          <textarea
-            required
+          <RichTextEditor
             value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            rows={3}
-            placeholder="¿Cuál es la función principal de un medicamento?"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            onChange={(content) => setFormData({ ...formData, content })}
+            placeholder="Escribe el contenido de la pregunta con formato enriquecido..."
+            minHeight="200px"
           />
         </div>
 
@@ -297,6 +305,27 @@ export default function CreateQuestionPage() {
           </div>
         </div>
 
+        {/* Imagen de la pregunta */}
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-3">
+            🖼️ Imagen de la Pregunta (opcional)
+          </label>
+          <ImageSelector
+            selectedImageId={formData.imageId}
+            onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
+            label="Seleccionar imagen para esta pregunta"
+          />
+          {formData.imageId && getImageUrl(formData.imageId) && (
+            <div className="mt-4">
+              <img
+                src={getImageUrl(formData.imageId) || ''}
+                alt="Preview"
+                className="w-full h-auto max-h-64 rounded-lg border border-gray-200"
+              />
+            </div>
+          )}
+        </div>
+
         {/* Opciones de respuesta */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -306,7 +335,7 @@ export default function CreateQuestionPage() {
             <button
               type="button"
               onClick={handleAddAnswer}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
               + Agregar Opción
             </button>
@@ -330,15 +359,12 @@ export default function CreateQuestionPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={answer.isCorrect}
-                        onChange={(e) => handleUpdateAnswer(answer.tempId, 'isCorrect', e.target.checked)}
-                        className="w-5 h-5 rounded"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Correcta</span>
-                    </label>
+                    <ToggleSwitch
+                      id={`isCorrect-${answer.tempId}`}
+                      checked={answer.isCorrect}
+                      onChange={(checked) => handleUpdateAnswer(answer.tempId, 'isCorrect', checked)}
+                      label="Opción Correcta"
+                    />
 
                     {answers.length > 2 && (
                       <button
@@ -362,6 +388,17 @@ export default function CreateQuestionPage() {
                     placeholder="Explicación detallada de por qué esta opción es correcta o incorrecta"
                     rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Imagen de la Opción (opcional)
+                  </label>
+                  <ImageSelector
+                    selectedImageId={answer.imageId}
+                    onImageSelect={(imageId) => handleUpdateAnswer(answer.tempId, 'imageId', imageId)}
+                    label="Seleccionar imagen para esta opción"
                   />
                 </div>
               </div>

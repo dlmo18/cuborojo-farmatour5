@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
+import ToggleSwitch from '@/app/components/ToggleSwitch';
 import { participantsApi, groupsApi, Participant, Group, CreateParticipantDto, UpdateParticipantDto } from '@/app/services/api';
 
 export default function ParticipantsPage() {
@@ -149,7 +150,7 @@ export default function ParticipantsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold mb-6">{editingParticipant ? 'Editar Participante' : 'Nuevo Participante'}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-black">{editingParticipant ? 'Editar Participante' : 'Nuevo Participante'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">DNI *</label>
@@ -171,10 +172,12 @@ export default function ParticipantsPage() {
                 </select>
               </div>
               {editingParticipant && (
-                <div className="flex items-center">
-                  <input type="checkbox" id="isActive" checked={(formData as UpdateParticipantDto).isActive ?? true} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
-                  <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">Participante activo</label>
-                </div>
+                <ToggleSwitch
+                  id="isActive"
+                  checked={(formData as UpdateParticipantDto).isActive ?? true}
+                  onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  label="Participante activo"
+                />
               )}
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
               <div className="flex gap-3 pt-4">

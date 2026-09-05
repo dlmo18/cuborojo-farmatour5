@@ -305,5 +305,4 @@ cache/
 monitoring/*.log
 !monitoring/.gitkeep
 
-docs/referencias
-docs/access
+docs/**/*

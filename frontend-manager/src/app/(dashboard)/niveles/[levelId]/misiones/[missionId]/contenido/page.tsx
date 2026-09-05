@@ -6,9 +6,18 @@ import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import { RichTextEditor } from '@/app/components/RichTextEditor';
-import { missionsApi, levelsApi, worldsApi, Mission, MissionItem, Level, World, CreateMissionItemDto, UpdateMissionItemDto } from '@/app/services/api';
+import ImageSelector from '@/app/components/ImageSelector';
+import MediaPreviewModal from '@/app/components/MediaPreviewModal';
+import { missionsApi, levelsApi, worldsApi, mediaApi, Mission, MissionItem, Level, World, CreateMissionItemDto, UpdateMissionItemDto, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { stripHtmlTags } from '@/app/utils/htmlUtils';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+const getImageUrl = (imageId: string) => {
+  if (!imageId) return '';
+  return `${API_URL}/media/serve/${imageId}`;
+};
 
 export default function MissionContentPage() {
   const router = useRouter();
@@ -33,6 +42,20 @@ export default function MissionContentPage() {
     title: '',
     orderNum: 1,
   });
+  const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [newBadge, setNewBadge] = useState('');
+
+  const handleOpenImagePreview = async (imageId?: string) => {
+    if (!imageId) return;
+    try {
+      const response = await mediaApi.getById(imageId);
+      setPreviewImage(response.data);
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Error loading image:', err);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     if (fetchedRef.current) return;
@@ -78,7 +101,9 @@ export default function MissionContentPage() {
     setFormData({
       title: '',
       orderNum: items.length + 1,
+      contentBadges: [],
     });
+    setNewBadge('');
     setShowModal(true);
     setError('');
   };
@@ -91,8 +116,10 @@ export default function MissionContentPage() {
       thumbnailId: item.thumbnailId,
       benefits: item.benefits,
       detail: item.detail,
+      contentBadges: item.contentBadges || [],
       orderNum: item.orderNum,
     });
+    setNewBadge('');
     setShowModal(true);
     setError('');
   };
@@ -134,7 +161,27 @@ export default function MissionContentPage() {
     { 
       key: 'title', 
       label: 'Título',
-      render: (value) => <div className="line-clamp-1 font-semibold">{value}</div>
+      render: (value, item: any) => (
+        <div className="flex items-center gap-2">
+          {item.imageId && (
+            <button
+              onClick={() => handleOpenImagePreview(item.imageId)}
+              className="flex-shrink-0 w-8 h-8 rounded border border-gray-200 hover:border-blue-400 transition-colors"
+              title="Ver imagen"
+            >
+              <img
+                src={getImageUrl(item.imageId)}
+                alt={value}
+                className="w-full h-full object-cover rounded"
+                onError={(e) => {
+                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpath d="M21 15l-5-5L5 21"/%3E%3C/svg%3E';
+                }}
+              />
+            </button>
+          )}
+          <div className="line-clamp-1 font-semibold">{value}</div>
+        </div>
+      )
     },
     { 
       key: 'benefits', 
@@ -145,6 +192,26 @@ export default function MissionContentPage() {
       key: 'detail', 
       label: 'Detalle',
       render: (value) => <div style={{width: '250px'}}><div className="whitespace-break-spaces min-w-md text-sm text-gray-600 line-clamp-1">{stripHtmlTags(value, 200)}</div></div>
+    },
+    { 
+      key: 'contentBadges', 
+      label: 'Etiquetas',
+      render: (value: any) => (
+        <div className="flex flex-wrap gap-1">
+          {value && value.length > 0 ? (
+            value.slice(0, 3).map((badge: string, idx: number) => (
+              <span key={idx} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                {badge}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-400 text-sm">-</span>
+          )}
+          {value && value.length > 3 && (
+            <span className="text-gray-500 text-xs">+{value.length - 3}</span>
+          )}
+        </div>
+      )
     },
   ];
 
@@ -214,7 +281,7 @@ export default function MissionContentPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">{editingItem ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-black">{editingItem ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Título *</label>
@@ -229,11 +296,10 @@ export default function MissionContentPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Beneficios</label>
-                <textarea 
+                <RichTextEditor 
                   value={formData.benefits || ''} 
-                  onChange={(e) => setFormData({ ...formData, benefits: e.target.value })} 
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  onChange={(content) => setFormData({ ...formData, benefits: content })}
+                  minHeight="200px"
                 />
               </div>
 
@@ -247,6 +313,15 @@ export default function MissionContentPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Imagen</label>
+                <ImageSelector
+                  selectedImageId={formData.imageId}
+                  onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
+                  label="Seleccionar imagen para este contenido"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Orden *</label>
                 <input 
                   type="number" 
@@ -256,6 +331,73 @@ export default function MissionContentPage() {
                   onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} 
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Etiquetas (Badges)</label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Ej: Vitamina A, Complejo B..."
+                      value={newBadge} 
+                      onChange={(e) => setNewBadge(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newBadge.trim()) {
+                            setFormData({
+                              ...formData,
+                              contentBadges: [...(formData.contentBadges || []), newBadge.trim()]
+                            });
+                            setNewBadge('');
+                          }
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newBadge.trim()) {
+                          setFormData({
+                            ...formData,
+                            contentBadges: [...(formData.contentBadges || []), newBadge.trim()]
+                          });
+                          setNewBadge('');
+                        }
+                      }}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                    >
+                      +
+                    </button>
+                  </div>
+                  
+                  {formData.contentBadges && formData.contentBadges.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.contentBadges.map((badge, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
+                        >
+                          {badge}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                contentBadges: formData.contentBadges!.filter((_, i) => i !== idx)
+                              });
+                            }}
+                            className="text-blue-600 hover:text-blue-800 font-bold"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
@@ -278,6 +420,14 @@ export default function MissionContentPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {previewImage && (
+        <MediaPreviewModal
+          item={previewImage}
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+        />
       )}
     </div>
   );

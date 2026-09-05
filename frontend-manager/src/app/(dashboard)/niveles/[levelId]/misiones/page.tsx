@@ -5,7 +5,10 @@ import { useRouter, useParams } from 'next/navigation';
 import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
-import { missionsApi, questionsApi, levelsApi, worldsApi, Mission, Level, World, CreateMissionDto, UpdateMissionDto } from '@/app/services/api';
+import ImageSelector from '@/app/components/ImageSelector';
+import ToggleSwitch from '@/app/components/ToggleSwitch';
+import MediaPreviewModal from '@/app/components/MediaPreviewModal';
+import { missionsApi, questionsApi, levelsApi, worldsApi, mediaApi, Mission, Level, World, CreateMissionDto, UpdateMissionDto, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 
 export default function MissionsPage() {
@@ -28,6 +31,19 @@ export default function MissionsPage() {
   const [editingMission, setEditingMission] = useState<Mission | null>(null);
   const [formData, setFormData] = useState<CreateMissionDto | UpdateMissionDto>({ levelId: '', name: '', orderNum: 1 });
   const [error, setError] = useState('');
+  const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handleOpenImagePreview = async (imageId?: string) => {
+    if (!imageId) return;
+    try {
+      const response = await mediaApi.getById(imageId);
+      setPreviewImage(response.data);
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Error loading image:', err);
+    }
+  };
 
   const fetchLevelAndMissions = useCallback(async () => {
     if (fetchedRef.current) return;
@@ -205,17 +221,35 @@ export default function MissionsPage() {
       render: (value, item) => {
         const missionItem = item as Mission & { levelData?: Level; worldData?: World };
         return (
-          <div>
-            {level ? (
-              <div className="text-xs text-gray-500 font-normal">{world?.name} / {level.name}</div>
-            ) : (
-              <div className="text-xs text-gray-500 font-normal">
-                {missionItem.worldData?.name && missionItem.levelData?.name
-                  ? `${missionItem.worldData.name} / ${missionItem.levelData.name}`
-                  : 'Todos los niveles'}
-              </div>
+          <div className="flex items-center gap-3">
+            {item.imageId && (
+              <button
+                onClick={() => handleOpenImagePreview(item.imageId)}
+                className="flex-shrink-0 w-6 h-6 rounded overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
+                title="Ver imagen"
+              >
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/media/${item.imageId}`}
+                  alt={value}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect fill=%22%23f0f0f0%22 width=%2248%22 height=%2248%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2224%22%3E🖼️%3C/text%3E%3C/svg%3E';
+                  }}
+                />
+              </button>
             )}
-            <div className="font-medium">{item.orderNum}. {value}</div>
+            <div>
+              {level ? (
+                <div className="text-xs text-gray-500 font-normal">{world?.name} / {level.name}</div>
+              ) : (
+                <div className="text-xs text-gray-500 font-normal">
+                  {missionItem.worldData?.name && missionItem.levelData?.name
+                    ? `${missionItem.worldData.name} / ${missionItem.levelData.name}`
+                    : 'Todos los niveles'}
+                </div>
+              )}
+              <div className="font-medium">{item.orderNum}. {value}</div>
+            </div>
           </div>
         );
       }
@@ -324,7 +358,7 @@ export default function MissionsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold mb-6">{editingMission ? 'Editar Misión' : 'Nueva Misión'}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-black">{editingMission ? 'Editar Misión' : 'Nueva Misión'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
@@ -338,11 +372,21 @@ export default function MissionsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Orden *</label>
                 <input type="number" required min="1" value={formData.orderNum || 1} onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
+              <div>
+                <ImageSelector
+                  selectedImageId={(formData as any).imageId}
+                  onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
+                  label="Imagen de la Misión"
+                  required={false}
+                />
+              </div>
               {editingMission && (
-                <div className="flex items-center">
-                  <input type="checkbox" id="isActive" checked={(formData as UpdateMissionDto).isActive ?? true} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })} className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
-                  <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">Misión activa</label>
-                </div>
+                <ToggleSwitch
+                  id="isActive"
+                  checked={(formData as UpdateMissionDto).isActive ?? true}
+                  onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                  label="Misión activa"
+                />
               )}
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
               <div className="flex gap-3 pt-4">
@@ -352,6 +396,14 @@ export default function MissionsPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {previewImage && (
+        <MediaPreviewModal
+          item={previewImage}
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+        />
       )}
     </div>
   );

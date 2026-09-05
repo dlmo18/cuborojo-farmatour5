@@ -5,7 +5,8 @@ import { useRouter, useParams } from 'next/navigation';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
-import { questionsApi, missionsApi, levelsApi, worldsApi, Question, Mission, Level, World } from '@/app/services/api';
+import MediaPreviewModal from '@/app/components/MediaPreviewModal';
+import { questionsApi, missionsApi, levelsApi, worldsApi, mediaApi, Question, Mission, Level, World, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { stripHtmlTags } from '@/app/utils/htmlUtils';
 
@@ -26,6 +27,19 @@ export default function MissionQuestionsPage() {
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
+  const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handleOpenImagePreview = async (imageId?: string) => {
+    if (!imageId) return;
+    try {
+      const response = await mediaApi.getById(imageId);
+      setPreviewImage(response.data);
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Error loading image:', err);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     if (fetchedRef.current) return;
@@ -91,7 +105,27 @@ export default function MissionQuestionsPage() {
     { 
       key: 'content', 
       label: 'Pregunta',
-      render: (value) => <div className="line-clamp-2">{stripHtmlTags(value, 100)}</div>
+      render: (value, item: any) => (
+        <div className="flex items-center gap-2">
+          {item.imageId && (
+            <button
+              onClick={() => handleOpenImagePreview(item.imageId)}
+              className="flex-shrink-0 w-8 h-8 rounded border border-gray-200 hover:border-blue-400 transition-colors"
+              title="Ver imagen"
+            >
+              <img
+                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/media/${item.imageId}`}
+                alt="pregunta"
+                className="w-full h-full object-cover rounded"
+                onError={(e) => {
+                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"/%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"/%3E%3Cpath d="M21 15l-5-5L5 21"/%3E%3C/svg%3E';
+                }}
+              />
+            </button>
+          )}
+          <div className="line-clamp-2">{stripHtmlTags(value, 100)}</div>
+        </div>
+      )
     },
     { 
       key: 'starsValue', 
@@ -177,6 +211,14 @@ export default function MissionQuestionsPage() {
           onItemsPerPageChange={() => {}} 
         />
       </div>
+
+      {previewImage && (
+        <MediaPreviewModal
+          item={previewImage}
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </div>
   );
 }
