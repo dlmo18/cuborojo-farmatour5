@@ -10,12 +10,15 @@ import OptionsMenu from '@/components/OptionsMenu';
 interface MissionItem {
   id: string;
   title: string;
-  image: string;
+  imageId: string;
   benefits: string;
-  content: string;
-  details: string;
-  thumbnail: string;
+  contentBadges: string[];
+  detail: string;
+  thumbnailId: string;
   orderNum: number;
+  missionId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Mission {
@@ -34,6 +37,12 @@ interface Mission {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// Construir URL de imagen desde imageId
+const getImageUrl = (imageId: string) => {
+  if (!imageId) return '';
+  return `${API_URL}/media/serve/${imageId}`;
+};
 
 export default function MissionInfoPage() {
   const { isHydrated } = useAuthCheck({ redirectTo: '/login' });
@@ -129,70 +138,55 @@ export default function MissionInfoPage() {
 
         {/* Contenedor de información */}
         {currentItem ? (
-          <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="bg-white rounded-lg shadow-lg p-8 text-black">
             {/* Título */}
-            <h2 className="text-2xl font-bold text-purple-600 mb-6">{currentItem.title}</h2>
+            <h2 className="text-3xl font-bold text-purple-600 mb-4">{currentItem.title}</h2>
 
-            {/* Grid con imagen principal y contenido */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {/* Contenido principal (2 columnas) */}
-              <div className="md:col-span-2">
-                {/* Imagen principal */}
-                {currentItem.image && (
-                  <div className="mb-6">
-                    <img
-                      src={currentItem.image}
-                      alt={currentItem.title}
-                      className="w-full rounded-lg shadow-md"
-                    />
-                  </div>
-                )}
-
-                {/* Beneficios */}
-                {currentItem.benefits && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Beneficios</h3>
-                    <p className="text-gray-700">{currentItem.benefits}</p>
-                  </div>
-                )}
-
-                {/* Contenido */}
-                {currentItem.content && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Contenido</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {currentItem.content.split(',').map((badge, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold"
-                        >
-                          {badge.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Detalles */}
-                {currentItem.details && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Detalles</h3>
-                    <p className="text-gray-700">{currentItem.details}</p>
-                  </div>
-                )}
+            {/* Badges/Etiquetas */}
+            {currentItem.contentBadges && currentItem.contentBadges.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {currentItem.contentBadges.map((badge, idx) => (
+                  <span
+                    key={idx}
+                    className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold"
+                  >
+                    {badge}
+                  </span>
+                ))}
               </div>
+            )}
+            
+            {/* Imagen principal */}
+            {currentItem.imageId && (
+              <div className="mb-8">
+                <img
+                  src={getImageUrl(currentItem.imageId)}
+                  alt={currentItem.title}
+                  className="w-auto h-[250px] block m-auto rounded-lg shadow-md"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+              </div>
+            )}
 
-              {/* Miniatura (1 columna) */}
-              {currentItem.thumbnail && (
-                <div className="md:col-span-1">
-                  <img
-                    src={currentItem.thumbnail}
-                    alt={`${currentItem.title} (miniatura)`}
-                    className="w-full rounded-lg shadow-md sticky top-8"
-                  />
+            {/* Beneficios (texto enriquecido - HTML) */}
+            {currentItem.benefits && (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">Beneficios</h3>
+                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: currentItem.benefits }} />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Detalles (texto enriquecido - HTML) */}
+            {currentItem.detail && (
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-gray-800 mb-3">Detalles</h3>
+                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: currentItem.detail }} />
+                </div>
+              </div>
+            )}
 
             {/* Navegación y contador */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">

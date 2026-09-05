@@ -77,12 +77,12 @@ LOG_LEVEL=info
 
 **FRONTEND_PARTICIPANTS_ENV:**
 ```
-NEXT_PUBLIC_API_URL=https://farmatour5.com/api
+NEXT_PUBLIC_API_URL=http://farmatour5-api.cuborojo.pe/api
 ```
 
 **FRONTEND_MANAGER_ENV:**
 ```
-NEXT_PUBLIC_API_URL=https://farmatour5.com/api
+NEXT_PUBLIC_API_URL=http://farmatour5-api.cuborojo.pe/api
 ```
 
 #### 4️⃣ Push a Main y Probar

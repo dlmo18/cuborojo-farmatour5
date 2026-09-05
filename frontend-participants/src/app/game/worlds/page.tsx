@@ -25,6 +25,14 @@ interface Level {
   isGolden: boolean;
   isActive: boolean;
   missions?: any[];
+  levelType?: 'normal' | 'golden' | 'final';
+  isLocked?: boolean;
+}
+
+interface LevelProgress {
+  levelId: string;
+  isCompleted: boolean;
+  starsEarned: number;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -35,6 +43,7 @@ export default function WorldsPage() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [selectedWorld, setSelectedWorld] = useState<World | null>(null);
   const [levels, setLevels] = useState<Level[]>([]);
+  const [levelProgress, setLevelProgress] = useState<Record<string, LevelProgress>>({});
   const [worldStars, setWorldStars] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
@@ -57,38 +66,97 @@ export default function WorldsPage() {
   const handleWorldClick = async (world: World) => {
     setSelectedWorld(world);
     try {
+      // Fetch all levels for this world
       const res = await axios.get(`${API_URL}/levels/world/${world.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Ordenar niveles: primero golden, luego por orderNum
-      const sorted = res.data.sort((a: Level, b: Level) => {
-        if (a.isGolden && !b.isGolden) return -1;
-        if (!a.isGolden && b.isGolden) return 1;
-        return a.orderNum - b.orderNum;
-      });
-      setLevels(sorted);
+      const allLevels = res.data;
 
-      // Calcular estrellas del mundo
+      // Fetch level progress for the current user
+      let progressMap: Record<string, LevelProgress> = {};
       try {
-        const progressRes = await axios.get(`${API_URL}/progress/state`, {
+        const progressRes = await axios.get(`${API_URL}/progress/game-state`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const missions = progressRes.data.missions || [];
-        let totalStars = 0;
+        if (progressRes.data.levelProgress) {
+          progressRes.data.levelProgress.forEach((lp: LevelProgress) => {
+            progressMap[lp.levelId] = lp;
+          });
+        }
+        setLevelProgress(progressMap);
+      } catch (err) {
+        console.error('Error fetching level progress:', err);
+        // Continue without progress data
+      }
+
+      // Separate levels by type
+      const normalLevels = allLevels.filter((l: Level) => l.levelType === 'normal' || (!l.levelType && !l.isGolden));
+      const goldenLevel = allLevels.find((l: Level) => l.levelType === 'golden' || l.isGolden);
+      const finalLevel = allLevels.find((l: Level) => l.levelType === 'final');
+
+      // Sort normal levels by orderNum
+      normalLevels.sort((a: Level, b: Level) => a.orderNum - b.orderNum);
+
+      // Determine which levels are locked
+      const levelsWithLockStatus = normalLevels.map((level: Level, index: number) => {
+        let isLocked = false;
         
-        // Obtener missions de cada nivel para saber qué missions pertenecen al mundo
-        const levelIds = sorted.map((level: Level) => level.id);
-        for (const levelId of levelIds) {
-          const levelRes = await axios.get(`${API_URL}/levels/${levelId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const levelMissions = levelRes.data.missions || [];
-          levelMissions.forEach((mission: any) => {
-            const missionProgress = missions.find((m: any) => m.missionId === mission.id);
-            if (missionProgress) {
-              totalStars += missionProgress.starsEarned || 0;
-            }
-          });
+        // First normal level is always unlocked
+        if (index === 0) {
+          isLocked = false;
+        } else {
+          // Subsequent levels are unlocked only if previous level is completed
+          const previousLevel = normalLevels[index - 1];
+          const previousProgress = progressMap[previousLevel.id];
+          isLocked = !previousProgress || !previousProgress.isCompleted;
+        }
+
+        return { ...level, isLocked };
+      });
+
+      // Golden level is unlocked if all normal levels are completed
+      let goldenLocked = true;
+      if (goldenLevel) {
+        goldenLocked = levelsWithLockStatus.some((l: Level) => l.isLocked);
+      }
+
+      // Final level is unlocked if all normal and golden levels are completed
+      let finalLocked = true;
+      if (finalLevel) {
+        finalLocked = goldenLocked || levelsWithLockStatus.some((l: Level) => l.isLocked);
+      }
+
+      // Build final sorted list: final on top, then golden, then normal levels (reversed for bottom-to-top display)
+      const sortedLevels = [
+        ...(finalLevel ? [{ ...finalLevel, isLocked: finalLocked, levelType: finalLevel.levelType || 'final' }] : []),
+        ...(goldenLevel ? [{ ...goldenLevel, isLocked: goldenLocked, levelType: goldenLevel.levelType || 'golden' }] : []),
+        ...levelsWithLockStatus.reverse(), // Normal levels bottom to top
+      ];
+
+      setLevels(sortedLevels);
+
+      // Calculate world stars
+      try {
+        let totalStars = 0;
+        levelsWithLockStatus.forEach((level: Level) => {
+          const progress = progressMap[level.id];
+          if (progress) {
+            totalStars += progress.starsEarned || 0;
+          }
+        });
+        // Add golden level stars if completed
+        if (goldenLevel && !goldenLocked) {
+          const goldenProgress = progressMap[goldenLevel.id];
+          if (goldenProgress) {
+            totalStars += goldenProgress.starsEarned || 0;
+          }
+        }
+        // Add final level stars if completed
+        if (finalLevel && !finalLocked) {
+          const finalProgress = progressMap[finalLevel.id];
+          if (finalProgress) {
+            totalStars += finalProgress.starsEarned || 0;
+          }
         }
         setWorldStars(totalStars);
       } catch (err) {
@@ -148,7 +216,12 @@ export default function WorldsPage() {
           <div>
             <div className="flex justify-between items-center mb-8">
               <button
-                onClick={() => { setSelectedWorld(null); setLevels([]); setWorldStars(0); }}
+                onClick={() => { 
+                  setSelectedWorld(null); 
+                  setLevels([]); 
+                  setLevelProgress({});
+                  setWorldStars(0); 
+                }}
                 className="text-white text-4xl hover:opacity-80 transition"
               >
                 ←
@@ -157,19 +230,57 @@ export default function WorldsPage() {
               <div className="w-10"></div>
             </div>
             <div className="text-center">
-              {levels.map((level) => (
-                <div key={level.id} className={ (level.isGolden ? "bg-yellow-400 " : "bg-white ") + " block w-full mb-4 rounded-lg shadow-lg p-6"}>
-                  {level.isGolden && <div className="text-3xl mb-2">✨ NIVEL DORADO</div>}
-                  <h3 className="text-xl font-bold text-purple-600 mb-2">{level.name}</h3>
-                  <p className="text-gray-600 mb-4">{level.description}</p>
-                  <button
-                    onClick={() => router.push(`/game/levels/${level.id}`)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+              {levels.map((level) => {
+                const isLocked = level.isLocked;
+                const isFinal = level.levelType === 'final';
+                const isGolden = level.levelType === 'golden';
+                
+                let bgColor = 'bg-white';
+                if (isGolden) bgColor = 'bg-yellow-400';
+                if (isFinal) bgColor = 'bg-red-400';
+                if (isLocked) bgColor = 'bg-gray-300';
+
+                return (
+                  <div
+                    key={level.id}
+                    className={`${bgColor} block w-full mb-4 rounded-lg shadow-lg p-6 ${
+                      isLocked ? 'opacity-60' : ''
+                    }`}
                   >
-                    Jugar Nivel
-                  </button>
-                </div>
-              ))}
+                    {isFinal && !isLocked && <div className="text-3xl mb-2">🏆 NIVEL FINAL</div>}
+                    {isGolden && !isLocked && <div className="text-3xl mb-2">✨ NIVEL DORADO</div>}
+                    {isLocked && <div className="text-3xl mb-2">🔒 BLOQUEADO</div>}
+                    
+                    <h3 className={`text-xl font-bold ${
+                      isGolden ? 'text-yellow-700' : isFinal ? 'text-red-700' : 'text-purple-600'
+                    } mb-2`}>
+                      {level.name}
+                    </h3>
+                    <p className={`${isLocked ? 'text-gray-500' : 'text-gray-600'} mb-4`}>
+                      {level.description}
+                    </p>
+                    
+                    {isLocked ? (
+                      <div className="text-gray-600 text-sm">
+                        Completa el nivel anterior para desbloquear
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => router.push(`/game/levels/${level.id}`)}
+                        className={`${
+                          isGolden
+                            ? 'bg-yellow-500 hover:bg-yellow-600'
+                            : isFinal
+                            ? 'bg-red-500 hover:bg-red-600'
+                            : 'bg-purple-600 hover:bg-purple-700'
+                        } text-white px-4 py-2 rounded-lg transition`}
+                      >
+                        {isFinal ? 'Jugar Nivel Final' : isGolden ? 'Jugar Nivel Dorado' : 'Jugar Nivel'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* WorldStarsBar en vista de detalle */}
