@@ -239,7 +239,7 @@ yarn-error.log*
 # dotenv environment variables file
 .env
 .env.test
-.env.production
+.env.prod
 
 # parcel-bundler cache
 .cache
