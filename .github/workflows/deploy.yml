@@ -32,7 +32,7 @@ jobs:
       - name: 📦 Install backend dependencies
         run: |
           cd backend
-          npm ci
+          npm install
 
       - name: 📋 Create backend .env
         run: |
@@ -78,7 +78,7 @@ jobs:
       - name: 📦 Install participant frontend dependencies
         run: |
           cd frontend-participants
-          npm ci
+          npm install
 
       - name: 📋 Create participant .env
         run: |
@@ -120,7 +120,7 @@ jobs:
       - name: 📦 Install manager frontend dependencies
         run: |
           cd frontend-manager
-          npm ci
+          npm install
 
       - name: 📋 Create manager .env
         run: |
@@ -163,7 +163,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           cd backend
-          npm ci
+          npm install
 
       - name: 🧪 Run backend tests
         run: |
