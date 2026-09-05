@@ -152,7 +152,11 @@ backend/uploads/*
 # DATABASE
 # ============================================================
 # PostgreSQL
+database/*
 *.sql.backup
+*.sql
+!database/schema.sql
+
 database/backups/*
 !database/backups/.gitkeep
 
