@@ -2,70 +2,15 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ActivityLog } from './activity-log.entity';
+import { MissionProgress } from './entities/mission-progress.entity';
+import { LevelProgress } from './entities/level-progress.entity';
+import { WorldProgress } from './entities/world-progress.entity';
+import { ParticipantAnswer } from './entities/participant-answer.entity';
+import { WorldExamAnswer } from './entities/world-exam-answer.entity';
 import { QuestionsService } from '../questions/questions.service';
 
-// Entidades inline de progreso
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, Unique } from 'typeorm';
-
-@Entity('participant_mission_progress')
-@Unique(['participantId', 'missionId'])
-export class MissionProgress {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ name: 'participant_id' }) participantId: string;
-  @Column({ name: 'mission_id' }) missionId: string;
-  @Column({ name: 'stars_earned', default: 0 }) starsEarned: number;
-  @Column({ name: 'is_completed', default: false }) isCompleted: boolean;
-  @CreateDateColumn({ name: 'started_at' }) startedAt: Date;
-  @Column({ name: 'completed_at', nullable: true }) completedAt: Date;
-}
-
-@Entity('participant_level_progress')
-@Unique(['participantId', 'levelId'])
-export class LevelProgress {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ name: 'participant_id' }) participantId: string;
-  @Column({ name: 'level_id' }) levelId: string;
-  @Column({ name: 'stars_earned', default: 0 }) starsEarned: number;
-  @Column({ name: 'is_completed', default: false }) isCompleted: boolean;
-  @CreateDateColumn({ name: 'started_at' }) startedAt: Date;
-  @Column({ name: 'completed_at', nullable: true }) completedAt: Date;
-}
-
-@Entity('participant_world_progress')
-@Unique(['participantId', 'worldId'])
-export class WorldProgress {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ name: 'participant_id' }) participantId: string;
-  @Column({ name: 'world_id' }) worldId: string;
-  @Column({ name: 'stars_earned', default: 0 }) starsEarned: number;
-  @Column({ name: 'is_completed', default: false }) isCompleted: boolean;
-  @CreateDateColumn({ name: 'started_at' }) startedAt: Date;
-  @Column({ name: 'completed_at', nullable: true }) completedAt: Date;
-}
-
-@Entity('participant_answers')
-@Unique(['participantId', 'questionId'])
-export class ParticipantAnswer {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ name: 'participant_id' }) participantId: string;
-  @Column({ name: 'question_id' }) questionId: string;
-  @Column({ name: 'answer_id', nullable: true }) answerId: string;
-  @Column({ name: 'is_correct', default: false }) isCorrect: boolean;
-  @Column({ name: 'stars_earned', default: 0 }) starsEarned: number;
-  @CreateDateColumn({ name: 'answered_at' }) answeredAt: Date;
-}
-
-@Entity('participant_world_exam_answers')
-@Unique(['participantId', 'examQuestionId'])
-export class WorldExamAnswer {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ name: 'participant_id' }) participantId: string;
-  @Column({ name: 'exam_question_id' }) examQuestionId: string;
-  @Column({ name: 'answer_id', nullable: true }) answerId: string;
-  @Column({ name: 'is_correct', default: false }) isCorrect: boolean;
-  @Column({ name: 'stars_earned', default: 0 }) starsEarned: number;
-  @CreateDateColumn({ name: 'answered_at' }) answeredAt: Date;
-}
+// Re-export entities for module registration
+export { MissionProgress, LevelProgress, WorldProgress, ParticipantAnswer, WorldExamAnswer };
 
 @Injectable()
 export class ProgressService {
@@ -186,6 +131,78 @@ export class ProgressService {
     }
   }
 
+  /** Verificar y marcar golden level como completado */
+  async checkGoldenLevelCompletion(participantId: string, questionId: string) {
+    // Obtener el levelId desde la pregunta de golden level
+    const [glq] = await this.dataSource.query(
+      `SELECT level_id FROM golden_level_questions WHERE id = $1`, [questionId]
+    );
+    if (!glq) return;
+    const levelId = glq.level_id;
+
+    // Contar preguntas totales del golden level vs respondidas correctamente
+    const [totalQ] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt FROM golden_level_questions WHERE level_id = $1 AND is_active = TRUE`, [levelId]
+    );
+    const [correctQ] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt, COALESCE(SUM(pa.stars_earned),0) as stars
+       FROM participant_golden_level_answers pa
+       JOIN golden_level_questions glq ON glq.id = pa.question_id
+       WHERE pa.participant_id = $1 AND glq.level_id = $2 AND pa.is_correct = TRUE`,
+      [participantId, levelId]
+    );
+
+    const isCompleted = parseInt(correctQ.cnt) === parseInt(totalQ.cnt);
+    if (isCompleted) {
+      await this.dataSource.query(`
+        INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+        VALUES ($1, $2, $3, TRUE, NOW())
+        ON CONFLICT (participant_id, level_id) DO UPDATE
+        SET stars_earned = $3, is_completed = TRUE, completed_at = NOW()
+      `, [participantId, levelId, parseInt(correctQ.stars)]);
+
+      await this.logRepo.save(this.logRepo.create({
+        participantId, action: 'golden_level_complete', entityType: 'level', entityId: levelId
+      }));
+    }
+  }
+
+  /** Verificar y marcar final level como completado */
+  async checkFinalLevelCompletion(participantId: string, questionId: string) {
+    // Obtener el levelId desde la pregunta de final level
+    const [flq] = await this.dataSource.query(
+      `SELECT level_id FROM final_level_questions WHERE id = $1`, [questionId]
+    );
+    if (!flq) return;
+    const levelId = flq.level_id;
+
+    // Contar preguntas totales del final level vs respondidas correctamente
+    const [totalQ] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt FROM final_level_questions WHERE level_id = $1 AND is_active = TRUE`, [levelId]
+    );
+    const [correctQ] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt, COALESCE(SUM(pa.stars_earned),0) as stars
+       FROM participant_final_level_answers pa
+       JOIN final_level_questions flq ON flq.id = pa.question_id
+       WHERE pa.participant_id = $1 AND flq.level_id = $2 AND pa.is_correct = TRUE`,
+      [participantId, levelId]
+    );
+
+    const isCompleted = parseInt(correctQ.cnt) === parseInt(totalQ.cnt);
+    if (isCompleted) {
+      await this.dataSource.query(`
+        INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+        VALUES ($1, $2, $3, TRUE, NOW())
+        ON CONFLICT (participant_id, level_id) DO UPDATE
+        SET stars_earned = $3, is_completed = TRUE, completed_at = NOW()
+      `, [participantId, levelId, parseInt(correctQ.stars)]);
+
+      await this.logRepo.save(this.logRepo.create({
+        participantId, action: 'final_level_complete', entityType: 'level', entityId: levelId
+      }));
+    }
+  }
+
   /** Obtener ranking del grupo del participante */
   async getGroupRanking(participantId: string) {
     const rows = await this.dataSource.query(`
@@ -206,4 +223,83 @@ export class ProgressService {
 
     return { top10: rows, self: self[0] };
   }
+
+  /** Responder pregunta de nivel dorado */
+  async answerGoldenLevelQuestion(participantId: string, questionId: string, answerId: string) {
+    // Verificar si ya respondió correctamente
+    const existing = await this.dataSource.query(
+      `SELECT is_correct FROM participant_golden_level_answers WHERE participant_id = $1 AND question_id = $2`,
+      [participantId, questionId]
+    );
+    if (existing.length > 0 && existing[0].is_correct) {
+      throw new BadRequestException('Esta pregunta ya fue respondida correctamente');
+    }
+
+    // Verificar si la respuesta es correcta
+    const [answerOption] = await this.dataSource.query(
+      `SELECT is_correct FROM golden_level_answer_options WHERE id = $1 AND question_id = $2`,
+      [answerId, questionId]
+    );
+    if (!answerOption) {
+      throw new BadRequestException('Opción de respuesta no válida');
+    }
+
+    const isCorrect = answerOption.is_correct;
+    const starsEarned = isCorrect ? 1 : 0;
+
+    // Guardar respuesta
+    await this.dataSource.query(`
+      INSERT INTO participant_golden_level_answers (participant_id, question_id, answer_id, is_correct, stars_earned)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, question_id) DO UPDATE
+      SET answer_id = $3, is_correct = $4, stars_earned = $5
+    `, [participantId, questionId, answerId, isCorrect, starsEarned]);
+
+    // Verificar si el nivel está completado
+    if (isCorrect) {
+      await this.checkGoldenLevelCompletion(participantId, questionId);
+    }
+
+    return { isCorrect, starsEarned };
+  }
+
+  /** Responder pregunta de nivel final */
+  async answerFinalLevelQuestion(participantId: string, questionId: string, answerId: string) {
+    // Verificar si ya respondió correctamente
+    const existing = await this.dataSource.query(
+      `SELECT is_correct FROM participant_final_level_answers WHERE participant_id = $1 AND question_id = $2`,
+      [participantId, questionId]
+    );
+    if (existing.length > 0 && existing[0].is_correct) {
+      throw new BadRequestException('Esta pregunta ya fue respondida correctamente');
+    }
+
+    // Verificar si la respuesta es correcta
+    const [answerOption] = await this.dataSource.query(
+      `SELECT is_correct FROM final_level_answer_options WHERE id = $1 AND question_id = $2`,
+      [answerId, questionId]
+    );
+    if (!answerOption) {
+      throw new BadRequestException('Opción de respuesta no válida');
+    }
+
+    const isCorrect = answerOption.is_correct;
+    const starsEarned = isCorrect ? 1 : 0;
+
+    // Guardar respuesta
+    await this.dataSource.query(`
+      INSERT INTO participant_final_level_answers (participant_id, question_id, answer_id, is_correct, stars_earned)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, question_id) DO UPDATE
+      SET answer_id = $3, is_correct = $4, stars_earned = $5
+    `, [participantId, questionId, answerId, isCorrect, starsEarned]);
+
+    // Verificar si el nivel está completado
+    if (isCorrect) {
+      await this.checkFinalLevelCompletion(participantId, questionId);
+    }
+
+    return { isCorrect, starsEarned };
+  }
+
 }

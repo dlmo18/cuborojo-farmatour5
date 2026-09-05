@@ -28,10 +28,10 @@ export class FinalLevelQuestion {
   @Column({ name: 'end_video_id', nullable: true })
   endVideoId: string;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'correct_message', nullable: true, type: 'text' })
   correctMessage: string;
 
-  @Column({ nullable: true, type: 'text' })
+  @Column({ name: 'incorrect_message', nullable: true, type: 'text' })
   incorrectMessage: string;
 
   @Column({ name: 'order_num' })

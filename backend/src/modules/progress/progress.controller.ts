@@ -10,6 +10,16 @@ class AnswerDto {
   @ApiProperty() @IsString() @IsNotEmpty() answerId: string;
 }
 
+class GoldenLevelAnswerDto {
+  @ApiProperty() @IsString() @IsNotEmpty() questionId: string;
+  @ApiProperty() @IsString() @IsNotEmpty() answerId: string;
+}
+
+class FinalLevelAnswerDto {
+  @ApiProperty() @IsString() @IsNotEmpty() questionId: string;
+  @ApiProperty() @IsString() @IsNotEmpty() answerId: string;
+}
+
 @ApiTags('progress')
 @ApiBearerAuth('access-token')
 @UseGuards(ParticipantGuard)
@@ -33,6 +43,18 @@ export class ProgressController {
   @ApiOperation({ summary: 'Responder pregunta de misión' })
   answerQuestion(@Req() req: any, @Body() dto: AnswerDto) {
     return this.service.answerQuestion(req.user.id, dto.questionId, dto.answerId);
+  }
+
+  @Post('answer/golden')
+  @ApiOperation({ summary: 'Responder pregunta de nivel dorado' })
+  answerGoldenLevelQuestion(@Req() req: any, @Body() dto: GoldenLevelAnswerDto) {
+    return this.service.answerGoldenLevelQuestion(req.user.id, dto.questionId, dto.answerId);
+  }
+
+  @Post('answer/final')
+  @ApiOperation({ summary: 'Responder pregunta de nivel final' })
+  answerFinalLevelQuestion(@Req() req: any, @Body() dto: FinalLevelAnswerDto) {
+    return this.service.answerFinalLevelQuestion(req.user.id, dto.questionId, dto.answerId);
   }
 
   @Get('group-ranking')

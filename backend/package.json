@@ -8,7 +8,10 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest"
+    "test": "jest",
+    "backup:complete": "bash ../scripts/backup-complete.sh",
+    "backup:data": "bash ../scripts/backup-data.sh",
+    "backup:schema": "bash ../scripts/backup-schema.sh"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

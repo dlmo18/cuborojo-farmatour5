@@ -76,9 +76,50 @@ export class MediaController {
     }
   }
 
+  @Get('serve/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Servir media por ID (público)' })
+  async serveMediaById(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const media = await this.service.findOne(id);
+      const filename = media.url.split('/').pop();
+      
+      const uploadDirConfig = this.configService.get('UPLOAD_DIR', './uploads');
+      const uploadDir = isAbsolute(uploadDirConfig) ? uploadDirConfig : join(process.cwd(), uploadDirConfig);
+      const filePath = join(uploadDir, filename);
+
+      console.log(`[Media] Serving: ${filename}`);
+
+      if (!filePath.startsWith(uploadDir) || filename.includes('..')) {
+        return res.status(HttpStatus.FORBIDDEN).json({ error: 'Acceso denegado' });
+      }
+
+      if (!existsSync(filePath)) {
+        return res.status(HttpStatus.NOT_FOUND).json({ error: 'Archivo no encontrado' });
+      }
+
+      const stream = createReadStream(filePath);
+      res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+      stream.on('error', (error) => {
+        console.error(`[Media] Stream error for ${filePath}:`, error);
+        if (!res.headersSent) {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Error al servir archivo' });
+        }
+      });
+      stream.pipe(res);
+    } catch (error) {
+      console.error('[Media] Serve error:', error);
+      if (!res.headersSent) {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Error al servir archivo' });
+      }
+    }
+  }
+
   @Get(':id')
-  @UseGuards(AdminGuard)
-  @ApiOperation({ summary: 'Obtener media por ID' })
+  @ApiOperation({ summary: 'Obtener información del media por ID' })
   findOne(@Param('id') id: string) { 
     return this.service.findOne(id); 
   }
