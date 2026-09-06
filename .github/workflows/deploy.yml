@@ -283,7 +283,6 @@ jobs:
           tar -xzf "$DEPLOY_BASE_PATH/frontend-participants.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-participants"
           rm -f "$DEPLOY_BASE_PATH/frontend-participants.tar.gz"
           if [ -f "$DEPLOY_BASE_PATH/frontend-participants.env" ]; then
-            cp "$DEPLOY_BASE_PATH/frontend-participants.env" "$DEPLOY_BASE_PATH/frontend-participants/.env.production.local"
             cp "$DEPLOY_BASE_PATH/frontend-participants.env" "$DEPLOY_BASE_PATH/frontend-participants/.env.prod"
             rm -f "$DEPLOY_BASE_PATH/frontend-participants.env"
           fi
@@ -320,7 +319,6 @@ jobs:
           tar -xzf "$DEPLOY_BASE_PATH/frontend-manager.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-manager"
           rm -f "$DEPLOY_BASE_PATH/frontend-manager.tar.gz"
           if [ -f "$DEPLOY_BASE_PATH/frontend-manager.env" ]; then
-            cp "$DEPLOY_BASE_PATH/frontend-manager.env" "$DEPLOY_BASE_PATH/frontend-manager/.env.production.local"
             cp "$DEPLOY_BASE_PATH/frontend-manager.env" "$DEPLOY_BASE_PATH/frontend-manager/.env.prod"
             rm -f "$DEPLOY_BASE_PATH/frontend-manager.env"
           fi
