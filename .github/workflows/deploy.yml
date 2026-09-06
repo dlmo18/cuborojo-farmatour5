@@ -229,6 +229,10 @@ jobs:
           ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           set -e
           export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential python3 make g++ >/dev/null
+
           mkdir -p "$DEPLOY_BASE_PATH/backend"
           tar -xzf "$DEPLOY_BASE_PATH/backend.tar.gz" -C "$DEPLOY_BASE_PATH/backend"
           rm -f "$DEPLOY_BASE_PATH/backend.tar.gz"
@@ -237,7 +241,8 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/backend.env"
           fi
           cd "$DEPLOY_BASE_PATH/backend"
-          npm ci --omit=dev --no-audit --no-fund
+          npm ci --no-audit --no-fund
+          npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-backend >/dev/null 2>&1; then
             pm2 reload farmatour5-backend --update-env
@@ -272,7 +277,8 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/frontend-participants.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-participants"
-          npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-participants >/dev/null 2>&1; then
             pm2 reload farmatour5-participants --update-env
@@ -307,7 +313,8 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/frontend-manager.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-manager"
-          npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-manager >/dev/null 2>&1; then
             pm2 reload farmatour5-manager --update-env
