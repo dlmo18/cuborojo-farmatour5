@@ -90,6 +90,10 @@ jobs:
           ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
           ENVEOF
 
+      - name: Clean build cache (participants)
+        working-directory: frontend-participants
+        run: rm -rf .next
+
       - name: Build participant frontend
         working-directory: frontend-participants
         run: npm run build
@@ -134,6 +138,10 @@ jobs:
           cat > .env.prod <<'ENVEOF'
           ${{ secrets.FRONTEND_MANAGER_ENV }}
           ENVEOF
+
+      - name: Clean build cache (manager)
+        working-directory: frontend-manager
+        run: rm -rf .next
 
       - name: Build manager frontend
         working-directory: frontend-manager
