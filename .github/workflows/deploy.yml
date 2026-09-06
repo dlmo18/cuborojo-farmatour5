@@ -239,6 +239,8 @@ jobs:
       - name: 📦 Deploy Backend
         run: |
           scp -i ~/.ssh/deploy_key -r backend-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          scp -i ~/.ssh/deploy_key backend/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          scp -i ~/.ssh/deploy_key backend/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/backend
           
@@ -262,6 +264,8 @@ jobs:
       - name: 📦 Deploy Frontend (Participants)
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          scp -i ~/.ssh/deploy_key frontend-participants/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          scp -i ~/.ssh/deploy_key frontend-participants/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-participants
           
@@ -285,6 +289,8 @@ jobs:
       - name: 📦 Deploy Frontend (Manager)
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          scp -i ~/.ssh/deploy_key frontend-manager/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          scp -i ~/.ssh/deploy_key frontend-manager/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-manager
           
