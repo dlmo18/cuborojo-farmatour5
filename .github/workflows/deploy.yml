@@ -219,7 +219,7 @@ jobs:
         env:
           BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
         run: |
-          scp -i ~/.ssh/deploy_key -r backend-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          scp -i ~/.ssh/deploy_key -r backend-deploy/backend/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
           
           # Create .env file locally and send it
           cat > /tmp/backend.env << 'ENVEOF'
@@ -244,7 +244,7 @@ jobs:
 
       - name: 📦 Deploy Frontend (Participants)
         run: |
-          scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/frontend-participants/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
           
           # Create .env.production.local locally and send it
           cat > /tmp/participants.env << 'ENVEOF'
@@ -269,7 +269,7 @@ jobs:
 
       - name: 📦 Deploy Frontend (Manager)
         run: |
-          scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/frontend-manager/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
           
           # Create .env.production.local locally and send it
           cat > /tmp/manager.env << 'ENVEOF'
