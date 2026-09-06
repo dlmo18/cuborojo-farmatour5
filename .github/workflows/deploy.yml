@@ -251,7 +251,7 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/backend.env"
           fi
           cd "$DEPLOY_BASE_PATH/backend"
-          npm ci --no-audit --no-fund
+          npm install --no-audit --no-fund
           npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-backend >/dev/null 2>&1; then
@@ -288,7 +288,7 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/frontend-participants.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-participants"
-          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-participants >/dev/null 2>&1; then
@@ -325,7 +325,7 @@ jobs:
             rm -f "$DEPLOY_BASE_PATH/frontend-manager.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-manager"
-          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
           if pm2 describe farmatour5-manager >/dev/null 2>&1; then
