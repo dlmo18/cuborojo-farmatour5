@@ -227,8 +227,8 @@ jobs:
             fi
           done
           
-          # Keep only last 5 backups
-          ls -t backups/ | tail -n +6 | xargs -r rm
+          # Keep only last 5 backups (fix path for xargs rm)
+          ls -t backups/ 2>/dev/null | tail -n +6 | xargs -r -I {} rm -f backups/{}
           EOSSH
 
       - name: 📦 Deploy PM2 Configuration
