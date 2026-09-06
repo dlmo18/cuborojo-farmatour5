@@ -102,6 +102,9 @@ jobs:
             frontend-participants/.next/**
             frontend-participants/package.json
             frontend-participants/package-lock.json
+            frontend-participants/src/**
+            frontend-participants/public/**
+            frontend-participants/next.config.js
 
   build-frontend-manager:
     name: Build Frontend (Manager)
@@ -142,6 +145,9 @@ jobs:
             frontend-manager/.next/**
             frontend-manager/package.json
             frontend-manager/package-lock.json
+            frontend-manager/src/**
+            frontend-manager/public/**
+            frontend-manager/next.config.js
 
   # ==========================================================
   # DEPLOY JOB
