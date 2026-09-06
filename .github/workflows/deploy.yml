@@ -34,14 +34,7 @@ jobs:
           cd backend
           npm install
 
-      - name: 📋 Create backend .env
-        run: |
-          cd backend
-          cat > .env << EOF
-          ${{ secrets.BACKEND_ENV }}
-          EOF
-
-      - name: 🔍 Lint backend
+      - name:  Lint backend
         run: |
           cd backend
           npm run lint 2>/dev/null || echo "⚠️ Lint warnings (non-blocking)"
@@ -60,7 +53,6 @@ jobs:
             backend/node_modules/
             backend/package.json
             backend/package-lock.json
-            backend/.env
 
   build-frontend-participants:
     name: Build Frontend (Participants)
@@ -81,13 +73,6 @@ jobs:
           cd frontend-participants
           npm install --legacy-peer-deps
 
-      - name: 📋 Create participant .env
-        run: |
-          cd frontend-participants
-          cat > .env.production.local << EOF
-          ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
-          EOF
-
       - name: 🏗️ Build participant frontend
         run: |
           cd frontend-participants
@@ -103,7 +88,6 @@ jobs:
             frontend-participants/node_modules/
             frontend-participants/package.json
             frontend-participants/package-lock.json
-            frontend-participants/.env.production.local
 
   build-frontend-manager:
     name: Build Frontend (Manager)
@@ -124,13 +108,6 @@ jobs:
           cd frontend-manager
           npm install --legacy-peer-deps
 
-      - name: 📋 Create manager .env
-        run: |
-          cd frontend-manager
-          cat > .env.production.local << EOF
-          ${{ secrets.FRONTEND_MANAGER_ENV }}
-          EOF
-
       - name: 🏗️ Build manager frontend
         run: |
           cd frontend-manager
@@ -146,7 +123,6 @@ jobs:
             frontend-manager/node_modules/
             frontend-manager/package.json
             frontend-manager/package-lock.json
-            frontend-manager/.env.production.local
 
   # ===== TEST JOB =====
 
@@ -240,8 +216,18 @@ jobs:
           echo "✅ PM2 configuration deployed"
 
       - name: 📦 Deploy Backend
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
         run: |
           scp -i ~/.ssh/deploy_key -r backend-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          
+          # Create .env file locally and send it
+          cat > /tmp/backend.env << 'ENVEOF'
+          ${{ secrets.BACKEND_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key /tmp/backend.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/.env
+          rm -f /tmp/backend.env
           
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/backend
@@ -260,10 +246,18 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
           
+          # Create .env.production.local locally and send it
+          cat > /tmp/participants.env << 'ENVEOF'
+          ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key /tmp/participants.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/.env.production.local
+          rm -f /tmp/participants.env
+          
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-participants
           
-          # Install dependencies (validate node_modules in VM)
+          # Install dependencies
           npm install --legacy-peer-deps
           
           # Restart with PM2
@@ -277,10 +271,18 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
           
+          # Create .env.production.local locally and send it
+          cat > /tmp/manager.env << 'ENVEOF'
+          ${{ secrets.FRONTEND_MANAGER_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key /tmp/manager.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/.env.production.local
+          rm -f /tmp/manager.env
+          
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-manager
           
-          # Install dependencies (validate node_modules in VM)
+          # Install dependencies
           npm install --legacy-peer-deps
           
           # Restart with PM2
