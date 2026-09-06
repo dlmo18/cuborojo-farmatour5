@@ -56,13 +56,13 @@ jobs:
         with:
           name: backend-build
           retention-days: 3
-          working-directory: backend
+          if-no-files-found: error
           path: |
-            dist/**
-            package.json
-            package-lock.json
-            tsconfig.json
-            src/**
+            backend/dist/**
+            backend/package.json
+            backend/package-lock.json
+            backend/tsconfig.json
+            backend/src/**
 
   build-frontend-participants:
     name: Build Frontend (Participants)
@@ -99,15 +99,15 @@ jobs:
         with:
           name: frontend-participants-build
           retention-days: 3
-          working-directory: frontend-participants
+          if-no-files-found: error
           path: |
-            .next/**
-            package.json
-            package-lock.json
-            tsconfig.json
-            src/**
-            public/**
-            next.config.js
+            frontend-participants/.next/**
+            frontend-participants/package.json
+            frontend-participants/package-lock.json
+            frontend-participants/tsconfig.json
+            frontend-participants/src/**
+            frontend-participants/public/**
+            frontend-participants/next.config.js
 
   build-frontend-manager:
     name: Build Frontend (Manager)
@@ -144,15 +144,15 @@ jobs:
         with:
           name: frontend-manager-build
           retention-days: 3
-          working-directory: frontend-manager
+          if-no-files-found: error
           path: |
-            .next/**
-            package.json
-            package-lock.json
-            tsconfig.json
-            src/**
-            public/**
-            next.config.js
+            frontend-manager/.next/**
+            frontend-manager/package.json
+            frontend-manager/package-lock.json
+            frontend-manager/tsconfig.json
+            frontend-manager/src/**
+            frontend-manager/public/**
+            frontend-manager/next.config.js
 
   # ==========================================================
   # DEPLOY JOB
