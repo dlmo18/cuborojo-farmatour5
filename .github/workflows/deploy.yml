@@ -36,8 +36,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          # Disable npm cache in this workflow because the runner sometimes fails to resolve
+          # the lockfile path before the repository is fully checkouted or in monorepo cases.
 
       - name: Install backend dependencies
         working-directory: backend
@@ -73,8 +73,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: frontend-participants/package-lock.json
+          # Disable npm cache in this workflow because the runner sometimes fails to resolve
+          # the lockfile path before the repository is fully checkouted or in monorepo cases.
 
       - name: Install participant frontend dependencies
         working-directory: frontend-participants
@@ -113,8 +113,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: frontend-manager/package-lock.json
+          # Disable npm cache in this workflow because the runner sometimes fails to resolve
+          # the lockfile path before the repository is fully checkouted or in monorepo cases.
 
       - name: Install manager frontend dependencies
         working-directory: frontend-manager
