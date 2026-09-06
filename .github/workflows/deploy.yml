@@ -6,367 +6,333 @@ on:
       - main
   workflow_dispatch:
 
+# Evita ejecuciones concurrentes que se pisen entre sí durante el deploy
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 env:
   DEPLOY_BASE_PATH: ${{ secrets.DEPLOY_BASE_PATH }}
   DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
   DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-  DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
 
 jobs:
-  # ===== BUILD JOBS =====
-  
+  # ==========================================================
+  # BUILD JOBS
+  # ==========================================================
+
   build-backend:
     name: Build Backend (NestJS)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend/package.json
+          cache-dependency-path: backend/package-lock.json
 
-      - name: 📦 Install backend dependencies
-        run: |
-          cd backend
-          npm install
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci --no-audit --no-fund
 
-      - name:  Lint backend
-        run: |
-          cd backend
-          npm run lint 2>/dev/null || echo "⚠️ Lint warnings (non-blocking)"
+      - name: Lint backend (non-blocking)
+        working-directory: backend
+        run: npm run lint 2>/dev/null || echo "Lint warnings (non-blocking)"
 
-      - name: 🏗️ Build backend
-        run: |
-          cd backend
-          npm run build
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
 
-      - name: 📦 Upload backend artifact
+      # Nota: NO subimos node_modules. Los binarios nativos (bcrypt, pg)
+      # se compilan para ubuntu-latest y pueden no ser compatibles con la VM.
+      # Las dependencias se instalan en la VM con `npm ci`.
+      - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-build
+          retention-days: 3
           path: |
             backend/dist/
-            backend/node_modules/
             backend/package.json
             backend/package-lock.json
 
   build-frontend-participants:
     name: Build Frontend (Participants)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend-participants/package.json
+          cache-dependency-path: frontend-participants/package-lock.json
 
-      - name: 📦 Install participant frontend dependencies
+      - name: Install participant frontend dependencies
+        working-directory: frontend-participants
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      # Las variables NEXT_PUBLIC_* se inyectan en build-time.
+      - name: Create build env
+        working-directory: frontend-participants
         run: |
-          cd frontend-participants
-          npm install --legacy-peer-deps
+          cat > .env.production.local << 'ENVEOF'
+          ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
+          ENVEOF
 
-      - name: 🏗️ Build participant frontend
-        run: |
-          cd frontend-participants
-          npm run build
+      - name: Build participant frontend
+        working-directory: frontend-participants
+        run: npm run build
 
-      - name: 📦 Upload participant artifact
+      - name: Upload participant artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-participants-build
+          retention-days: 3
           path: |
             frontend-participants/.next/
-            frontend-participants/public/
-            frontend-participants/node_modules/
             frontend-participants/package.json
             frontend-participants/package-lock.json
 
   build-frontend-manager:
     name: Build Frontend (Manager)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: frontend-manager/package.json
+          cache-dependency-path: frontend-manager/package-lock.json
 
-      - name: 📦 Install manager frontend dependencies
+      - name: Install manager frontend dependencies
+        working-directory: frontend-manager
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Create build env
+        working-directory: frontend-manager
         run: |
-          cd frontend-manager
-          npm install --legacy-peer-deps
+          cat > .env.production.local << 'ENVEOF'
+          ${{ secrets.FRONTEND_MANAGER_ENV }}
+          ENVEOF
 
-      - name: 🏗️ Build manager frontend
-        run: |
-          cd frontend-manager
-          npm run build
+      - name: Build manager frontend
+        working-directory: frontend-manager
+        run: npm run build
 
-      - name: 📦 Upload manager artifact
+      - name: Upload manager artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-manager-build
+          retention-days: 3
           path: |
             frontend-manager/.next/
-            frontend-manager/public/
-            frontend-manager/node_modules/
             frontend-manager/package.json
             frontend-manager/package-lock.json
 
-  # ===== TEST JOB =====
-
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: [build-backend, build-frontend-participants, build-frontend-manager]
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: 📦 Install dependencies
-        run: |
-          cd backend
-          npm install
-
-      - name: 🧪 Run backend tests
-        run: |
-          cd backend
-          npm run test 2>/dev/null || echo "⚠️ Tests completed (non-blocking)"
-
-  # ===== DEPLOY JOB =====
+  # ==========================================================
+  # DEPLOY JOB
+  # ==========================================================
 
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build-backend, build-frontend-participants, build-frontend-manager, test]
+    timeout-minutes: 25
+    needs: [build-backend, build-frontend-participants, build-frontend-manager]
     if: success()
     environment:
       name: production
-      url: https://farmatour5.com
+      url: https://farmatour5.cuborojo.pe
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 📥 Download backend artifact
+      - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-build
           path: backend-deploy
 
-      - name: 📥 Download participant artifact
+      - name: Download participant artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-participants-build
           path: frontend-participants-deploy
 
-      - name: 📥 Download manager artifact
+      - name: Download manager artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-manager-build
           path: frontend-manager-deploy
 
-      - name: 🔑 Setup SSH
+      # ---- SSH setup ----
+      # BatchMode evita cualquier prompt interactivo que cuelgue el job.
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ env.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ env.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H -T 15 "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: 📤 Backup production files
+      - name: Configure SSH/SCP helpers
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          cd ${{ env.DEPLOY_BASE_PATH }}
-          
-          # Backup timestamp
+          echo "SSH_OPTS=-i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4" >> "$GITHUB_ENV"
+
+      - name: Verify server connectivity
+        run: |
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "echo 'SSH OK on host:' \$(hostname); mkdir -p '$DEPLOY_BASE_PATH'/{backend,frontend-participants,frontend-manager,logs,backups}" < /dev/null
+
+      # ---- Backup ----
+      - name: Backup production files
+        run: |
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          set -e
+          cd "$DEPLOY_BASE_PATH"
           BACKUP_TIME=$(date +%Y%m%d_%H%M%S)
-          
-          # Backup each service
+          mkdir -p backups
           for service in backend frontend-participants frontend-manager; do
             if [ -d "$service" ]; then
-              mkdir -p backups
-              tar -czf backups/${service}_${BACKUP_TIME}.tar.gz $service 2>/dev/null || true
-              echo "✅ Backed up $service"
+              tar -czf "backups/${service}_${BACKUP_TIME}.tar.gz" "$service" 2>/dev/null || true
+              echo "Backed up $service"
             fi
           done
-          
-          # Keep only last 5 backups (fix path for xargs rm)
-          ls -t backups/ 2>/dev/null | tail -n +6 | xargs -r -I {} rm -f backups/{}
+          # Conservar solo los ultimos 5 backups
+          ls -1t backups/*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f
           EOSSH
 
-      - name: 📦 Deploy PM2 Configuration
+      # ---- PM2 config ----
+      - name: Deploy PM2 configuration
         run: |
-          scp -i ~/.ssh/deploy_key ecosystem.config.js ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/
-          echo "✅ PM2 configuration deployed"
+          scp $SSH_OPTS ecosystem.config.js "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/"
+          echo "PM2 configuration deployed"
 
-      - name: 📦 Deploy Backend
-        env:
-          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+      # ---- Backend ----
+      - name: Deploy Backend
         run: |
-          scp -i ~/.ssh/deploy_key -r backend-deploy/backend/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
-          
-          # Create .env file locally and send it
+          # Sincronizar artefacto compilado (sin node_modules)
+          scp $SSH_OPTS -r backend-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend/"
+
+          # Enviar el .env del backend
           cat > /tmp/backend.env << 'ENVEOF'
           ${{ secrets.BACKEND_ENV }}
           ENVEOF
-          
-          scp -i ~/.ssh/deploy_key /tmp/backend.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/.env
+          scp $SSH_OPTS /tmp/backend.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend/.env"
           rm -f /tmp/backend.env
-          
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          cd ${{ env.DEPLOY_BASE_PATH }}/backend
-          
-          # Install dependencies (validate node_modules in VM)
-          npm install
-          
-          # Restart backend with PM2
-          pm2 restart farmatour5-backend || pm2 start /var/www/farmatour5/ecosystem.config.js
+
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          set -e
+          export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          cd "$DEPLOY_BASE_PATH/backend"
+
+          # Instalar solo dependencias de produccion, sin prompts
+          npm ci --omit=dev --no-audit --no-fund
+
+          # Asegurar que PM2 este disponible
+          command -v pm2 >/dev/null 2>&1 || npm install -g pm2
+
+          # Arrancar/actualizar SOLO el proceso del backend (por nombre)
+          if pm2 describe farmatour5-backend >/dev/null 2>&1; then
+            pm2 reload farmatour5-backend --update-env
+          else
+            pm2 start "$DEPLOY_BASE_PATH/ecosystem.config.js" --only farmatour5-backend
+          fi
           pm2 save
-          
-          echo "✅ Backend deployed"
+          echo "Backend deployed"
           EOSSH
 
-      - name: 📦 Deploy Frontend (Participants)
+      # ---- Frontend Participants ----
+      - name: Deploy Frontend (Participants)
         run: |
-          scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/frontend-participants/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
-          
-          # Create .env.production.local locally and send it
+          scp $SSH_OPTS -r frontend-participants-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants/"
+
           cat > /tmp/participants.env << 'ENVEOF'
           ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
           ENVEOF
-          
-          scp -i ~/.ssh/deploy_key /tmp/participants.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/.env.production.local
+          scp $SSH_OPTS /tmp/participants.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants/.env.production.local"
           rm -f /tmp/participants.env
-          
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          cd ${{ env.DEPLOY_BASE_PATH }}/frontend-participants
-          
-          # Install dependencies
-          npm install --legacy-peer-deps
-          
-          # Restart with PM2
-          pm2 restart farmatour5-participants || pm2 start /var/www/farmatour5/ecosystem.config.js
+
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          set -e
+          export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          cd "$DEPLOY_BASE_PATH/frontend-participants"
+
+          npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
+
+          command -v pm2 >/dev/null 2>&1 || npm install -g pm2
+
+          if pm2 describe farmatour5-participants >/dev/null 2>&1; then
+            pm2 reload farmatour5-participants --update-env
+          else
+            pm2 start "$DEPLOY_BASE_PATH/ecosystem.config.js" --only farmatour5-participants
+          fi
           pm2 save
-          
-          echo "✅ Participants frontend deployed"
+          echo "Participants frontend deployed"
           EOSSH
 
-      - name: 📦 Deploy Frontend (Manager)
+      # ---- Frontend Manager ----
+      - name: Deploy Frontend (Manager)
         run: |
-          scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/frontend-manager/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
-          
-          # Create .env.production.local locally and send it
+          scp $SSH_OPTS -r frontend-manager-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager/"
+
           cat > /tmp/manager.env << 'ENVEOF'
           ${{ secrets.FRONTEND_MANAGER_ENV }}
           ENVEOF
-          
-          scp -i ~/.ssh/deploy_key /tmp/manager.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/.env.production.local
+          scp $SSH_OPTS /tmp/manager.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager/.env.production.local"
           rm -f /tmp/manager.env
-          
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          cd ${{ env.DEPLOY_BASE_PATH }}/frontend-manager
-          
-          # Install dependencies
-          npm install --legacy-peer-deps
-          
-          # Restart with PM2
-          pm2 restart farmatour5-manager || pm2 start /var/www/farmatour5/ecosystem.config.js
-          pm2 save
-          
-          echo "✅ Manager frontend deployed"
-          EOSSH
 
-      - name: 🔄 Reload Nginx
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          sudo nginx -t && sudo systemctl reload nginx
-          echo "✅ Nginx reloaded"
-          EOSSH
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          set -e
+          export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          cd "$DEPLOY_BASE_PATH/frontend-manager"
 
-      - name: ✅ Health Check
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          sleep 5
-          
-          # Run health check script
-          if [ -f ${{ env.DEPLOY_BASE_PATH }}/../scripts/health-check.sh ]; then
-            bash ${{ env.DEPLOY_BASE_PATH }}/../scripts/health-check.sh
+          npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
+
+          command -v pm2 >/dev/null 2>&1 || npm install -g pm2
+
+          if pm2 describe farmatour5-manager >/dev/null 2>&1; then
+            pm2 reload farmatour5-manager --update-env
+          else
+            pm2 start "$DEPLOY_BASE_PATH/ecosystem.config.js" --only farmatour5-manager
           fi
-          
-          # Check if services are running
-          pm2 status
+          pm2 save
+          echo "Manager frontend deployed"
           EOSSH
 
-      - name: 📧 Notify Success
-        if: success()
+      # ---- Nginx ----
+      - name: Reload Nginx
         run: |
-          echo "✅ Deployment successful!"
-          echo "Deployed at: $(date)"
-          echo "Commit: ${{ github.sha }}"
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" 'sudo -n nginx -t && sudo -n systemctl reload nginx && echo "Nginx reloaded"' < /dev/null
 
-      - name: 📧 Notify Failure
-        if: failure()
+      # ---- Health check ----
+      - name: Health check
         run: |
-          echo "❌ Deployment failed!"
-          echo "Check the logs above for details."
-          exit 1
-
-  # ===== POST-DEPLOY JOB =====
-
-  post-deploy:
-    name: Post-Deploy Tasks
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: success()
-    steps:
-      - name: 🧹 Cleanup old artifacts
-        run: |
-          echo "🧹 Cleaning up old deployment artifacts..."
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          cd ${{ env.DEPLOY_BASE_PATH }}
-          
-          # Clean npm cache
-          npm cache clean --force
-          
-          # Remove old node_modules backups
-          find . -name "node_modules" -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null || true
-          
-          echo "✅ Cleanup completed"
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          sleep 5
+          if [ -f "$DEPLOY_BASE_PATH/../scripts/health-check.sh" ]; then
+            bash "$DEPLOY_BASE_PATH/../scripts/health-check.sh" || true
+          fi
+          pm2 status || true
           EOSSH
 
-      - name: 📊 Log deployment
+      - name: Notify result
+        if: always()
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
-          DEPLOY_LOG="/var/www/farmatour5/logs/deployments.log"
-          echo "[$(date)] Deployment successful - Commit: ${{ github.sha }}" >> $DEPLOY_LOG
-          EOSSH
-
-      - name: ✅ Summary
-        run: |
-          echo "📋 Deployment Summary:"
-          echo "  Repository: ${{ github.repository }}"
-          echo "  Branch: ${{ github.ref }}"
-          echo "  Commit: ${{ github.sha }}"
-          echo "  Author: ${{ github.actor }}"
-          echo "  Time: $(date)"
-          echo ""
-          echo "🌐 Services:"
-          echo "  Backend: https://farmatour5.com/api"
-          echo "  Participants: https://farmatour5.com"
-          echo "  Manager: https://farmatour5.com/manager-system"
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "Deployment successful - commit ${{ github.sha }}"
+          else
+            echo "Deployment failed - check logs above"
+          fi

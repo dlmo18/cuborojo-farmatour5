@@ -114,7 +114,7 @@ export default function MissionQuestionsPage() {
               title="Ver imagen"
             >
               <img
-                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/media/${item.imageId}`}
+                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/media/serve/${item.imageId}`}
                 alt="pregunta"
                 className="w-full h-full object-cover rounded"
                 onError={(e) => {

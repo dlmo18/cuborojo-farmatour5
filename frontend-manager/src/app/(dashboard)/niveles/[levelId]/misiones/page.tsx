@@ -229,7 +229,7 @@ export default function MissionsPage() {
                 title="Ver imagen"
               >
                 <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/media/${item.imageId}`}
+                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/media/serve/${item.imageId}`}
                   alt={value}
                   className="w-full h-full object-cover"
                   onError={(e) => {

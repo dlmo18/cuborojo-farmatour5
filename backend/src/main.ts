@@ -6,6 +6,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Detrás de Nginx (reverse proxy con SSL): confiar en X-Forwarded-*.
+  // Necesario para que req.protocol sea "https" y las URLs de media
+  // generadas (upload) usen https en lugar de http.
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   // CORS - Aceptar ambos frontends (participantes y manager)
   const corsOrigins = [
     process.env.FRONTEND_PARTICIPANTS_URL || 'http://localhost:3000',
