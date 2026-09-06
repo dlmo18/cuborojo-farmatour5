@@ -242,6 +242,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/backend
           
+          # Install dependencies (validate node_modules in VM)
+          npm install
+          
           # Create .env if not exists
           if [ ! -f .env ]; then
             cat > .env << 'EOF'
@@ -262,6 +265,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-participants
           
+          # Install dependencies (validate node_modules in VM)
+          npm install --legacy-peer-deps
+          
           # Create .env if not exists
           if [ ! -f .env.production.local ]; then
             cat > .env.production.local << 'EOF'
@@ -281,6 +287,9 @@ jobs:
           scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-manager
+          
+          # Install dependencies (validate node_modules in VM)
+          npm install --legacy-peer-deps
           
           # Create .env if not exists
           if [ ! -f .env.production.local ]; then
