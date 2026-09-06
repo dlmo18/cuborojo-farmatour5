@@ -231,6 +231,11 @@ jobs:
           ls -t backups/ | tail -n +6 | xargs -r rm
           EOSSH
 
+      - name: 📦 Deploy PM2 Configuration
+        run: |
+          scp -i ~/.ssh/deploy_key ecosystem.config.js ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/
+          echo "✅ PM2 configuration deployed"
+
       - name: 📦 Deploy Backend
         run: |
           scp -i ~/.ssh/deploy_key -r backend-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
@@ -244,8 +249,8 @@ jobs:
           EOF
           fi
           
-          # Restart backend with PM2
-          pm2 restart farmatour5-backend || pm2 start ecosystem.config.js --name farmatour5-backend
+          # Restart backend with PM2 (using absolute path)
+          pm2 restart farmatour5-backend || pm2 start /var/www/farmatour5/ecosystem.config.js
           pm2 save
           
           echo "✅ Backend deployed"
@@ -264,8 +269,8 @@ jobs:
           EOF
           fi
           
-          # Restart with PM2
-          pm2 restart farmatour5-participants || pm2 start npm --name "farmatour5-participants" -- start -- -p 3000
+          # Restart with PM2 (using ecosystem.config.js)
+          pm2 restart farmatour5-participants || pm2 start /var/www/farmatour5/ecosystem.config.js
           pm2 save
           
           echo "✅ Participants frontend deployed"
@@ -284,8 +289,8 @@ jobs:
           EOF
           fi
           
-          # Restart with PM2
-          pm2 restart farmatour5-manager || pm2 start npm --name "farmatour5-manager" -- start -- -p 3002
+          # Restart with PM2 (using ecosystem.config.js)
+          pm2 restart farmatour5-manager || pm2 start /var/www/farmatour5/ecosystem.config.js
           pm2 save
           
           echo "✅ Manager frontend deployed"
