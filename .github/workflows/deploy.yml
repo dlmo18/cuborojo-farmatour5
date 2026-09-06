@@ -239,20 +239,21 @@ jobs:
       - name: 📦 Deploy Backend
         run: |
           scp -i ~/.ssh/deploy_key -r backend-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
-          scp -i ~/.ssh/deploy_key backend/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
-          scp -i ~/.ssh/deploy_key backend/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          scp -i ~/.ssh/deploy_key backend-deploy/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          scp -i ~/.ssh/deploy_key backend-deploy/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          
+          # Create backend .env locally and send it
+          cat > backend/.env << 'ENVEOF'
+          ${{ secrets.BACKEND_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key backend/.env ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/backend/
+          
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/backend
           
           # Install dependencies (validate node_modules in VM)
           npm install
-          
-          # Create .env if not exists
-          if [ ! -f .env ]; then
-            cat > .env << 'EOF'
-          ${{ secrets.BACKEND_ENV }}
-          EOF
-          fi
           
           # Restart backend with PM2 (using absolute path)
           pm2 restart farmatour5-backend || pm2 start /var/www/farmatour5/ecosystem.config.js
@@ -264,20 +265,21 @@ jobs:
       - name: 📦 Deploy Frontend (Participants)
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-participants-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
-          scp -i ~/.ssh/deploy_key frontend-participants/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
-          scp -i ~/.ssh/deploy_key frontend-participants/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          scp -i ~/.ssh/deploy_key frontend-participants-deploy/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          scp -i ~/.ssh/deploy_key frontend-participants-deploy/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          
+          # Create participants .env locally and send it
+          cat > frontend-participants/.env.production.local << 'ENVEOF'
+          ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key frontend-participants/.env.production.local ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-participants/
+          
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-participants
           
           # Install dependencies (validate node_modules in VM)
           npm install --legacy-peer-deps
-          
-          # Create .env if not exists
-          if [ ! -f .env.production.local ]; then
-            cat > .env.production.local << 'EOF'
-          ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
-          EOF
-          fi
           
           # Restart with PM2 (using ecosystem.config.js)
           pm2 restart farmatour5-participants || pm2 start /var/www/farmatour5/ecosystem.config.js
@@ -289,20 +291,21 @@ jobs:
       - name: 📦 Deploy Frontend (Manager)
         run: |
           scp -i ~/.ssh/deploy_key -r frontend-manager-deploy/* ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
-          scp -i ~/.ssh/deploy_key frontend-manager/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
-          scp -i ~/.ssh/deploy_key frontend-manager/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          scp -i ~/.ssh/deploy_key frontend-manager-deploy/package.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          scp -i ~/.ssh/deploy_key frontend-manager-deploy/package-lock.json ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          
+          # Create manager .env locally and send it
+          cat > frontend-manager/.env.production.local << 'ENVEOF'
+          ${{ secrets.FRONTEND_MANAGER_ENV }}
+          ENVEOF
+          
+          scp -i ~/.ssh/deploy_key frontend-manager/.env.production.local ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:${{ env.DEPLOY_BASE_PATH }}/frontend-manager/
+          
           ssh -i ~/.ssh/deploy_key ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOSSH'
           cd ${{ env.DEPLOY_BASE_PATH }}/frontend-manager
           
           # Install dependencies (validate node_modules in VM)
           npm install --legacy-peer-deps
-          
-          # Create .env if not exists
-          if [ ! -f .env.production.local ]; then
-            cat > .env.production.local << 'EOF'
-          ${{ secrets.FRONTEND_MANAGER_ENV }}
-          EOF
-          fi
           
           # Restart with PM2 (using ecosystem.config.js)
           pm2 restart farmatour5-manager || pm2 start /var/www/farmatour5/ecosystem.config.js
