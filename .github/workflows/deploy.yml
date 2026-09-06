@@ -56,12 +56,13 @@ jobs:
         with:
           name: backend-build
           retention-days: 3
+          working-directory: backend
           path: |
-            backend/dist/**
-            backend/package.json
-            backend/package-lock.json
-            backend/tsconfig.json
-            backend/src/**
+            dist/**
+            package.json
+            package-lock.json
+            tsconfig.json
+            src/**
 
   build-frontend-participants:
     name: Build Frontend (Participants)
@@ -98,14 +99,15 @@ jobs:
         with:
           name: frontend-participants-build
           retention-days: 3
+          working-directory: frontend-participants
           path: |
-            frontend-participants/.next/**
-            frontend-participants/package.json
-            frontend-participants/package-lock.json
-            frontend-participants/tsconfig.json
-            frontend-participants/src/**
-            frontend-participants/public/**
-            frontend-participants/next.config.js
+            .next/**
+            package.json
+            package-lock.json
+            tsconfig.json
+            src/**
+            public/**
+            next.config.js
 
   build-frontend-manager:
     name: Build Frontend (Manager)
@@ -142,14 +144,15 @@ jobs:
         with:
           name: frontend-manager-build
           retention-days: 3
+          working-directory: frontend-manager
           path: |
-            frontend-manager/.next/**
-            frontend-manager/package.json
-            frontend-manager/package-lock.json
-            frontend-manager/tsconfig.json
-            frontend-manager/src/**
-            frontend-manager/public/**
-            frontend-manager/next.config.js
+            .next/**
+            package.json
+            package-lock.json
+            tsconfig.json
+            src/**
+            public/**
+            next.config.js
 
   # ==========================================================
   # DEPLOY JOB
