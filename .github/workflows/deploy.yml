@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 # Evita ejecuciones concurrentes que se pisen entre sí durante el deploy
 concurrency:
   group: deploy-production
@@ -48,16 +51,13 @@ jobs:
         working-directory: backend
         run: npm run build
 
-      # Nota: NO subimos node_modules. Los binarios nativos (bcrypt, pg)
-      # se compilan para ubuntu-latest y pueden no ser compatibles con la VM.
-      # Las dependencias se instalan en la VM con `npm ci`.
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
           name: backend-build
           retention-days: 3
           path: |
-            backend/dist/
+            backend/dist/**
             backend/package.json
             backend/package-lock.json
 
@@ -80,11 +80,10 @@ jobs:
         working-directory: frontend-participants
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
-      # Las variables NEXT_PUBLIC_* se inyectan en build-time.
       - name: Create build env
         working-directory: frontend-participants
         run: |
-          cat > .env.production.local << 'ENVEOF'
+          cat > .env.production.local <<'ENVEOF'
           ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
           ENVEOF
 
@@ -98,7 +97,7 @@ jobs:
           name: frontend-participants-build
           retention-days: 3
           path: |
-            frontend-participants/.next/
+            frontend-participants/.next/**
             frontend-participants/package.json
             frontend-participants/package-lock.json
 
@@ -124,7 +123,7 @@ jobs:
       - name: Create build env
         working-directory: frontend-manager
         run: |
-          cat > .env.production.local << 'ENVEOF'
+          cat > .env.production.local <<'ENVEOF'
           ${{ secrets.FRONTEND_MANAGER_ENV }}
           ENVEOF
 
@@ -138,7 +137,7 @@ jobs:
           name: frontend-manager-build
           retention-days: 3
           path: |
-            frontend-manager/.next/
+            frontend-manager/.next/**
             frontend-manager/package.json
             frontend-manager/package-lock.json
 
@@ -178,14 +177,12 @@ jobs:
           name: frontend-manager-build
           path: frontend-manager-deploy
 
-      # ---- SSH setup ----
-      # BatchMode evita cualquier prompt interactivo que cuelgue el job.
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H -T 15 "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H -T 15 "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Configure SSH/SCP helpers
         run: |
@@ -193,12 +190,11 @@ jobs:
 
       - name: Verify server connectivity
         run: |
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "echo 'SSH OK on host:' \$(hostname); mkdir -p '$DEPLOY_BASE_PATH'/{backend,frontend-participants,frontend-manager,logs,backups}" < /dev/null
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" "echo 'SSH OK on host:' \\$(hostname); mkdir -p '$DEPLOY_BASE_PATH'/{backend,frontend-participants,frontend-manager,logs,backups}" < /dev/null
 
-      # ---- Backup ----
       - name: Backup production files
         run: |
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           set -e
           cd "$DEPLOY_BASE_PATH"
           BACKUP_TIME=$(date +%Y%m%d_%H%M%S)
@@ -209,41 +205,40 @@ jobs:
               echo "Backed up $service"
             fi
           done
-          # Conservar solo los ultimos 5 backups
           ls -1t backups/*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f
           EOSSH
 
-      # ---- PM2 config ----
       - name: Deploy PM2 configuration
         run: |
           scp $SSH_OPTS ecosystem.config.js "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/"
           echo "PM2 configuration deployed"
 
-      # ---- Backend ----
       - name: Deploy Backend
         run: |
-          # Sincronizar artefacto compilado (sin node_modules)
-          scp $SSH_OPTS -r backend-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend/"
+          if [ -d backend-deploy/backend ]; then BACKEND_SRC=backend-deploy/backend; else BACKEND_SRC=backend-deploy; fi
+          tar -czf /tmp/backend-deploy.tar.gz -C "$BACKEND_SRC" .
+          scp $SSH_OPTS /tmp/backend-deploy.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend.tar.gz"
+          rm -f /tmp/backend-deploy.tar.gz
 
-          # Enviar el .env del backend
-          cat > /tmp/backend.env << 'ENVEOF'
+          cat > /tmp/backend.env <<'ENVEOF'
           ${{ secrets.BACKEND_ENV }}
           ENVEOF
-          scp $SSH_OPTS /tmp/backend.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend/.env"
+          scp $SSH_OPTS /tmp/backend.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/backend.env"
           rm -f /tmp/backend.env
 
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           set -e
           export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          mkdir -p "$DEPLOY_BASE_PATH/backend"
+          tar -xzf "$DEPLOY_BASE_PATH/backend.tar.gz" -C "$DEPLOY_BASE_PATH/backend"
+          rm -f "$DEPLOY_BASE_PATH/backend.tar.gz"
+          if [ -f "$DEPLOY_BASE_PATH/backend.env" ]; then
+            cp "$DEPLOY_BASE_PATH/backend.env" "$DEPLOY_BASE_PATH/backend/.env"
+            rm -f "$DEPLOY_BASE_PATH/backend.env"
+          fi
           cd "$DEPLOY_BASE_PATH/backend"
-
-          # Instalar solo dependencias de produccion, sin prompts
           npm ci --omit=dev --no-audit --no-fund
-
-          # Asegurar que PM2 este disponible
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
-
-          # Arrancar/actualizar SOLO el proceso del backend (por nombre)
           if pm2 describe farmatour5-backend >/dev/null 2>&1; then
             pm2 reload farmatour5-backend --update-env
           else
@@ -253,26 +248,32 @@ jobs:
           echo "Backend deployed"
           EOSSH
 
-      # ---- Frontend Participants ----
       - name: Deploy Frontend (Participants)
         run: |
-          scp $SSH_OPTS -r frontend-participants-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants/"
+          if [ -d frontend-participants-deploy/frontend-participants ]; then PARTICIPANTS_SRC=frontend-participants-deploy/frontend-participants; else PARTICIPANTS_SRC=frontend-participants-deploy; fi
+          tar -czf /tmp/frontend-participants-deploy.tar.gz -C "$PARTICIPANTS_SRC" .
+          scp $SSH_OPTS /tmp/frontend-participants-deploy.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants.tar.gz"
+          rm -f /tmp/frontend-participants-deploy.tar.gz
 
-          cat > /tmp/participants.env << 'ENVEOF'
+          cat > /tmp/participants.env <<'ENVEOF'
           ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
           ENVEOF
-          scp $SSH_OPTS /tmp/participants.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants/.env.production.local"
+          scp $SSH_OPTS /tmp/participants.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-participants.env"
           rm -f /tmp/participants.env
 
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           set -e
           export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          mkdir -p "$DEPLOY_BASE_PATH/frontend-participants"
+          tar -xzf "$DEPLOY_BASE_PATH/frontend-participants.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-participants"
+          rm -f "$DEPLOY_BASE_PATH/frontend-participants.tar.gz"
+          if [ -f "$DEPLOY_BASE_PATH/frontend-participants.env" ]; then
+            cp "$DEPLOY_BASE_PATH/frontend-participants.env" "$DEPLOY_BASE_PATH/frontend-participants/.env.production.local"
+            rm -f "$DEPLOY_BASE_PATH/frontend-participants.env"
+          fi
           cd "$DEPLOY_BASE_PATH/frontend-participants"
-
           npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
-
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
-
           if pm2 describe farmatour5-participants >/dev/null 2>&1; then
             pm2 reload farmatour5-participants --update-env
           else
@@ -282,26 +283,32 @@ jobs:
           echo "Participants frontend deployed"
           EOSSH
 
-      # ---- Frontend Manager ----
       - name: Deploy Frontend (Manager)
         run: |
-          scp $SSH_OPTS -r frontend-manager-deploy/* "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager/"
+          if [ -d frontend-manager-deploy/frontend-manager ]; then MANAGER_SRC=frontend-manager-deploy/frontend-manager; else MANAGER_SRC=frontend-manager-deploy; fi
+          tar -czf /tmp/frontend-manager-deploy.tar.gz -C "$MANAGER_SRC" .
+          scp $SSH_OPTS /tmp/frontend-manager-deploy.tar.gz "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager.tar.gz"
+          rm -f /tmp/frontend-manager-deploy.tar.gz
 
-          cat > /tmp/manager.env << 'ENVEOF'
+          cat > /tmp/manager.env <<'ENVEOF'
           ${{ secrets.FRONTEND_MANAGER_ENV }}
           ENVEOF
-          scp $SSH_OPTS /tmp/manager.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager/.env.production.local"
+          scp $SSH_OPTS /tmp/manager.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_BASE_PATH/frontend-manager.env"
           rm -f /tmp/manager.env
 
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           set -e
           export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
+          mkdir -p "$DEPLOY_BASE_PATH/frontend-manager"
+          tar -xzf "$DEPLOY_BASE_PATH/frontend-manager.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-manager"
+          rm -f "$DEPLOY_BASE_PATH/frontend-manager.tar.gz"
+          if [ -f "$DEPLOY_BASE_PATH/frontend-manager.env" ]; then
+            cp "$DEPLOY_BASE_PATH/frontend-manager.env" "$DEPLOY_BASE_PATH/frontend-manager/.env.production.local"
+            rm -f "$DEPLOY_BASE_PATH/frontend-manager.env"
+          fi
           cd "$DEPLOY_BASE_PATH/frontend-manager"
-
           npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
-
           command -v pm2 >/dev/null 2>&1 || npm install -g pm2
-
           if pm2 describe farmatour5-manager >/dev/null 2>&1; then
             pm2 reload farmatour5-manager --update-env
           else
@@ -311,20 +318,18 @@ jobs:
           echo "Manager frontend deployed"
           EOSSH
 
-      # ---- Nginx ----
       - name: Reload Nginx
         run: |
           ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" 'sudo -n nginx -t && sudo -n systemctl reload nginx && echo "Nginx reloaded"' < /dev/null
 
-      # ---- Health check ----
       - name: Health check
         run: |
-          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' << 'EOSSH'
+          ssh -T $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_BASE_PATH="$DEPLOY_BASE_PATH" 'bash -s' <<'EOSSH'
           export PATH="$PATH:$HOME/.npm-global/bin:/usr/local/bin:/usr/bin"
           sleep 5
-          if [ -f "$DEPLOY_BASE_PATH/../scripts/health-check.sh" ]; then
-            bash "$DEPLOY_BASE_PATH/../scripts/health-check.sh" || true
-          fi
+          curl -fsS https://farmatour5-api.cuborojo.pe/api/health || true
+          curl -fsS https://farmatour5-admin.cuborojo.pe/ || true
+          curl -fsS https://farmatour5.cuborojo.pe/ || true
           pm2 status || true
           EOSSH
 
