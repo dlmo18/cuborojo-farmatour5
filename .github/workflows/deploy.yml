@@ -86,9 +86,10 @@ jobs:
       - name: Create build env
         working-directory: frontend-participants
         run: |
-          cat > .env.prod <<'ENVEOF'
+          cat > .env.production <<'ENVEOF'
           ${{ secrets.FRONTEND_PARTICIPANTS_ENV }}
           ENVEOF
+          cp .env.production .env.prod
 
       - name: Clean build cache (participants)
         working-directory: frontend-participants
@@ -137,9 +138,10 @@ jobs:
       - name: Create build env
         working-directory: frontend-manager
         run: |
-          cat > .env.prod <<'ENVEOF'
+          cat > .env.production <<'ENVEOF'
           ${{ secrets.FRONTEND_MANAGER_ENV }}
           ENVEOF
+          cp .env.production .env.prod
 
       - name: Clean build cache (manager)
         working-directory: frontend-manager
@@ -298,7 +300,8 @@ jobs:
           tar -xzf "$DEPLOY_BASE_PATH/frontend-participants.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-participants"
           rm -f "$DEPLOY_BASE_PATH/frontend-participants.tar.gz"
           if [ -f "$DEPLOY_BASE_PATH/frontend-participants.env" ]; then
-            cp "$DEPLOY_BASE_PATH/frontend-participants.env" "$DEPLOY_BASE_PATH/frontend-participants/.env.prod"
+            cp "$DEPLOY_BASE_PATH/frontend-participants.env" "$DEPLOY_BASE_PATH/frontend-participants/.env.production"
+            cp "$DEPLOY_BASE_PATH/frontend-participants/.env.production" "$DEPLOY_BASE_PATH/frontend-participants/.env.prod"
             rm -f "$DEPLOY_BASE_PATH/frontend-participants.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-participants"
@@ -334,7 +337,8 @@ jobs:
           tar -xzf "$DEPLOY_BASE_PATH/frontend-manager.tar.gz" -C "$DEPLOY_BASE_PATH/frontend-manager"
           rm -f "$DEPLOY_BASE_PATH/frontend-manager.tar.gz"
           if [ -f "$DEPLOY_BASE_PATH/frontend-manager.env" ]; then
-            cp "$DEPLOY_BASE_PATH/frontend-manager.env" "$DEPLOY_BASE_PATH/frontend-manager/.env.prod"
+            cp "$DEPLOY_BASE_PATH/frontend-manager.env" "$DEPLOY_BASE_PATH/frontend-manager/.env.production"
+            cp "$DEPLOY_BASE_PATH/frontend-manager/.env.production" "$DEPLOY_BASE_PATH/frontend-manager/.env.prod"
             rm -f "$DEPLOY_BASE_PATH/frontend-manager.env"
           fi
           cd "$DEPLOY_BASE_PATH/frontend-manager"
