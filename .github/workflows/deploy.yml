@@ -112,6 +112,8 @@ jobs:
             frontend-participants/src/**
             frontend-participants/public/**
             frontend-participants/next.config.js
+            frontend-participants/postcss.config.js
+            frontend-participants/tailwind.config.ts
 
   build-frontend-manager:
     name: Build Frontend (Manager)
@@ -161,6 +163,8 @@ jobs:
             frontend-manager/src/**
             frontend-manager/public/**
             frontend-manager/next.config.js
+            frontend-manager/postcss.config.js
+            frontend-manager/tailwind.config.ts
 
   # ==========================================================
   # DEPLOY JOB
