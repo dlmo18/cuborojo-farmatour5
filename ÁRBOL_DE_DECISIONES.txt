@@ -1,0 +1,407 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                      ÁRBOL DE DECISIONES - FARMATOUR 5                        ║
+║                       ¿Qué debo hacer ahora?                                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+                              🎯 COMIENZA AQUÍ
+                                    │
+                    ¿Cuál es mi rol en el proyecto?
+                                    │
+                ┌───────────────────┼───────────────────┐
+                │                   │                   │
+        👨‍💼 PM/MANAGER        👨‍💻 DEVELOPER          🔧 DBA/DEVOPS
+                │                   │                   │
+                ▼                   ▼                   ▼
+            (VER ABAJO)         (VER ABAJO)         (VER ABAJO)
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+👨‍💼 SOY PROJECT MANAGER / STAKEHOLDER
+════════════════════════════════════════════════════════════════════════════════
+
+¿Necesito entender el proyecto rápidamente?
+    │
+    └─ SÍ ──→ Lee: COMIENZA_AQUI.txt (5 min)
+    │
+    └─ NO ──→ Ve directo a: DASHBOARD.txt
+
+
+Después, quiero...
+
+├─ Ver qué se hizo
+│  └─ Lee: RESUMEN_CONSOLIDADO_FINAL.md
+│     Encontrarás: Estadísticas, resultados, ejemplos
+│
+├─ Ver el checklist
+│  └─ Ve a: DASHBOARD.txt (sección CHECKLIST)
+│     Encontrarás: Qué está completo, qué falta
+│
+├─ Aprobar para producción
+│  └─ Verifica: "Resultados Esperados" en DASHBOARD.txt
+│     Checklist: ✅ Todos verde = Listo
+│
+└─ Reportar estado al equipo
+   └─ Comparte: RESUMEN_CONSOLIDADO_FINAL.md
+      Tamaño: Pequeño (8.2K), fácil de leer
+
+
+⏱️ TIEMPO TOTAL: 10-15 minutos
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+👨‍💻 SOY DESARROLLADOR FRONTEND/FULL-STACK
+════════════════════════════════════════════════════════════════════════════════
+
+Primero, entender el proyecto:
+    └─ Lee: COMIENZA_AQUI.txt (5 min)
+
+
+Necesito el código React/JSX:
+    │
+    └─ Ve a: LAS_3_MEJORAS_GUIA_COMPLETA.md
+       Apartado: "Mejora 3: Código React"
+       Encontrarás:
+       ├─ Componentes React completos
+       ├─ Cómo mostrar imágenes
+       ├─ Cómo renderizar videos
+       ├─ Cómo mostrar badges
+       └─ Estilos CSS
+
+
+Tengo datos, necesito ejecutar script:
+    │
+    └─ Ejecuta: psql -f database/UPDATE_VIDEOS_IMAGES.sql
+
+
+Necesito validar que funcionó:
+    │
+    └─ Ve a: QUICK_REFERENCE.txt
+       Sección: "VALIDAR RESULTADOS"
+       Copia las queries, ejecútalas
+
+
+Tengo errores:
+    │
+    └─ Ve a: GUIA_UPDATE_VIDEOS_IMAGES.md
+       Sección: "Troubleshooting"
+
+
+Necesito estadísticas de datos:
+    │
+    └─ Ve a: RESUMEN_CONSOLIDADO_FINAL.md
+       Encontrarás: Qué datos hay, cuántos registros
+
+
+Quiero entender cómo funciona el hash:
+    │
+    └─ Ve a: GUIA_UPDATE_VIDEOS_IMAGES.md
+       Sección: "Método Hash Determinístico"
+
+
+⏱️ TIEMPO TOTAL: 30-45 minutos (incluye codificación)
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+🔧 SOY DBA / DEVOPS / INFRAESTRUCTURA
+════════════════════════════════════════════════════════════════════════════════
+
+Necesito ejecutar rápidamente:
+    │
+    └─ Lee: INSTRUCCIONES_FINALES_EJECUCION.md
+       Encontrarás: 3 opciones de ejecución paso a paso
+       Elige una:
+       ├─ OPCIÓN A: Setup completo (recomendada)
+       ├─ OPCIÓN B: Solo actualizar (si datos existen)
+       └─ OPCIÓN C: Todo en uno (simplificada)
+
+
+Antes de ejecutar, debo...
+    │
+    ├─ Conectar a BD
+    │  └─ psql -U deploy-uat -d farmatour5_dev -c "SELECT version();"
+    │
+    ├─ Ver qué scripts necesito
+    │  └─ Ve a: /database/ 
+    │     Archivos: UPDATE_VIDEOS_IMAGES.sql, test_data_complete_enhanced.sql
+    │
+    └─ Respaldar BD (opcional pero recomendado)
+       └─ pg_dump -U deploy-uat farmatour5_dev > backup_$(date +%Y%m%d).sql
+
+
+Ejecutando...
+    │
+    ├─ Opción A (Recomendada):
+    │  $ cd /database
+    │  $ psql -f schema.sql
+    │  $ psql -f test_data_complete_enhanced.sql
+    │  $ psql -f UPDATE_VIDEOS_IMAGES.sql
+    │
+    ├─ Opción B (Si datos existen):
+    │  $ cd /database
+    │  $ psql -f UPDATE_VIDEOS_IMAGES.sql
+    │
+    └─ Opción C (Todo en uno):
+       $ cd /database
+       $ psql -f SCRIPT_MAESTRO_COMPLETO.sql
+
+
+Después de ejecutar, debo validar:
+    │
+    └─ Ve a: QUICK_REFERENCE.txt
+       Sección: "VALIDAR RESULTADOS"
+       Ejecuta las 4 queries, verifica números
+
+
+Si algo falló:
+    │
+    └─ Ve a: GUIA_UPDATE_VIDEOS_IMAGES.md
+       Sección: "Troubleshooting"
+       Encontrarás soluciones para:
+       ├─ "column doesn't exist"
+       ├─ "relation not found"
+       ├─ "FK violation"
+       └─ Performance issues
+
+
+Necesito documentar para el team:
+    │
+    └─ Comparte:
+       ├─ INSTRUCCIONES_FINALES_EJECUCION.md
+       ├─ QUICK_REFERENCE.txt
+       └─ Logs de ejecución
+
+
+Monitoreo en producción:
+    │
+    └─ Ve a: README_SCRIPTS_VIDEOS_IMAGENES.txt
+       Sección: "Performance & Monitoring"
+
+
+⏱️ TIEMPO TOTAL: 10-20 minutos
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+🧪 SOY QA / TESTER
+════════════════════════════════════════════════════════════════════════════════
+
+Necesito entender qué se prueba:
+    │
+    └─ Lee: COMIENZA_AQUI.txt (5 min)
+
+
+Qué debo validar:
+    │
+    ├─ SQL: Queries de verificación
+    │  └─ Ve a: QUICK_REFERENCE.txt
+    │     Ejecuta todas las queries
+    │
+    ├─ Frontend: Imágenes, videos, badges
+    │  └─ Ve a: LAS_3_MEJORAS_GUIA_COMPLETA.md
+    │     Sección: "Checklist de Testing Frontend"
+    │
+    └─ Performance: Velocidad de carga
+       └─ Ve a: GUIA_UPDATE_VIDEOS_IMAGES.md
+          Sección: "Performance"
+
+
+Teste de datos:
+    │
+    ├─ Hay 10 imágenes en media_library?
+    │  Query: SELECT COUNT(*) FROM media_library;
+    │  Esperado: 10
+    │
+    ├─ Hay 4 URLs Vimeo en final_level_questions?
+    │  Query: SELECT COUNT(*) FROM final_level_questions 
+    │         WHERE start_video_url LIKE 'https://vimeo%';
+    │  Esperado: 4
+    │
+    ├─ Hay 36+ items con benefits?
+    │  Query: SELECT COUNT(*) FROM mission_items 
+    │         WHERE benefits IS NOT NULL;
+    │  Esperado: 36+
+    │
+    └─ Hay 36+ items con badges?
+       Query: SELECT COUNT(*) FROM mission_items 
+              WHERE content_badges IS NOT NULL;
+       Esperado: 36+
+
+
+Test de Frontend:
+    │
+    ├─ ¿Se cargan las imágenes?
+    │  Ruta: /media/image_95000001.jpg, etc.
+    │  Debe: Verse clara, 800x600px
+    │
+    ├─ ¿Se reproducen los videos?
+    │  URL: https://vimeo.com/197211423
+    │  Debe: Reproducirse en iframe
+    │
+    ├─ ¿Se muestran los badges?
+    │  Tipo: JSON array (["etiqueta1", "etiqueta2", ...])
+    │  Debe: Renderizarse como botones/tags
+    │
+    └─ ¿Se ven los benefits?
+       Tipo: Texto plano (50-150 palabras)
+       Debe: Aparecer en la descripción del item
+
+
+Si encontraste un bug:
+    │
+    ├─ Verifica en: GUIA_UPDATE_VIDEOS_IMAGES.md#Troubleshooting
+    │  Tal vez ya está documentado
+    │
+    └─ Si no, reporta con:
+       ├─ Descripción exacta
+       ├─ Query que falla
+       ├─ Error message
+       └─ Archivo donde falla
+
+
+⏱️ TIEMPO TOTAL: 20-30 minutos
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+❓ CASOS ESPECIALES
+════════════════════════════════════════════════════════════════════════════════
+
+¿Necesito cambiar la URL Vimeo?
+    │
+    └─ Edita: database/UPDATE_VIDEOS_IMAGES.sql
+       Línea 20: Reemplaza la URL
+       Re-ejecuta el script
+
+
+¿Necesito agregar más imágenes?
+    │
+    └─ Edita: database/test_data_complete_enhanced.sql
+       Busca: INSERT INTO media_library
+       Agrega más filas con IDs 95000011, 95000012, etc.
+       Re-ejecuta el script
+
+
+¿Necesito cambiar los benefits?
+    │
+    └─ Opción 1: Edita SQL directamente
+       Archivo: database/test_data_complete_enhanced.sql
+       Campo: mission_items.benefits
+    │
+    └─ Opción 2: UPDATE directo en BD
+       $ psql -c "UPDATE mission_items SET benefits='...' WHERE id='...';"
+
+
+¿Necesito cambiar los badges?
+    │
+    └─ Edita SQL o UPDATE directo
+       Campo: mission_items.content_badges
+       Formato: JSON ["badge1", "badge2", "badge3"]
+
+
+¿Necesito ejecutar en otro ambiente?
+    │
+    ├─ UAT: Solo copia el script, ejecuta igual
+    │  psql -U deploy-uat -d farmatour5_uat -f UPDATE_VIDEOS_IMAGES.sql
+    │
+    ├─ Producción: Mismo comando, DB de producción
+    │  psql -U deploy-prod -d farmatour5_prod -f UPDATE_VIDEOS_IMAGES.sql
+    │
+    └─ Local: Igual, solo cambia credenciales
+       psql -U local_user -d farmatour5_local -f UPDATE_VIDEOS_IMAGES.sql
+
+
+¿Necesito regenerar datos?
+    │
+    └─ Generadores Python disponibles:
+       ├─ python3 database/generate_final_test_data.py
+       └─ python3 database/generate_enhanced_test_data.py
+       Generan: test_data_example_v2.sql
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+🚨 PROBLEMAS COMUNES Y SOLUCIONES
+════════════════════════════════════════════════════════════════════════════════
+
+Problema: "psql: command not found"
+Solución: 
+  ├─ Instala PostgreSQL: brew install postgresql
+  ├─ O agrega a PATH: export PATH="/usr/local/pgsql/bin:$PATH"
+  └─ Verifica: psql --version
+
+
+Problema: "psql: error: could not translate host name"
+Solución:
+  ├─ Verifica IP: ping 35.225.15.165
+  ├─ Verifica credenciales en SQL
+  └─ Usa VPN si es necesario
+
+
+Problema: "syntax error in SQL at ..."
+Solución:
+  ├─ Ve a: GUIA_UPDATE_VIDEOS_IMAGES.md#Troubleshooting
+  ├─ Verifica formato de strings (comillas)
+  └─ Re-ejecuta sin cambios
+
+
+Problema: "Queries lentas"
+Solución:
+  ├─ Es normal, esperar 3-5 segundos
+  ├─ Verifica con: EXPLAIN ANALYZE (query)
+  └─ Más info: GUIA_UPDATE_VIDEOS_IMAGES.md#Performance
+
+
+Problema: "No data assigned"
+Solución:
+  ├─ Verifica: SELECT COUNT(*) FROM media_library;
+  ├─ Si = 0: Ejecuta test_data_complete_enhanced.sql primero
+  └─ Luego re-ejecuta UPDATE_VIDEOS_IMAGES.sql
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+📊 RESUMEN RÁPIDO DE ARCHIVOS
+════════════════════════════════════════════════════════════════════════════════
+
+LECTURA (ELIGE UNO):
+  ├─ 5 min:  COMIENZA_AQUI.txt
+  ├─ 10 min: RESUMEN_CONSOLIDADO_FINAL.md
+  └─ 15 min: LAS_3_MEJORAS_GUIA_COMPLETA.md
+
+EJECUCIÓN (ELIGE UNO):
+  ├─ UPDATE_VIDEOS_IMAGES.sql (RECOMENDADO)
+  ├─ test_data_complete_enhanced.sql
+  └─ SCRIPT_MAESTRO_COMPLETO.sql
+
+REFERENCIA:
+  ├─ QUICK_REFERENCE.txt (queries comunes)
+  ├─ GUIA_UPDATE_VIDEOS_IMAGES.md (detalles técnicos)
+  └─ INSTRUCCIONES_FINALES_EJECUCION.md (paso a paso)
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+✅ CUANDO TODO ESTÉ LISTO
+════════════════════════════════════════════════════════════════════════════════
+
+  ✓ Datos insertados correctamente
+  ✓ Videos/imágenes asignadas
+  ✓ Benefits/badges incluidos
+  ✓ Queries de validación pasan
+  ✓ Frontend implementado
+  ✓ Testing completado
+  
+  → LISTO PARA PRODUCCIÓN ✅
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+Versión: 3.0
+Estado: ✅ COMPLETADO
+Próximo paso: Elige tu rol arriba y sigue las instrucciones
+
+════════════════════════════════════════════════════════════════════════════════

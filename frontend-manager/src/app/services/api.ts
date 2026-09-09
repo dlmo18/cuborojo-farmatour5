@@ -157,7 +157,6 @@ export interface CreateGroupDto {
 export interface UpdateGroupDto {
   name?: string;
   description?: string;
-  isActive?: boolean;
 }
 
 export const groupsApi = {
@@ -203,7 +202,6 @@ export interface CreateParticipantDto {
 }
 
 export interface UpdateParticipantDto {
-  dni?: string;
   fullName?: string;
   email?: string;
   groupId?: string;

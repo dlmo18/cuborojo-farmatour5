@@ -58,7 +58,6 @@ export default function GroupsPage() {
     setFormData({
       name: group.name,
       description: group.description,
-      isActive: group.isActive,
     });
     setShowModal(true);
     setError('');
@@ -81,7 +80,11 @@ export default function GroupsPage() {
 
     try {
       if (editingGroup) {
-        await groupsApi.update(editingGroup.id, formData as UpdateGroupDto);
+        const updateData: UpdateGroupDto = {
+          name: formData.name,
+          description: formData.description,
+        };
+        await groupsApi.update(editingGroup.id, updateData);
       } else {
         await groupsApi.create(formData as CreateGroupDto);
       }
@@ -143,12 +146,15 @@ export default function GroupsPage() {
               </div>
 
               {editingGroup && (
-                <ToggleSwitch
-                  id="isActive"
-                  checked={(formData as UpdateGroupDto).isActive ?? true}
-                  onChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                  label="Grupo activo"
-                />
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-yellow-800 font-semibold text-sm">Estado del grupo:</span>
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${editingGroup.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {editingGroup.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-yellow-700">El estado del grupo no puede ser modificado desde aquí. Contacta al administrador si necesitas cambiar el estado.</p>
+                </div>
               )}
 
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
