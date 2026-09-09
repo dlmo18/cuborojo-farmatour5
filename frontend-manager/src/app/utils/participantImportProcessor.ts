@@ -2,7 +2,7 @@
  * Utilidad para procesar importación de participantes con validaciones
  */
 
-import { Participant, CreateParticipantDto, UpdateParticipantDto, Group } from './api';
+import { Participant, CreateParticipantDto, UpdateParticipantDto, Group } from '../services/api';
 
 export interface ImportRow {
   dni: string;
