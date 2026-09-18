@@ -31,10 +31,10 @@ export default function OptionsMenu({ isOpen, onClose }: OptionsMenuProps) {
       {/* Modal de opciones */}
       <div className="fixed top-20 right-8 bg-white rounded-lg shadow-2xl p-6 w-80 z-50">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-purple-600">Opciones</h2>
+          <h2 className="text-2xl font-bold text-primary-600" style={{ fontFamily: "'Blinker', sans-serif" }}>Opciones</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-white/60 hover:text-white/80 text-2xl" 
           >
             ✕
           </button>
@@ -45,12 +45,12 @@ export default function OptionsMenu({ isOpen, onClose }: OptionsMenuProps) {
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🔊</span>
-              <span className="font-semibold text-gray-700">Sonido de Fondo</span>
+              <span className="font-semibold text-white/90">Sonido de Fondo</span>
             </div>
             <button
               onClick={toggleBackgroundSound}
               className={`relative w-12 h-6 rounded-full transition ${
-                backgroundSound ? 'bg-green-500' : 'bg-gray-300'
+                backgroundSound ? 'bg-primary-500' : 'bg-secondary-300'
               }`}
             >
               <div
@@ -64,12 +64,12 @@ export default function OptionsMenu({ isOpen, onClose }: OptionsMenuProps) {
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎵</span>
-              <span className="font-semibold text-gray-700">Sonido de Efecto</span>
+              <span className="font-semibold text-white/90">Sonido de Efecto</span>
             </div>
             <button
               onClick={toggleEffectSound}
               className={`relative w-12 h-6 rounded-full transition ${
-                effectSound ? 'bg-green-500' : 'bg-gray-300'
+                effectSound ? 'bg-primary-500' : 'bg-secondary-300'
               }`}
             >
               <div
@@ -87,7 +87,7 @@ export default function OptionsMenu({ isOpen, onClose }: OptionsMenuProps) {
         {/* Cerrar sesión */}
         <button
           onClick={handleLogout}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition"
+          className="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-bold py-2 px-4 rounded-lg transition" style={{ fontFamily: "'Blinker', sans-serif" }}
         >
           Cerrar Sesión
         </button>

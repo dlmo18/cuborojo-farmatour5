@@ -95,7 +95,7 @@ export default function MissionInfoPage() {
           <p className="text-white text-center">Misión no encontrada</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100"
+            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -127,7 +127,7 @@ export default function MissionInfoPage() {
           </div>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="bg-white text-purple-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
+            className="bg-white text-primary-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
           >
             ⚙️
           </button>
@@ -140,7 +140,7 @@ export default function MissionInfoPage() {
         {currentItem ? (
           <div className="bg-white rounded-lg shadow-lg p-8 text-black">
             {/* Título */}
-            <h2 className="text-3xl font-bold text-purple-600 mb-4">{currentItem.title}</h2>
+            <h2 className="text-3xl font-bold text-primary-600 mb-4" style={{ fontFamily: "'Blinker', sans-serif" }}>{currentItem.title}</h2>
 
             {/* Badges/Etiquetas */}
             {currentItem.contentBadges && currentItem.contentBadges.length > 0 && (
@@ -148,7 +148,7 @@ export default function MissionInfoPage() {
                 {currentItem.contentBadges.map((badge, idx) => (
                   <span
                     key={idx}
-                    className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold"
+                    className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-semibold"
                   >
                     {badge}
                   </span>
@@ -171,8 +171,8 @@ export default function MissionInfoPage() {
             {/* Beneficios (texto enriquecido - HTML) */}
             {currentItem.benefits && (
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Beneficios</h3>
-                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                <h3 className="text-lg font-bold text-white mb-3" style={{ fontFamily: "'Blinker', sans-serif" }}>Beneficios</h3>
+                <div className="text-white/90 leading-relaxed prose prose-sm max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: currentItem.benefits }} />
                 </div>
               </div>
@@ -181,8 +181,8 @@ export default function MissionInfoPage() {
             {/* Detalles (texto enriquecido - HTML) */}
             {currentItem.detail && (
               <div className="mb-8">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Detalles</h3>
-                <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                <h3 className="text-lg font-bold text-white mb-3" style={{ fontFamily: "'Blinker', sans-serif" }}>Detalles</h3>
+                <div className="text-white/90 leading-relaxed prose prose-sm max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: currentItem.detail }} />
                 </div>
               </div>
@@ -193,19 +193,19 @@ export default function MissionInfoPage() {
               <button
                 onClick={() => setCurrentItemIndex(currentItemIndex - 1)}
                 disabled={!hasPrevItem}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ fontFamily: "'Blinker', sans-serif" }}
               >
                 ← Anterior
               </button>
 
-              <span className="text-gray-700 font-semibold">
+              <span className="text-white/80 font-semibold">
                 {currentItemIndex + 1}/{mission.items?.length || 0}
               </span>
 
               {hasNextItem ? (
                 <button
                   onClick={() => setCurrentItemIndex(currentItemIndex + 1)}
-                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700" style={{ fontFamily: "'Blinker', sans-serif" }}
                 >
                   Siguiente →
                 </button>
@@ -221,7 +221,7 @@ export default function MissionInfoPage() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-            <p className="text-gray-600">No hay información disponible para esta misión</p>
+            <p className="text-white/70">No hay información disponible para esta misión</p>
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
@@ -20,11 +21,22 @@ export default function Home() {
 
   // Mostrar pantalla de carga mientras redirige
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
+    <main className="flex items-center justify-center min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800">
       <div className="text-center text-white">
-        <div className="animate-pulse mb-4">
-          <h1 className="text-5xl font-bold mb-4">🎮 Farmatour 5</h1>
-          <p className="text-xl">Cargando...</p>
+        <div className="animate-pulse mb-8">
+          {/* Logo Farmatour 5 */}
+          <div className="relative w-96 h-48 mx-auto mb-6">
+            <Image
+              src="/images/logo.png"
+              alt="Farmatour 5"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <p className="text-xl font-semibold drop-shadow-lg" style={{ fontFamily: "'Blinker', sans-serif" }}>
+            Cargando...
+          </p>
         </div>
       </div>
     </main>

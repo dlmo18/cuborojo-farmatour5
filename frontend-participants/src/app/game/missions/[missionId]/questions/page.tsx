@@ -122,7 +122,7 @@ export default function MissionQuestionsPage() {
           <p className="text-white text-center mb-4">❌ {error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 w-full"
+            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 w-full" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -138,7 +138,7 @@ export default function MissionQuestionsPage() {
           <p className="text-white text-center">Misión no encontrada</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100"
+            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -167,7 +167,7 @@ export default function MissionQuestionsPage() {
             </div>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="bg-white text-purple-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
+              className="bg-white text-primary-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
             >
               ⚙️
             </button>
@@ -176,10 +176,10 @@ export default function MissionQuestionsPage() {
           <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <p className="text-gray-600 text-lg mb-6">No hay preguntas disponibles para esta misión</p>
+            <p className="text-white/70 text-lg mb-6">No hay preguntas disponibles para esta misión</p>
             <button
               onClick={() => router.back()}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 font-bold"
+              className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}
             >
               ← Volver al contenido
             </button>
@@ -263,7 +263,7 @@ export default function MissionQuestionsPage() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           {/* Número de pregunta */}
           <div className="text-center mb-8">
-            <span className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-bold">
+            <span className="inline-block bg-primary-100 text-primary-800 px-4 py-2 rounded-full text-sm font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}>
               Pregunta {currentQuestionIndex + 1} de {questions.length}
             </span>
           </div>
@@ -281,8 +281,9 @@ export default function MissionQuestionsPage() {
 
           {/* Contenido de la pregunta (HTML) */}
           <div 
-            className="text-lg text-gray-800 mb-8 prose prose-sm max-w-none"
+            className="text-lg text-white/90 mb-8 prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: currentQuestion.content }}
+            style={{ fontFamily: "'Blinker', sans-serif" }}
           />
 
           {/* Opciones de respuesta */}
@@ -298,7 +299,7 @@ export default function MissionQuestionsPage() {
                   value={option.id}
                   checked={answers[currentQuestion.id] === option.id}
                   onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                  className="w-5 h-5 text-purple-600 cursor-pointer mt-1 flex-shrink-0"
+                  className="w-5 h-5 text-primary-600 cursor-pointer mt-1 flex-shrink-0"
                 />
                 <div className="ml-4 flex-1">
                   {option.imageId && getImageUrl(option.imageId) && (
@@ -308,7 +309,7 @@ export default function MissionQuestionsPage() {
                       className="w-full h-auto max-h-32 rounded-lg mb-2"
                     />
                   )}
-                  <span className="text-gray-700 font-medium block">{option.text}</span>
+                  <span className="text-white/90 font-medium block">{option.text}</span>
                 </div>
               </label>
             ))}
@@ -319,12 +320,12 @@ export default function MissionQuestionsPage() {
             <button
               onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
               disabled={currentQuestionIndex === 0}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ fontFamily: "'Blinker', sans-serif" }}
             >
               ← Anterior
             </button>
 
-            <span className="text-gray-700 font-semibold">
+            <span className="text-white/80 font-semibold">
               {currentQuestionIndex + 1}/{questions.length}
             </span>
 

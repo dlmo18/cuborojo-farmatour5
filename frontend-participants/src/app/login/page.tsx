@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [dni, setDni] = useState('');
@@ -30,59 +31,127 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-purple-600 mb-2">🎮 Farmatour 5</h1>
-          <p className="text-gray-600">¡Bienvenido a la aventura!</p>
+    <div className="min-h-screen w-full relative flex items-center justify-center overflow-hidden">
+      {/* Fondo responsivo */}
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src="/images/login-bg.jpeg"
+          alt="Fondo Farmatour 5"
+          fill
+          priority
+          className="object-cover w-full h-full"
+          quality={90}
+        />
+        {/* Overlay oscuro para mejorar legibilidad - Adaptado a colores Farmatour */}
+        <div className="absolute inset-0 bg-black/20"></div>
+      </div>
+
+      {/* Contenedor del login */}
+      <div className="relative z-10 w-full max-w-md px-4 flex flex-col items-center">
+        {/* Logo */}
+        <div className="relative w-full h-[300px]">
+          <Image
+            src="/images/logo.png"
+            alt="Logo Farmatour 5"
+            fill
+            className="object-contain"
+            priority
+          />
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label className="block text-gray-700 font-semibold mb-2">
-              Ingresa tu DNI
-            </label>
-            <input
-              type="text"
-              value={dni}
-              onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
-              placeholder="12345678"
-              maxLength={8}
-              className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:border-purple-600 text-lg text-center"
-              disabled={isLoading}
-              autoFocus
-            />
-            <p className="text-xs text-gray-500 mt-2 text-center">Solo números, 8 dígitos</p>
-          </div>
-
+        {/* Mensaje de error */}
+        <div className="h-32 pt-12">
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm text-center">
+            <div className="text-orange-200 text-2xl w-[300px] md:text-base text-center font-bold px-4 bg-red-600/80 rounded py-2" style={{ fontFamily: "'Blinker', sans-serif" }}>
               {error}
             </div>
           )}
+        </div>
+        {/* Modal del Login */}
+        <div className="relative w-full">
+          {/* Fondo del modal */}
+          <Image
+            src="/images/login-modal.png"
+            alt="Modal"
+            width={400}
+            height={300}
+            className="w-full h-auto"
+            priority
+          />
+          
+          {/* Contenido del modal (posicionado absolutamente) */}
+          <div className="absolute inset-0 flex flex-col items-center justify-start px-8 pt-10">
+            {/* Título - Colores Farmatour 5 */}
+            <h2
+              className="text-3xl font-black text-center mb-2 mt-4 text-white drop-shadow-lg"
+              style={{ fontFamily: "'Blinker', sans-serif" }}
+            >
+              INGRESA TU DNI
+            </h2>
 
-          <button
-            type="submit"
-            disabled={isLoading || !dni || dni.length !== 8}
-            className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Ingresando...
-              </span>
-            ) : (
-              '🚀 Entrar al Juego'
-            )}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} className="w-full space-y-6 login-modal">
+              {/* Input con fondo */}
+              <div className="relative w-[230px] h-[70px]  m-auto">
+                <Image
+                  src="/images/login-input.png"
+                  alt="Input background"
+                  fill
+                  className="object-cover"
+                />
+                <input
+                  type="text"
+                  value={dni}
+                  onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
+                  placeholder="********"
+                  maxLength={8}
+                  disabled={isLoading}
+                  autoFocus
+                  className="login-input absolute inset-0 w-full h-full px-8 text-black text-center text-3xl font-bold bg-transparent focus:outline-none placeholder-gray-400 placeholder:opacity-50"
+                  style={{ fontFamily: "'Blinker', sans-serif" }}
+                />
+              </div>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>¿Problemas para ingresar?</p>
-          <p className="mt-1">Contacta a tu administrador</p>
+              {/* Botón con fondo */}
+              <div className="relative w-full h-16 flex items-center justify-start" style={{'marginTop': '1rem'}}>
+                <button
+                  type="submit"
+                  disabled={isLoading || !dni || dni.length !== 8}
+                  className="login-button absolute inset-0 w-[230px] h-[80px]  m-auto flex items-center justify-center focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:scale-105 active:scale-95"
+                >
+                  {/* Fondo del botón */}
+                  <Image
+                    src="/images/login-button.png"
+                    alt="Button"
+                    fill
+                    className="object-cover"
+                  />
+
+                  <span
+                    className="absolute text-3xl font-black text-white z-10 drop-shadow-lg top-4"
+                    style={{ fontFamily: "'Blinker', sans-serif" }}
+                  >
+                    INGRESAR
+                  </span>
+                </button>
+              </div>
+              {/* Mensaje de contacto */}
+              <div className="login-contact mt-8 w-[250px] m-auto text-center text-white text-xs drop-shadow-lg" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>
+                <p className="font-semibold" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  Si tienes problemas para acceder envía un correo a
+                </p>
+                <p className="font-bold text-yellow-100" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  universidadcorporativa@farmaciasfarmatour.com
+                </p>
+                <p style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  con tus datos de colaborador.
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        
+        <div className="copyright mt-12 pb-8 text-center text-white/80 text-xs drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.6)' }}>
+          Copyright &copy; {new Date().getFullYear()} CUBOROJO. Farmacias Peruanas
         </div>
       </div>
     </div>

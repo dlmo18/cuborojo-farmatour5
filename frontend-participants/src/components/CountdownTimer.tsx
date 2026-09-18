@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Image from 'next/image';
 
 interface CountdownTimerProps {
   onTimeExpired?: () => void;
@@ -69,19 +70,23 @@ export default function CountdownTimer({ onTimeExpired }: CountdownTimerProps) {
   return (
     <>
       {/* Contador regresivo */}
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">⏱️</span>
-        <div className="text-white font-bold text-lg">
-          {countdownTime ? formatTime(timeRemaining) : '--'}
+      <div className="flex relative items-center gap-3 mt-12 pt-8 pl-4">
+        <div className="text-black font-bold text-md font-blinker">
+          {countdownTime ? formatTime(timeRemaining) : (
+            <>
+              <span className='block'>9 HORAS</span>
+              <span className='block -mt-3'>16 MIN</span>
+            </>
+          )}
         </div>
         <button
           onClick={() => isExpired && setShowModal(true)}
           disabled={!isExpired}
-          className={`text-2xl transition ${
-            isExpired ? 'cursor-pointer opacity-100' : 'opacity-50 cursor-not-allowed'
+          className={`text-2xl absolute top-0 -right-5 ${
+            isExpired ? 'cursor-pointer' : 'cursor-not-allowed'
           }`}
         >
-          🎁
+          <Image src={isExpired ? "/images/icon-gift.png" : "/images/icon-gift-lock.png"} alt="Gift" width={80} height={80} />
         </button>
       </div>
 
@@ -96,13 +101,13 @@ export default function CountdownTimer({ onTimeExpired }: CountdownTimerProps) {
             <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
               <div className="text-center">
                 <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-2xl font-bold text-purple-600 mb-3">¡Evento Especial!</h2>
-                <p className="text-gray-700 mb-6">
+                <h2 className="text-2xl font-bold text-primary-600 mb-3" style={{ fontFamily: "'Blinker', sans-serif" }}>¡Evento Especial!</h2>
+                <p className="text-white/80 mb-6">
                   Se ha completado la cuenta atrás. ¡Algo especial te espera!
                 </p>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition"
+                  className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-6 rounded-lg transition" style={{ fontFamily: "'Blinker', sans-serif" }}
                 >
                   Cerrar
                 </button>

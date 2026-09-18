@@ -8,6 +8,7 @@ import { useAuthCheck } from '@/hooks/useAuthCheck';
 import OptionsMenu from '@/components/OptionsMenu';
 import BottomStats from '@/components/BottomStats';
 import WorldStarsBar from '@/components/WorldStarsBar';
+import Image from 'next/image';
 
 interface World {
   id: string;
@@ -52,11 +53,18 @@ export default function WorldsPage() {
   const fetchWorlds = useCallback(async () => {
     try {
       const res = await axios.get(`${API_URL}/worlds`);
-      setWorlds(res.data.data || res.data);
+      const reversedWorlds = res.data.data?.reverse();
+      setWorlds(reversedWorlds || res.data);
     } catch (err) {
       console.error('Error fetching worlds:', err);
     }
   }, []);
+
+  // Función para obtener la URL de la imagen de un mundo
+  const getWorldImageUrl = (imageId?: string): string => {
+    if (!imageId) return '/images/world-default.png';
+    return `${API_URL}/media/serve/${imageId}`;
+  };
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -169,48 +177,105 @@ export default function WorldsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
+    <div className="world-page min-h-screen px-8">
       <div className="max-w-md mx-auto">
+
         {/* Header con botón de menú */}
-        <div className="flex justify-between items-start mb-8">
-          <h1 className="text-4xl font-bold text-white">🎮 Farmatour 5</h1>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="bg-white text-purple-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
-          >
-            ⚙️
-          </button>
+        <div className="header fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
+            <div className="max-w-md mx-auto flex px-4 justify-between items-center ">
+              <button>
+                <Image
+                    src="/images/btn-back.png"
+                    alt="Atras"
+                    width={50}
+                    height={50}
+                    className="w-full h-auto"
+                    priority
+                  />
+              </button>
+              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                <Image
+                  src="/images/logo-header.png"
+                  alt="Farmatour 5"
+                  width={160}
+                  height={80}
+                  className="header-logo object-contain"
+                  priority
+                />
+              </h1>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
+              >
+                <Image
+                    src="/images/btn-menu.png"
+                    alt="Menú"
+                    width={50}
+                    height={50}
+                    className="w-full h-auto"
+                    priority
+                  />
+              </button>
+            </div>
         </div>
+        
 
         {/* Menú de opciones */}
         <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
         {!selectedWorld ? (
           <div>
-            <h2 className="text-3xl text-center font-bold text-white mb-8">Selecciona un Mundo</h2>
             <div className="gap-6">
-              {worlds.map((world) => (
+              <div className="world-top">
+                <Image
+                    src="/images/world-top.jpg"
+                    alt="Mundo Superior"
+                    width={160}
+                    height={80}
+                    className="w-full h-auto"
+                    priority
+                  />
+              </div>
+              {worlds.map((world, index) => (
                 <button
                   key={world.id}
                   onClick={() => handleWorldClick(world)}
-                  className="bg-white rounded-lg shadow-lg p-6 hover:shadow-2xl transition transform hover:scale-105 mb-5 block w-full"
+                  className="block w-full"
                 >
-                  <div className="text-4xl mb-3">🌍</div>
-                  <h3 className="text-2xl font-bold text-purple-600 mb-2">{world.name}</h3>
-                  <p className="text-gray-600">{world.description}</p>
+                  <Image
+                    src={getWorldImageUrl(world.imageId)}
+                    alt={world.name}
+                    width={320}
+                    height={160}
+                    className="w-full h-auto"
+                    priority={index === 0}
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTYwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE2MCIgZmlsbD0iI2Q1ZDdjZiIvPjwvc3ZnPg=="
+                  />
                 </button>
               ))}
+              {!worlds.length && (
+                <Image
+                    src="/images/world-default.jpg"
+                    alt="No hay mundos disponibles"
+                    width={320}
+                    height={160}
+                    className="w-full h-auto"
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTYwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE2MCIgZmlsbD0iI2Q1ZDdjZiIvPjwvc3ZnPg=="
+                  />
+              )}
+              <div className="world-footer">
+                <Image
+                    src="/images/world-footer.jpg"
+                    alt="Mundo Inferior"
+                    width={160}
+                    height={80}
+                    className="w-full h-auto"
+                    priority
+                  />
+              </div>
             </div>
-
-            {/* BottomStats en vista principal */}
-            {isHydrated && user && (
-              <BottomStats
-                totalStars={user.totalStars}
-                userId={user.id}
-                groupId={user.group?.id}
-                token={token || ''}
-              />
-            )}
           </div>
         ) : (
           <div>
@@ -226,7 +291,7 @@ export default function WorldsPage() {
               >
                 ←
               </button>
-              <h2 className="text-3xl font-bold text-white">{selectedWorld.name}</h2>
+              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>{selectedWorld.name}</h2>
               <div className="w-10"></div>
             </div>
             <div className="text-center">
@@ -236,9 +301,9 @@ export default function WorldsPage() {
                 const isGolden = level.levelType === 'golden';
                 
                 let bgColor = 'bg-white';
-                if (isGolden) bgColor = 'bg-yellow-400';
-                if (isFinal) bgColor = 'bg-red-400';
-                if (isLocked) bgColor = 'bg-gray-300';
+                if (isGolden) bgColor = 'bg-accent-300';
+                if (isFinal) bgColor = 'bg-secondary-300';
+                if (isLocked) bgColor = 'bg-secondary-200';
 
                 return (
                   <div
@@ -252,16 +317,16 @@ export default function WorldsPage() {
                     {isLocked && <div className="text-3xl mb-2">🔒 BLOQUEADO</div>}
                     
                     <h3 className={`text-xl font-bold ${
-                      isGolden ? 'text-yellow-700' : isFinal ? 'text-red-700' : 'text-purple-600'
-                    } mb-2`}>
+                      isGolden ? 'text-accent-700' : isFinal ? 'text-secondary-700' : 'text-primary-600'
+                    } mb-2`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                       {level.name}
                     </h3>
-                    <p className={`${isLocked ? 'text-gray-500' : 'text-gray-600'} mb-4`}>
+                    <p className={`${isLocked ? 'text-gray-600' : 'text-gray-700'} mb-4`}>
                       {level.description}
                     </p>
                     
                     {isLocked ? (
-                      <div className="text-gray-600 text-sm">
+                      <div className="text-gray-700 text-sm">
                         Completa el nivel anterior para desbloquear
                       </div>
                     ) : (
@@ -269,11 +334,11 @@ export default function WorldsPage() {
                         onClick={() => router.push(`/game/levels/${level.id}`)}
                         className={`${
                           isGolden
-                            ? 'bg-yellow-500 hover:bg-yellow-600'
+                            ? 'bg-accent-500 hover:bg-accent-600'
                             : isFinal
-                            ? 'bg-red-500 hover:bg-red-600'
-                            : 'bg-purple-600 hover:bg-purple-700'
-                        } text-white px-4 py-2 rounded-lg transition`}
+                            ? 'bg-secondary-500 hover:bg-secondary-600'
+                            : 'bg-primary-600 hover:bg-primary-700'
+                        } text-white px-4 py-2 rounded-lg transition font-semibold`} style={{ fontFamily: "'Blinker', sans-serif" }}
                       >
                         {isFinal ? 'Jugar Nivel Final' : isGolden ? 'Jugar Nivel Dorado' : 'Jugar Nivel'}
                       </button>
@@ -288,6 +353,9 @@ export default function WorldsPage() {
           </div>
         )}
       </div>
+
+      {/* BottomStats siempre visible */}
+      <BottomStats />
     </div>
   );
 }

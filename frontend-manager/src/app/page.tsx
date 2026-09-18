@@ -29,12 +29,12 @@ export default function Home() {
 
   // Mostrar pantalla de carga mientras se verifica autenticación
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <main className="flex items-center justify-center min-h-screen bg-gradient-to-br from-forest-800 via-primary-800 to-secondary-900">
       <div className="text-center text-white">
         <div className="animate-pulse">
-          <h1 className="text-4xl font-bold mb-4">⚙️ Farmatour 5</h1>
-          <p className="text-xl text-gray-300">Panel de Administración</p>
-          <p className="text-sm text-gray-400 mt-2">Verificando sesión...</p>
+          <h1 className="text-4xl font-bold mb-4" style={{ fontFamily: "'Blinker', sans-serif" }}>⚙️ Farmatour 5</h1>
+          <p className="text-xl text-white/80">Panel de Administración</p>
+          <p className="text-sm text-white/60 mt-2">Verificando sesión...</p>
           <div className="mt-8">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
           </div>

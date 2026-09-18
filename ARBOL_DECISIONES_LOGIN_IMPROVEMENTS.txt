@@ -1,0 +1,596 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                  🌳 ÁRBOL DE DECISIONES - ¿QUÉ HACER AHORA?                ║
+║                                                                              ║
+║                      Frontend Participants - Login Improvements              ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                    ¿QUÉ QUIERES HACER AHORA?                               ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                              ELIGE UNA OPCIÓN:
+
+                    ┌──────────────────────────────────────────┐
+                    │  1. Quiero entender qué se hizo          │
+                    │  2. Quiero testear el login              │
+                    │  3. Quiero desplegar a producción        │
+                    │  4. Quiero ver detalles técnicos         │
+                    │  5. Tengo una pregunta específica        │
+                    │  6. Quiero ver el resultado visualmente  │
+                    │  7. Necesito ayuda con algo específico   │
+                    └──────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    OPCIÓN 1: ENTENDER QUÉ SE HIZO                           ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA: ¿Cuál es tu nivel de detalle?                                   │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    A) Resumen ejecutivo (5-10 minutos)
+       ↓
+       📖 Lee: RESUMEN_EJECUTIVO_LOGIN_IMPROVEMENTS.md
+       
+       Obtendrás:
+       ✓ Objetivo logrado
+       ✓ Qué se implementó
+       ✓ Build validation
+       ✓ Cómo proceder (3 opciones)
+       
+       Perfecto para: Managers, stakeholders, decision makers
+
+
+    B) Detalles técnicos (20-30 minutos)
+       ↓
+       📖 Lee: CAMBIOS_LOGIN_FRONTEND_PARTICIPANTS.md
+       
+       Obtendrás:
+       ✓ Estructura de directorios
+       ✓ Archivos creados (fonts, images)
+       ✓ Archivos modificados (código)
+       ✓ Validación del build
+       ✓ Checklist de verificación
+       
+       Perfecto para: Developers, architects
+
+
+    C) Análisis profundo (45-60 minutos)
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md
+       
+       Obtendrás:
+       ✓ Análisis detallado
+       ✓ Diff de código
+       ✓ Definiciones de fuentes
+       ✓ Especificaciones de imágenes
+       ✓ Security review
+       ✓ Performance metrics
+       
+       Perfecto para: Architects, senior developers
+
+
+    D) Comparativa visual (20 minutos)
+       ↓
+       📖 Lee: COMPARATIVA_VISUAL_LOGIN.md
+       
+       Obtendrás:
+       ✓ Antes vs después visual
+       ✓ Desktop, tablet, mobile
+       ✓ Tabla comparativa
+       ✓ Mejoras clave
+       ✓ Impacto visual
+       
+       Perfecto para: Designers, product managers
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ SIGUIENTE PASO                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Después de elegir y leer el documento:
+
+   Si todo está claro:
+   ├─ Si necesitas testear → SALTA A OPCIÓN 2
+   ├─ Si necesitas desplegar → SALTA A OPCIÓN 3
+   └─ Si tienes preguntas → SALTA A OPCIÓN 5
+
+   Si tienes dudas:
+   ├─ Lee el documento de FAQ: INDICE_LOGIN_IMPROVEMENTS.md
+   └─ Busca "Preguntas Frecuentes"
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    OPCIÓN 2: TESTEAR EL LOGIN                               ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA: ¿Cuánto tiempo tienes?                                          │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    A) Testing Rápido (15-30 minutos)
+       ↓
+       PASO 1: Entender qué testear
+       📖 Lee: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md (sección "Quick Test")
+       
+       PASO 2: Configurar entorno
+       ```bash
+       cd frontend-participants
+       npm install
+       npm run dev
+       ```
+       
+       PASO 3: Validar visual
+       • Abre: http://localhost:3000/login
+       • Observa: Se ve profesional?
+       • Prueba: Logo, modal, inputs, botón
+       • Verifica: Responde a pantalla pequeña?
+       
+       PASO 4: Hacer login
+       • DNI: 12345678
+       • Verifica autenticación
+       • Verifica redirección
+       
+       ✓ Listo en 15-30 minutos
+
+
+    B) Testing Completo (1-2 horas)
+       ↓
+       📖 Lee completamente: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md
+       
+       PASO 1: Setup
+       • Instalar dependencias
+       • Ejecutar build: npm run build
+       • Ejecutar en dev
+       
+       PASO 2: Checklist
+       ☐ Visual en desktop
+       ☐ Visual en tablet
+       ☐ Visual en mobile
+       ☐ Funcionamiento login
+       ☐ Errores en consola
+       ☐ Performance
+       ☐ Responsividad
+       
+       PASO 3: Navegadores múltiples
+       ☐ Chrome
+       ☐ Firefox
+       ☐ Safari
+       ☐ Edge
+       
+       PASO 4: Documentar resultados
+       • Screenshot de cada navegador
+       • Notas de problemas (si hay)
+       • Validación general
+       
+       ✓ Listo en 1-2 horas
+
+
+    C) Testing Exhaustivo (4-8 horas)
+       ↓
+       📖 Lee: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md
+       
+       Incluye:
+       ✓ Visual testing (múltiples navegadores y dispositivos)
+       ✓ Functional testing (login, validación, errores)
+       ✓ Performance testing (lighthouse, metrics)
+       ✓ Accessibility testing (WCAG compliance)
+       ✓ Security testing (XSS, injection, CSRF)
+       ✓ Integration testing (con backend)
+       ✓ Edge cases (mobile pequeño, slow networks)
+       
+       ✓ Listo en 4-8 horas
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ SIGUIENTE PASO                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Después de testear:
+
+   Si encontraste problemas:
+   ├─ Busca en: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md → Troubleshooting
+   └─ Si no está → Reporta: [Descripción del problema]
+
+   Si todo está bien:
+   ├─ ¿Necesitas desplegar? → SALTA A OPCIÓN 3
+   ├─ ¿Tienes preguntas? → SALTA A OPCIÓN 5
+   └─ ¿Reportar resultados? → Documenta en: TESTING_RESULTS.txt
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                 OPCIÓN 3: DESPLEGAR A PRODUCCIÓN                            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA: ¿Dónde quieres desplegar?                                       │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    A) Deploy a Staging/Pre-producción
+       ↓
+       📖 Lee: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md (Sección: Staging)
+       
+       PASOS TÍPICOS:
+       1. Preparar staging environment
+       2. Ejecutar: npm run build
+       3. Copiar archivos a staging
+       4. Ejecutar build en staging
+       5. Verificar: http://staging.farmatour5.local/login
+       6. Validaciones post-deploy
+       7. Testing completo en staging
+       8. Obtener sign-off
+       
+       ✓ Listo en 2-4 horas
+
+
+    B) Deploy a Producción
+       ↓
+       📖 Lee completamente: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md
+       
+       ⚠️  IMPORTANTE: Seguir proceso de cambio de tu empresa
+       
+       PASOS TÍPICOS:
+       1. Backup de versión actual
+       2. Ejecutar: npm run build en producción
+       3. Copiar archivos a producción
+       4. Verificar acceso: http://participants.farmatour5.local/login
+       5. Validaciones post-deploy
+       6. Monitoreo 24-48 horas
+       7. Rollback si es necesario
+       
+       ✓ Listo en 1-2 horas (después de staging)
+
+
+    C) Deploy con Docker
+       ↓
+       📖 Lee: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md → Docker section
+       
+       PASOS TÍPICOS:
+       1. Construir imagen: docker build -t frontend-participants:latest .
+       2. Push a registry: docker push registry/frontend-participants:latest
+       3. Actualizar deployment (k8s, docker-compose, etc)
+       4. Verificar acceso
+       5. Monitoreo
+       
+       ✓ Listo en 1-2 horas
+
+
+    D) Deploy con Nginx
+       ↓
+       📖 Lee: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md → Nginx section
+       
+       INCLUYE:
+       ✓ Configuración de Nginx
+       ✓ SSL/TLS setup
+       ✓ Headers de caché
+       ✓ Compresión Gzip
+       ✓ Rate limiting
+       
+       ✓ Listo en 2-4 horas
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ SIGUIENTE PASO                                                             │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Después de desplegar:
+
+   Verificar acceso:
+   ├─ URL funciona?
+   ├─ Imágenes cargan?
+   ├─ Fuentes correctas?
+   └─ Login funciona?
+
+   Si todo bien:
+   ├─ Monitorear 24-48 horas
+   ├─ Celebrar 🎉
+   └─ Documentar lecciones aprendidas
+
+   Si hay problemas:
+   ├─ Consultar: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md → Troubleshooting
+   ├─ Ejecutar rollback si es necesario
+   └─ Contactar: universidadcorporativa@farmaciasfarmatour.com
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    OPCIÓN 4: VER DETALLES TÉCNICOS                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA: ¿Qué aspecto técnico?                                           │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    A) Fuentes Web
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Sección: Fuentes
+       
+       Obtendrás:
+       ✓ Definición de @font-face
+       ✓ Formatos utilizados
+       ✓ Rutas de archivos
+       ✓ Font-display strategy
+       ✓ Compatibilidad de navegadores
+
+
+    B) Imágenes
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Sección: Imágenes
+       
+       Obtendrás:
+       ✓ Especificaciones de cada imagen
+       ✓ Tamaños y formatos
+       ✓ Optimización aplicada
+       ✓ Cómo reemplazar imágenes
+
+
+    C) Componentes React
+       ↓
+       📖 Lee: CAMBIOS_LOGIN_FRONTEND_PARTICIPANTS.md → Sección: Código
+       Luego abre: frontend-participants/src/app/login/page.tsx
+       
+       Obtendrás:
+       ✓ Estructura del componente
+       ✓ Uso de Next.js Image
+       ✓ Responsive design
+       ✓ Manejo de estado
+
+
+    D) CSS y Responsive
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Sección: Estilos
+       Luego abre: frontend-participants/src/app/globals.css
+       
+       Obtendrás:
+       ✓ Definiciones de fuentes
+       ✓ Breakpoints responsivos
+       ✓ Media queries
+       ✓ Tailwind classes
+
+
+    E) Performance
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Sección: Performance
+       
+       Obtendrás:
+       ✓ Lighthouse scores
+       ✓ Bundle size
+       ✓ Load times
+       ✓ Optimizaciones aplicadas
+
+
+    F) Security
+       ↓
+       📖 Lee: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Sección: Security
+       
+       Obtendrás:
+       ✓ Security review
+       ✓ Input validation
+       ✓ XSS protection
+       ✓ CSRF considerations
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                  OPCIÓN 5: TENGO UNA PREGUNTA ESPECÍFICA                    ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PREGUNTA: ¿Tu pregunta está en esta lista?                                │
+└────────────────────────────────────────────────────────────────────────────┘
+
+    ¿Cuánto pesan las fuentes?
+    ├─ Respuesta: 2.06 MB total (20 archivos)
+    └─ Detalles: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md
+
+    ¿Cuánto pesan las imágenes?
+    ├─ Respuesta: 3.53 MB total (6 archivos)
+    └─ Detalles: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md
+
+    ¿Funciona en móvil?
+    ├─ Respuesta: Sí, 100% responsive
+    └─ Ver: COMPARATIVA_VISUAL_LOGIN.md → Mobile section
+
+    ¿Cómo cambio el diseño?
+    ├─ Pasos: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Cómo modificar
+    └─ Código: frontend-participants/src/app/login/page.tsx
+
+    ¿Hay dependencias nuevas?
+    ├─ Respuesta: No, cero dependencias nuevas
+    └─ Detalles: CAMBIOS_LOGIN_FRONTEND_PARTICIPANTS.md
+
+    ¿Cuál es el risk?
+    ├─ Respuesta: Bajo (solo cambios visuales)
+    └─ Análisis: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Risk analysis
+
+    ¿Cuánto toma desplegar?
+    ├─ Respuesta: 1-4 horas (según método)
+    └─ Detalles: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md
+
+    ¿Cómo funciona la autenticación?
+    ├─ Respuesta: Lógica preservada, sin cambios
+    └─ Detalles: CAMBIOS_LOGIN_FRONTEND_PARTICIPANTS.md
+
+    ¿Cuál es el email de soporte?
+    ├─ Respuesta: universidadcorporativa@farmaciasfarmatour.com
+    └─ Contexto: En el login rediseñado
+
+    ¿Puedo revertir si hay problemas?
+    ├─ Respuesta: Sí, simple git revert
+    └─ Pasos: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md → Rollback
+
+    ¿Mi pregunta no está en la lista?
+    ├─ Paso 1: Busca en INDICE_LOGIN_IMPROVEMENTS.md → FAQ
+    ├─ Paso 2: Busca en documento específico
+    └─ Paso 3: Contacta o abre issue
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              OPCIÓN 6: VER EL RESULTADO VISUALMENTE                         ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN A: Ver en navegador (5 minutos)                                    │
+└────────────────────────────────────────────────────────────────────────────┘
+
+```bash
+cd /home/david/Escritorio/server/cuborojo-farmatour5/frontend-participants
+npm run dev
+```
+
+Luego abre: http://localhost:3000/login
+
+✓ Verás el login rediseñado en tu máquina
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN B: Ver en screenshots (2 minutos)                                  │
+└────────────────────────────────────────────────────────────────────────────┘
+
+📖 Lee: COMPARATIVA_VISUAL_LOGIN.md
+
+Contiene:
+✓ Before/after visual ASCII
+✓ Desktop, tablet, mobile
+✓ Tabla comparativa
+✓ Paleta de colores
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ OPCIÓN C: Producción simulada (15 minutos)                                │
+└────────────────────────────────────────────────────────────────────────────┘
+
+```bash
+cd /home/david/Escritorio/server/cuborojo-farmatour5/frontend-participants
+npm run build
+npm start  # o usar serve -s .next
+```
+
+Luego abre: http://localhost:3000/login
+
+✓ Verás como se vería en producción
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║              OPCIÓN 7: NECESITO AYUDA CON ALGO ESPECÍFICO                   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA: No puedo desplegar                                              │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Checklist:
+☐ npm install completó sin errores?
+☐ npm run build completó sin errores?
+☐ Tienes Node.js 18+?
+☐ Tienes permisos en el servidor?
+☐ Nginx/Apache configurado?
+☐ Carpeta public/ existe?
+
+📖 Consulta: DESPLIEGUE_LOGIN_FRONTEND_PARTICIPANTS.md → Troubleshooting
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA: El login no se ve bien en móvil                                 │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Checklist:
+☐ Viewport meta tag presente?
+☐ Tailwind build completó?
+☐ Imágenes cargan?
+☐ Fuentes cargan?
+☐ Cache limpio (Ctrl+F5)?
+
+📖 Consulta: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md → Mobile testing
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA: Las fuentes no cargan                                           │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Checklist:
+☐ public/fonts/ existe con 20 archivos?
+☐ globals.css tiene @font-face definitions?
+☐ Rutas en @font-face son correctas?
+☐ Build completó sin errores?
+☐ DevTools Network muestra archivos?
+
+📖 Consulta: RESUMEN_TECNICO_LOGIN_IMPROVEMENTS.md → Fonts section
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA: Las imágenes no cargan                                          │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Checklist:
+☐ public/images/ existe con 6 archivos?
+☐ Nombres coinciden en código?
+☐ Build completó sin errores?
+☐ Cache limpio?
+☐ Permisos de archivo correctos?
+
+📖 Consulta: TESTING_LOGIN_FRONTEND_PARTICIPANTS.md → Image loading issues
+
+
+┌────────────────────────────────────────────────────────────────────────────┐
+│ PROBLEMA: Build falla con errores                                         │
+└────────────────────────────────────────────────────────────────────────────┘
+
+PASOS:
+1. Limpia: rm -rf .next node_modules
+2. Reinstala: npm install
+3. Intenta: npm run build
+4. Si sigue fallando, verifica:
+   ☐ Node version: node --version (debe ser 18+)
+   ☐ npm version: npm --version
+   ☐ Permissions: ls -la node_modules
+
+📖 Consulta: CAMBIOS_LOGIN_FRONTEND_PARTICIPANTS.md → Build validation
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                           RESUMEN FINAL                                     ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Has completado exitosamente:
+
+  ✅ Rediseño del login (frontend-participants)
+  ✅ Integración de fuentes personalizadas (Blinker)
+  ✅ Integración de imágenes profesionales
+  ✅ Validación de build
+  ✅ Documentación completa (7 documentos)
+  ✅ Testing y deployment ready
+
+Ahora puedes:
+
+  1️⃣  Entender qué se hizo (30 min)
+  2️⃣  Testear en navegadores (1-2 horas)
+  3️⃣  Desplegar a staging (2-4 horas)
+  4️⃣  Desplegar a producción (1-2 horas)
+
+Status: 🚀 LISTO PARA PRODUCCIÓN
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Documento: ARBOL_DECISIONES_LOGIN_IMPROVEMENTS.txt
+Creado: 2026-09-18
+Status: ✅ COMPLETADO

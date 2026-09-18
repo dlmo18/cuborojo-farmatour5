@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import OptionsMenu from '@/components/OptionsMenu';
@@ -126,7 +127,7 @@ export default function LevelMissionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white">Cargando nivel...</p>
@@ -137,12 +138,13 @@ export default function LevelMissionsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
-        <div className="max-w-md mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+        <div className="max-w-md mx-auto pt-24">
           <p className="text-white text-center mb-4">❌ {error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 w-full"
+            className="mt-4 bg-primary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700 w-full"
+            style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -153,12 +155,13 @@ export default function LevelMissionsPage() {
 
   if (!level) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
-        <div className="max-w-md mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+        <div className="max-w-md mx-auto pt-24">
           <p className="text-white text-center">Nivel no encontrado</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100"
+            className="mt-4 bg-primary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700"
+            style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -168,40 +171,54 @@ export default function LevelMissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="text-white text-4xl hover:opacity-80 transition"
-            >
-              ←
+    <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+      <div className="max-w-md mx-auto">
+
+        {/* Header simple (sin clase .header, solo en mundos) */}
+        <div className="fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
+          <div className="max-w-md mx-auto flex px-4 justify-between items-center">
+            <button onClick={() => router.back()}>
+              <Image
+                src="/images/btn-back.png"
+                alt="Atrás"
+                width={50}
+                height={50}
+                className="w-full h-auto"
+                priority
+              />
             </button>
-            <div>
-              <p className="text-white text-sm font-light mb-1">{level.world.name}</p>
-              <h1 className="text-4xl font-bold text-white">{level.name}</h1>
-            </div>
+            <h1 className="text-3xl font-bold text-white text-center flex-1" style={{ fontFamily: "'Blinker', sans-serif" }}>
+              {level.name}
+            </h1>
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl">
+              <Image
+                src="/images/btn-menu.png"
+                alt="Menú"
+                width={50}
+                height={50}
+                className="w-full h-auto"
+                priority
+              />
+            </button>
           </div>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="bg-white text-purple-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
-          >
-            ⚙️
-          </button>
         </div>
 
         {/* Menú de opciones */}
         <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
-        {/* Descripción del nivel */}
-        {level.description && (
-          <p className="text-white text-center mb-8">{level.description}</p>
-        )}
+        {/* Espacio para el header fijo */}
+        <div className="h-24" />
+
+        {/* Información y descripción del nivel */}
+        <div className="text-center mb-8">
+          <p className="text-white text-sm font-light mb-2">{level.world.name}</p>
+          {level.description && (
+            <p className="text-white/80">{level.description}</p>
+          )}
+        </div>
 
         {/* Lista de misiones */}
-        <div className="space-y-4">
+        <div className="space-y-4 mt-8">
           {missions.length === 0 ? (
             <div className="bg-white rounded-lg shadow-lg p-6 text-center">
               <p className="text-gray-600">No hay misiones en este nivel</p>
@@ -229,10 +246,10 @@ export default function LevelMissionsPage() {
             })
           )}
         </div>
-      </div>
 
-      {/* Barra inferior con estrellas del mundo */}
-      <WorldStarsBar worldStars={worldStars} />
+        {/* Barra inferior con estrellas del mundo */}
+        <WorldStarsBar worldStars={worldStars} />
+      </div>
     </div>
   );
 }

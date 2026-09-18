@@ -2,6 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Definición de fuentes personalizadas */
+@font-face {
+  font-family: 'Blinker';
+  src: url('/fonts/Blinker-Regular.eot');
+  src: url('/fonts/Blinker-Regular.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/Blinker-Regular.woff2') format('woff2'),
+    url('/fonts/Blinker-Regular.woff') format('woff'),
+    url('/fonts/Blinker-Regular.ttf') format('truetype'),
+    url('/fonts/Blinker-Regular.svg#Blinker-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Blinker';
+  src: url('/fonts/Blinker-Bold.eot');
+  src: url('/fonts/Blinker-Bold.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/Blinker-Bold.woff2') format('woff2'),
+    url('/fonts/Blinker-Bold.woff') format('woff'),
+    url('/fonts/Blinker-Bold.ttf') format('truetype'),
+    url('/fonts/Blinker-Bold.svg#Blinker-Bold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Blinker';
+  src: url('/fonts/Blinker-ExtraBold.eot');
+  src: url('/fonts/Blinker-ExtraBold.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/Blinker-ExtraBold.woff2') format('woff2'),
+    url('/fonts/Blinker-ExtraBold.woff') format('woff'),
+    url('/fonts/Blinker-ExtraBold.ttf') format('truetype'),
+    url('/fonts/Blinker-ExtraBold.svg#Blinker-ExtraBold') format('svg');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bowlby One SC';
+  src: url('/fonts/BowlbyOneSC-Regular.eot');
+  src: url('/fonts/BowlbyOneSC-Regular.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/BowlbyOneSC-Regular.woff2') format('woff2'),
+    url('/fonts/BowlbyOneSC-Regular.woff') format('woff'),
+    url('/fonts/BowlbyOneSC-Regular.ttf') format('truetype'),
+    url('/fonts/BowlbyOneSC-Regular.svg#BowlbyOneSC-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -14,6 +67,14 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
+}
+
+.font-blinker {
+  font-family: 'Blinker', sans-serif;
+}
+
+.font-bowlby {
+  font-family: 'Bowlby One SC', sans-serif;
 }
 
 body {
@@ -30,4 +91,49 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.login-input {
+  color: #fff;
+
+  &::placeholder {
+    color: #fff;
+    opacity: .8;
+  }
+}
+
+
+.world-page {
+  background: top center repeat;
+  background-image: url('/images/world-bg.jpg');
+
+}
+
+.bottom-stats {
+  background: bottom center no-repeat;
+  background-size: auto 300px;
+  /*background-image: url('/images/world-clouds.png');*/
+}
+
+.bottom-stats .panel-block {
+  background: bottom center no-repeat;
+  background-image: url('/images/panel-bottom.png');
+  background-size: contain;
+  height: 180px;
+}
+
+.bottom-stars {
+  background: bottom center no-repeat;
+  background-size: contain;
+  width: 160px;
+  height: 160px;
+  background-image: url('/images/icon-score.png');
+}
+
+.bottom-place {
+  background: bottom center no-repeat;
+  background-size: contain;
+  width: 80px;
+  height: 80px;
+  background-image: url('/images/icon-place.png');
 }

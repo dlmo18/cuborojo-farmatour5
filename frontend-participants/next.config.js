@@ -14,6 +14,24 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@radix-ui/react-dialog'],
   },
+  // Permitir imágenes del API backend
+  images: {
+    domains: [
+      'localhost',
+      '127.0.0.1',
+      process.env.NEXT_PUBLIC_API_URL?.replace('http://', '').replace('https://', '').split(':')[0] || 'localhost',
+    ].filter(Boolean),
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
 }
 
 module.exports = nextConfig

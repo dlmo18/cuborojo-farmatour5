@@ -31,14 +31,14 @@ export default function MissionCard({
       className={`w-full rounded-lg shadow-lg p-6 transition transform ${
         isUnlocked
           ? 'bg-white hover:shadow-2xl hover:scale-105 cursor-pointer'
-          : 'bg-gray-300 opacity-50 cursor-not-allowed'
+          : 'bg-secondary-200 opacity-50 cursor-not-allowed'
       }`}
     >
       <div className="flex items-center justify-between">
         <div className="text-left flex-1">
-          <h3 className="text-xl font-bold text-purple-600 mb-2">{mission.name}</h3>
+          <h3 className="text-xl font-bold text-primary-600 mb-2" style={{ fontFamily: "'Blinker', sans-serif" }}>{mission.name}</h3>
           {mission.description && (
-            <p className="text-gray-600 text-sm mb-3">{mission.description}</p>
+            <p className="text-gray-700 text-sm mb-3">{mission.description}</p>
           )}
           {/* Estrellas */}
           <div className="flex gap-2 rounded bg-black max-w-xs">
@@ -56,10 +56,10 @@ export default function MissionCard({
             <div className="text-green-600 font-bold text-sm mb-2">✓ Completada</div>
           )}
           {!isUnlocked && (
-            <div className="text-gray-600 font-bold text-sm">🔒 Bloqueada</div>
+            <div className="text-gray-700 font-bold text-sm">🔒 Bloqueada</div>
           )}
           {isUnlocked && !isCompleted && (
-            <div className="text-purple-600 font-bold text-sm">▶ Jugar</div>
+            <div className="text-primary-600 font-bold text-sm" style={{ fontFamily: "'Blinker', sans-serif" }}>▶ Jugar</div>
           )}
         </div>
       </div>
