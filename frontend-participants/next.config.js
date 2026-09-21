@@ -16,6 +16,8 @@ const nextConfig = {
   },
   // Permitir imágenes del API backend
   images: {
+    // Desactivar optimización de imágenes en producción para evitar problemas con _next/image
+    unoptimized: process.env.NODE_ENV === 'production',
     domains: [
       'localhost',
       '127.0.0.1',

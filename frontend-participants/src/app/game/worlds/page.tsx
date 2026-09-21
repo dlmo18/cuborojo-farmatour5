@@ -181,43 +181,45 @@ export default function WorldsPage() {
       <div className="max-w-md mx-auto">
 
         {/* Header con botón de menú */}
-        <div className="header fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
-            <div className="max-w-md mx-auto flex px-4 justify-between items-center ">
-              <button>
-                <Image
-                    src="/images/btn-back.png"
-                    alt="Atras"
-                    width={50}
-                    height={50}
-                    className="w-full h-auto"
+        {!selectedWorld && (
+          <div className="header fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
+              <div className="max-w-md mx-auto flex px-4 justify-between items-center ">
+                <button>
+                  <Image
+                      src="/images/btn-back.png"
+                      alt="Atras"
+                      width={50}
+                      height={50}
+                      className="w-full h-auto"
+                      priority
+                    />
+                </button>
+                <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  <Image
+                    src="/images/logo-header.png"
+                    alt="Farmatour 5"
+                    width={160}
+                    height={80}
+                    className="header-logo object-contain"
                     priority
                   />
-              </button>
-              <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                <Image
-                  src="/images/logo-header.png"
-                  alt="Farmatour 5"
-                  width={160}
-                  height={80}
-                  className="header-logo object-contain"
-                  priority
-                />
-              </h1>
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
-              >
-                <Image
-                    src="/images/btn-menu.png"
-                    alt="Menú"
-                    width={50}
-                    height={50}
-                    className="w-full h-auto"
-                    priority
-                  />
-              </button>
-            </div>
-        </div>
+                </h1>
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
+                >
+                  <Image
+                      src="/images/btn-menu.png"
+                      alt="Menú"
+                      width={50}
+                      height={50}
+                      className="w-full h-auto"
+                      priority
+                    />
+                </button>
+              </div>
+          </div>
+        )}
         
 
         {/* Menú de opciones */}
@@ -355,7 +357,9 @@ export default function WorldsPage() {
       </div>
 
       {/* BottomStats siempre visible */}
-      <BottomStats />
+      {!selectedWorld && (
+        <BottomStats />
+      )}
     </div>
   );
 }
