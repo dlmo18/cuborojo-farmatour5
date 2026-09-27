@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
@@ -114,8 +115,8 @@ export default function UsersPage() {
         <span
           className={`px-2 py-1 rounded-full text-xs font-semibold ${
             value === 'manager'
-              ? 'bg-purple-100 text-purple-800'
-              : 'bg-blue-100 text-blue-800'
+              ? 'bg-secondary-100 text-secondary-800'
+              : 'bg-primary-100 text-primary-800'
           }`}
         >
           {value === 'manager' ? 'Administrador' : 'Reportero'}
@@ -128,7 +129,7 @@ export default function UsersPage() {
       render: (value) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'
           }`}
         >
           {value ? 'Activo' : 'Inactivo'}
@@ -140,12 +141,12 @@ export default function UsersPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">👤 Usuarios del Sistema</h1>
+        <h1 className="text-4xl font-bold text-secondary-800">👤 Usuarios del Sistema</h1>
         <button
           onClick={handleCreate}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
         >
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nuevo Usuario
         </button>
       </div>
@@ -184,7 +185,7 @@ export default function UsersPage() {
       {/* Modal de crear/editar */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-lg max-w-xl w-full p-6">
             <h2 className="text-2xl font-bold mb-6 text-black">
               {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
             </h2>
@@ -290,7 +291,7 @@ export default function UsersPage() {
               )}
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">
                   {error}
                 </div>
               )}
@@ -299,7 +300,7 @@ export default function UsersPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50"
                 >
                   Cancelar
                 </button>

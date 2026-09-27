@@ -45,8 +45,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return null;
   }
 
-  const buttonClass = 'px-2 py-1 mx-1 rounded border border-gray-300 bg-white hover:bg-gray-100 text-sm font-medium transition cursor-pointer';
-  const activeButtonClass = 'px-2 py-1 mx-1 rounded border border-gray-300 bg-primary-500 text-white text-sm font-medium transition cursor-pointer';
+  const buttonClass = 'px-2 py-1 mx-1 rounded border border-surface-300 bg-white hover:bg-surface-50 text-sm font-medium transition cursor-pointer';
+  const activeButtonClass = 'px-2 py-1 mx-1 rounded border border-surface-300 bg-primary-500 text-white text-sm font-medium transition cursor-pointer';
 
   const handleButtonClick = (e: React.MouseEvent, callback: () => void) => {
     e.preventDefault();
@@ -55,11 +55,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   };
 
   return (
-    <div className="border border-gray-300 rounded-md overflow-hidden bg-white">
+    <div className="border border-surface-300 rounded-md overflow-hidden bg-white">
       {/* Toolbar */}
-      <div className="bg-gray-50 border-b border-gray-300 p-3 flex flex-wrap gap-1 items-center">
+      <div className="bg-surface-50 border-b border-surface-300 p-3 flex flex-wrap gap-1 items-center">
         {/* Encabezados */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <button
             type="button"
             onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())}
@@ -87,7 +87,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
 
         {/* Estilos de texto */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <button
             type="button"
             onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBold().run())}
@@ -115,7 +115,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
 
         {/* Color de texto */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <input
             type="color"
             onMouseDown={(e) => e.stopPropagation()}
@@ -124,15 +124,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               e.stopPropagation();
               editor.chain().focus().setColor(e.target.value).run();
             }}
-            className="w-8 h-8 cursor-pointer rounded border border-gray-300"
+            className="w-8 h-8 cursor-pointer rounded border border-surface-300"
             title="Color de texto"
             defaultValue="#000000"
           />
-          <span className="text-xs text-gray-600">Color</span>
+          <span className="text-xs text-surface-600">Color</span>
         </div>
 
         {/* Listas */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <button
             type="button"
             onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleBulletList().run())}
@@ -152,7 +152,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
 
         {/* Bloques */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <button
             type="button"
             onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().toggleCodeBlock().run())}
@@ -172,7 +172,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
 
         {/* Alineación */}
-        <div className="flex items-center gap-1 border-r border-gray-200 pr-2">
+        <div className="flex items-center gap-1 border-r border-surface-200 pr-2">
           <button
             type="button"
             onMouseDown={(e) => handleButtonClick(e, () => editor.chain().focus().clearNodes().run())}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
@@ -280,7 +281,7 @@ export default function FinalLevelContentPage() {
       label: 'Estado',
       width: '100px',
       render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'}`}>
           {value ? 'Activo' : 'Inactivo'}
         </span>
       )
@@ -295,7 +296,7 @@ export default function FinalLevelContentPage() {
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">Cargando...</div>
+        <div className="text-surface-600">Cargando...</div>
       </div>
     );
   }
@@ -306,35 +307,35 @@ export default function FinalLevelContentPage() {
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={() => router.push(`/mundos/${world?.id}/niveles`)}
-            className="text-gray-600 hover:text-gray-900 text-2xl"
+            className="text-surface-600 hover:text-surface-900 text-2xl"
           >
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800">🎬 Nivel Final</h1>
+            <h1 className="text-4xl font-bold text-surface-800">🎜 Nivel Final</h1>
             {world && level && (
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-surface-600 mt-2">
                 {world.name} / {level.name}
               </p>
             )}
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
           </div>
         </div>
-        <button 
+        <button
           onClick={handleCreate}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
         >
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nueva Pregunta
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-surface-200">
           <SearchBar 
             value={searchTerm} 
             onChange={(term) => { setSearchTerm(term); setCurrentPage(1); }} 
@@ -366,7 +367,7 @@ export default function FinalLevelContentPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Contenido */}
               <div>
-                <label className="block text-lg font-semibold text-gray-700 mb-3">
+                <label className="block text-lg font-semibold text-surface-700 mb-3">
                   Contenido de la Pregunta *
                 </label>
                 <textarea
@@ -374,7 +375,7 @@ export default function FinalLevelContentPage() {
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 border border-surface-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
@@ -442,7 +443,7 @@ export default function FinalLevelContentPage() {
                     min="1" 
                     value={formData.orderNum} 
                     onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                  className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -456,7 +457,7 @@ export default function FinalLevelContentPage() {
                   <button
                     type="button"
                     onClick={handleAddAnswer}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    className="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
                   >
                     + Agregar Opción
                   </button>
@@ -464,14 +465,14 @@ export default function FinalLevelContentPage() {
 
                 <div className="space-y-4">
                   {currentAnswers.map((answer, idx) => (
-                    <div key={answer.tempId} className="p-4 border border-gray-300 rounded-lg space-y-3">
+                    <div key={answer.tempId} className="p-4 border border-surface-300 rounded-lg space-y-3">
                       <div className="flex gap-2">
                         <textarea
                           value={answer.text}
                           onChange={(e) => handleUpdateAnswer(answer.tempId, 'text', e.target.value)}
                           placeholder="Texto de la opción"
                           rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="flex-1 px-3 py-2 border border-surface-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                         <div className="flex flex-col gap-2">
                           <ToggleSwitch
@@ -507,13 +508,13 @@ export default function FinalLevelContentPage() {
                 </div>
               </div>
 
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
 
-              <div className="flex gap-3 pt-6 border-t border-gray-200">
+              <div className="flex gap-3 pt-6 border-t border-surface-200">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50"
                 >
                   Cancelar
                 </button>

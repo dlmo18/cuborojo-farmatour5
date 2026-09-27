@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { MdPublic, MdAdd, MdFileDownload } from 'react-icons/md';
 import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import ImageSelector from '@/app/components/ImageSelector';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
 import MediaPreviewModal from '@/app/components/MediaPreviewModal';
+import ContentTreeModal from '@/app/components/ContentTreeModal';
 import { worldsApi, levelsApi, mediaApi, World, CreateWorldDto, UpdateWorldDto, Level, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
+import ProgressModal, { ProgressState } from '@/app/components/ProgressModal';
+import { exportService, ExportProgress } from '@/app/services/exportService';
 
 export default function WorldsPage() {
   const router = useRouter();
@@ -27,6 +31,55 @@ export default function WorldsPage() {
   const [error, setError] = useState('');
   const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [exportProgress, setExportProgress] = useState<ProgressState | null>(null);
+  const [exportResult, setExportResult] = useState<any>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showTreeModal, setShowTreeModal] = useState(false);
+  const [selectedWorldForTree, setSelectedWorldForTree] = useState<World | null>(null);
+
+  const handleExportContent = async (world: World) => {
+    try {
+      setExporting(world.id);
+      setShowExportModal(true);
+      setExportProgress(null);
+      setExportResult(null);
+
+      const onProgress = (progress: ExportProgress) => {
+        setExportProgress({
+          stage: progress.stage,
+          current: progress.current,
+          total: progress.total,
+          percentage: progress.percentage,
+        });
+      };
+
+      await exportService.exportWorldContent(world.id, world.name, onProgress);
+
+      setExportResult({
+        success: true,
+        message: '✅ Exportación completada exitosamente',
+        details: {
+          'Mundo exportado': world.name,
+          'Fecha de exportación': new Date().toLocaleString('es-ES'),
+        },
+      });
+    } catch (err: any) {
+      setExportResult({
+        success: false,
+        message: 'Error al exportar: ' + (err.message || 'Error desconocido'),
+      });
+      console.error('Export error:', err);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleCloseExportModal = () => {
+    setShowExportModal(false);
+    setExportProgress(null);
+    setExportResult(null);
+  };
 
   const handleOpenImagePreview = async (imageId?: string) => {
     if (!imageId) return;
@@ -101,6 +154,11 @@ export default function WorldsPage() {
     router.push(`/mundos/${world.id}/niveles`);
   };
 
+  const handleViewTree = (world: World) => {
+    setSelectedWorldForTree(world);
+    setShowTreeModal(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -150,48 +208,62 @@ export default function WorldsPage() {
       label: 'Descripción',
       render: (value, item) => (
         <div className='whitespace-break-spaces'>
-          <div className="text-gray-600">{item.description}</div>
+          <div className="text-surface-600">{item.description}</div>
         </div>
       )
     },
     { 
       key: 'levelCount', 
       label: 'Niveles',
-      width: '100px',
       render: (value, item) => (
         <button
           onClick={() => handleViewLevels(item)}
-          className="text-blue-600 hover:text-blue-900 font-semibold hover:underline"
+          className="text-primary-600 hover:text-primary-900 font-semibold hover:underline"
         >
           {value || 0}
         </button>
       )
     },
-    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
+    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
   ];
 
   const additionalOptions: AdditionalOption<World & { levelCount?: number }>[] = [
     {
+      label: 'Árbol de Contenidos',
+      icon: 'account_tree',
+      class: 'bg-green-100 text-green-700 hover:bg-green-200',
+      title: 'Ver estructura jerárquica del mundo',
+      callback: (world) => handleViewTree(world),
+    },
+    {
       label: 'Ver Niveles',
       icon: 'layers',
-      class: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      class: 'bg-primary-100 text-primary-700 hover:bg-primary-200',
       title: 'Ver todos los niveles de este mundo',
       callback: (world) => handleViewLevels(world),
+    },
+    {
+      label: 'Exportar contenido',
+      icon: 'file_download',
+      class: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      title: 'Descargar contenido en formato Excel',
+      callback: (world) => handleExportContent(world),
+      condition: (world) => exporting !== world.id,
     },
   ];
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800"><span style={{fontSize: '2rem', width: '2rem'}} className="material-icons">public</span> Mundos</h1>
+        <h1 className="text-4xl font-bold text-secondary-800">🌍 Mundos</h1>
         <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nuevo Mundo
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-surface-200">
           <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar mundos..." />
         </div>
         <DataTable columns={columns} data={worlds} loading={loading} onEdit={handleEdit} onDelete={handleDelete} additionalOptions={additionalOptions} />
@@ -204,16 +276,16 @@ export default function WorldsPage() {
             <h2 className="text-2xl text-black font-bold mb-6">{editingWorld ? 'Editar Mundo' : 'Nuevo Mundo'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                <input type="text" required value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Nombre *</label>
+                <input type="text" required value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Descripción</label>
+                <textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Orden *</label>
-                <input type="number" required min="1" value={formData.orderNum || 1} onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Orden *</label>
+                <input type="number" required min="1" value={formData.orderNum || 1} onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
               </div>
               <div>
                 <ImageSelector
@@ -233,9 +305,9 @@ export default function WorldsPage() {
                   />
                 </div>
               )}
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-secondary-700 hover:bg-surface-50">Cancelar</button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">{editingWorld ? 'Actualizar' : 'Crear'}</button>
               </div>
             </form>
@@ -250,11 +322,25 @@ export default function WorldsPage() {
           onClose={() => setShowPreview(false)}
         />
       )}
+
+      <ProgressModal
+        isOpen={showExportModal}
+        progress={exportProgress}
+        result={exportResult}
+        onClose={handleCloseExportModal}
+        title="Exportar Contenido del Mundo"
+      />
+
+      {selectedWorldForTree && (
+        <ContentTreeModal
+          isOpen={showTreeModal}
+          onClose={() => {
+            setShowTreeModal(false);
+            setSelectedWorldForTree(null);
+          }}
+          worldId={selectedWorldForTree.id}
+        />
+      )}
     </div>
   );
 }
-
-/*
-
-
-*/

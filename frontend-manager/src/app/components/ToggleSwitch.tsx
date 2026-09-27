@@ -24,8 +24,8 @@ export default function ToggleSwitch({
         disabled={disabled}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
           checked
-            ? 'bg-green-600 hover:bg-green-700'
-            : 'bg-gray-300 hover:bg-gray-400'
+            ? 'bg-primary-600 hover:bg-primary-700'
+            : 'bg-surface-300 hover:bg-surface-400'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span
@@ -38,7 +38,7 @@ export default function ToggleSwitch({
         <label
           htmlFor={id}
           className={`text-sm font-medium ${
-            disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-900 cursor-pointer'
+            disabled ? 'text-surface-400 cursor-not-allowed' : 'text-secondary-900 cursor-pointer'
           }`}
         >
           {label}

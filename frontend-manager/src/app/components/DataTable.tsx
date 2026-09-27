@@ -1,3 +1,18 @@
+'use client';
+
+import { 
+  MdVisibility, 
+  MdEdit, 
+  MdDelete,
+  MdLayers,
+  MdAssignment,
+  MdAccountTree,
+  MdFolderOpen,
+  MdQuiz,
+  MdExtension,
+  MdFileDownload,
+} from 'react-icons/md';
+
 export interface Column<T> {
   key: keyof T | string;
   label: string;
@@ -27,6 +42,17 @@ export interface DataTableProps<T> {
   idKey?: keyof T;
 }
 
+// Mapeo de nombres de iconos Material Design a componentes React Icons
+const iconMap: Record<string, React.ComponentType<{ size: number }>> = {
+  'layers': MdLayers,
+  'assignment': MdAssignment,
+  'account_tree': MdAccountTree,
+  'folder_open': MdFolderOpen,
+  'quiz': MdQuiz,
+  'automation': MdExtension,
+  'file_download': MdFileDownload,
+};
+
 export default function DataTable<T extends Record<string, any>>({
   columns,
   data,
@@ -48,7 +74,7 @@ export default function DataTable<T extends Record<string, any>>({
 
   if (data.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-surface-500">
         <p className="text-lg">{emptyMessage}</p>
       </div>
     );
@@ -58,38 +84,38 @@ export default function DataTable<T extends Record<string, any>>({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-surface-200">
+        <thead className="bg-surface-50">
           <tr>
             {hasActions && (
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="col-actions px-6 py-3 text-right text-xs font-medium text-surface-500 uppercase tracking-wider" style={{ width: 'auto' }}>
                 Acciones
               </th>
             )}
             {columns.map((column, idx) => (
               <th
                 key={idx}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                style={{ width: column.width }}
+                className="px-6 py-3 text-left text-xs font-medium text-surface-500 uppercase tracking-wider"
+                style={{ width: column.width }} 
               >
                 {column.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-surface-200">
           {data.map((item, rowIdx) => (
-            <tr key={item[idKey] || rowIdx} className="hover:bg-gray-50">
+            <tr key={item[idKey] || rowIdx} className="hover:bg-surface-50">
 
               {hasActions && (
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2" style={{ width: 'auto' }}>
                   {onView && (
                     <button
                       onClick={() => onView(item)}
-                      className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                      className="text-primary-600 hover:text-primary-900 inline-flex items-center"
                       title="Ver"
                     >
-                      <span className="material-icons text-lg" style={{ fontSize: '20px' }}>visibility</span>
+                      <MdVisibility size={20} />
                     </button>
                   )}
                   {onEdit && (
@@ -98,16 +124,16 @@ export default function DataTable<T extends Record<string, any>>({
                       className="text-primary-600 hover:text-primary-900 inline-flex items-center"
                       title="Editar"
                     >
-                      <span className="material-icons text-lg" style={{ fontSize: '20px' }}>edit</span>
+                      <MdEdit size={20} />
                     </button>
                   )}
                   {onDelete && (
                     <button
                       onClick={() => onDelete(item)}
-                      className="text-red-600 hover:text-red-900 inline-flex items-center"
+                      className="text-accent-600 hover:text-accent-900 inline-flex items-center"
                       title="Eliminar"
                     >
-                      <span className="material-icons text-lg" style={{ fontSize: '20px' }}>delete</span>
+                      <MdDelete size={20} />
                     </button>
                   )}
                   {additionalOptions && additionalOptions.map((option, optIdx) => {
@@ -115,22 +141,22 @@ export default function DataTable<T extends Record<string, any>>({
                     const shouldShow = option.condition ? option.condition(item) : true;
                     
                     if (!shouldShow) return null;
+
+                    // Obtener el icono de React Icons desde el mapeo
+                    const iconName = option.icon || 'automation';
+                    const IconComponent = iconMap[iconName];
                     
                     return (
                       <button
                         key={optIdx}
                         onClick={() => option.callback(item)}
-                        className={`${option.class} px-2 py-1 rounded text-xs font-semibold inline-flex items-center hover:shadow-sm`}
+                        className={`${option.class} px-2 py-1 rounded text-xs font-semibold inline-flex items-center gap-1 hover:shadow-sm`}
                         title={option.title || option.label}
                       >
-                        {option.icon ? (
-                          <span className="material-icons" style={{ fontSize: '18px' }}>
-                            {option.icon}
-                          </span>
+                        {IconComponent ? (
+                          <IconComponent size={18} />
                         ) : (
-                          <span className="material-icons" style={{ fontSize: '18px' }}>
-                            automation
-                          </span>
+                          <MdExtension size={18} />
                         )}
                       </button>
                     );
@@ -143,7 +169,7 @@ export default function DataTable<T extends Record<string, any>>({
                   : item[column.key as keyof T];
 
                 return (
-                  <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td key={colIdx} className="px-6 py-4 whitespace-nowrap text-sm text-secondary-900" style={{ width: column.width }}>
                     {column.render ? column.render(value, item) : value}
                   </td>
                 );

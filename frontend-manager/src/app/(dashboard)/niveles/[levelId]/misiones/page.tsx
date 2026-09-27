@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
@@ -269,26 +270,26 @@ export default function MissionsPage() {
       label: 'Preguntas',
       width: '100px',
       render: (value) => (
-        <span className="text-blue-600 font-semibold">
+        <span className="text-primary-600 font-semibold">
           {value || 0}
         </span>
       )
     },
-    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
+    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
   ];
 
   const additionalOptions: AdditionalOption<Mission & { questionCount?: number; itemCount?: number; levelData?: Level; worldData?: World }>[] = [
     {
       label: 'Gestionar Contenido',
       icon: 'folder_open',
-      class: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
+      class: 'bg-accent-100 text-accent-700 hover:bg-accent-200',
       title: 'Gestionar items de contenido',
       callback: (mission) => handleManageContent(mission, new MouseEvent('click') as any),
     },
     {
       label: 'Ver Preguntas',
       icon: 'quiz',
-      class: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      class: 'bg-primary-100 text-primary-700 hover:bg-primary-200',
       title: 'Ver todas las preguntas de esta misión',
       callback: (mission) => handleCreateQuestion(mission, new MouseEvent('click') as any),
     },
@@ -316,9 +317,9 @@ export default function MissionsPage() {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800">🎯 Misiones</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Misiones</h1>
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
@@ -342,7 +343,7 @@ export default function MissionsPage() {
           </div>
         </div>
         <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nueva Misión
         </button>
       </div>
@@ -357,7 +358,7 @@ export default function MissionsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white rounded-lg max-w-xl w-full p-6">
             <h2 className="text-2xl font-bold mb-6 text-black">{editingMission ? 'Editar Misión' : 'Nueva Misión'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -388,9 +389,9 @@ export default function MissionsPage() {
                   label="Misión activa"
                 />
               )}
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50">Cancelar</button>
                 <button type="submit" className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">{editingMission ? 'Actualizar' : 'Crear'}</button>
               </div>
             </form>

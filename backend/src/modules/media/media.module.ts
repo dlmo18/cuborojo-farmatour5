@@ -12,7 +12,7 @@ import { MediaItem } from './media.entity';
 
 const fileFilter = (req, file, cb) => {
   const allowedMimes = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
     'video/mp4', 'video/webm', 'video/quicktime',
     'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg',
     'application/pdf', 'application/msword', 
@@ -24,6 +24,35 @@ const fileFilter = (req, file, cb) => {
     'text/plain',
     'application/zip', 'application/x-rar-compressed',
   ];
+  
+  // Si el MIME type está vacío o no reconocido, intentar detectar por extensión
+  if (!file.mimetype || file.mimetype === 'application/octet-stream') {
+    const ext = file.originalname.toLowerCase().split('.').pop() || '';
+    const extensionMap: { [key: string]: string } = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+      'svg': 'image/svg+xml',
+      'pdf': 'application/pdf',
+      'mp4': 'video/mp4',
+      'webm': 'video/webm',
+      'mov': 'video/quicktime',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'ogg': 'audio/ogg',
+      'zip': 'application/zip',
+      'txt': 'text/plain',
+    };
+    const detectedMime = extensionMap[ext];
+    if (detectedMime) {
+      file.mimetype = detectedMime;
+      cb(null, true);
+      return;
+    }
+  }
+  
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {

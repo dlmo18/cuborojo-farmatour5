@@ -190,7 +190,7 @@ export default function WorldsPage() {
                       alt="Atras"
                       width={50}
                       height={50}
-                      className="w-full h-auto"
+                      className="h-auto"
                       priority
                     />
                 </button>
@@ -213,14 +213,13 @@ export default function WorldsPage() {
                       alt="Menú"
                       width={50}
                       height={50}
-                      className="w-full h-auto"
+                      className="h-auto"
                       priority
                     />
                 </button>
               </div>
           </div>
         )}
-        
 
         {/* Menú de opciones */}
         <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />

@@ -49,15 +49,15 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">📊 Dashboard</h1>
+      <h1 className="text-4xl font-bold text-secondary-800 mb-8">📊 Dashboard</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top 10 Participantes */}
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🏆 Top 10 Participantes</h2>
+          <h2 className="text-2xl font-bold text-secondary-800 mb-4">🏆 Top 10 Participantes</h2>
           <div className="space-y-2">
             {data?.top10Participants?.map((p, idx) => (
-              <div key={p.id} className="flex justify-between p-2 bg-gray-100 text-black rounded">
+              <div key={p.id} className="flex justify-between p-2 bg-surface-100 text-black rounded">
                 <span className="font-semibold">#{idx + 1} {p.full_name}</span>
                 <span className="text-yellow-500">⭐ {p.total_stars}</span>
               </div>
@@ -67,10 +67,10 @@ export default function DashboardPage() {
 
         {/* Top 10 Grupos */}
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🏅 Top 10 Grupos</h2>
+          <h2 className="text-2xl font-bold text-secondary-800 mb-4">🏅 Top 10 Grupos</h2>
           <div className="space-y-2">
             {data?.top10Groups?.map((g, idx) => (
-              <div key={g.group_id} className="flex justify-between p-2 bg-gray-100 text-black rounded">
+              <div key={g.group_id} className="flex justify-between p-2 bg-surface-100 text-black rounded">
                 <span className="font-semibold">#{idx + 1} {g.group_name}</span>
                 <span className="text-yellow-500">⭐ {g.total_group_stars}</span>
               </div>
@@ -80,17 +80,17 @@ export default function DashboardPage() {
 
         {/* Completitud de Mundos */}
         <div className="bg-white rounded-lg shadow-lg p-6 lg:col-span-2">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🌍 Progreso de Mundos</h2>
+          <h2 className="text-2xl font-bold text-secondary-800 mb-4">🌍 Progreso de Mundos</h2>
           <div className="space-y-3">
             {data?.worldCompletion?.map((w) => (
-              <div key={w.world_name} className="p-3 bg-gray-50 rounded">
+              <div key={w.world_name} className="p-3 bg-surface-50 rounded">
                 <div className="flex justify-between mb-2 text-black">
                   <span className="font-semibold">{w.world_name}</span>
-                  <span className="text-blue-600">{w.completion_rate}%</span>
+                  <span className="text-primary-600">{w.completion_rate}%</span>
                 </div>
-                <div className="w-full bg-gray-300 rounded-full h-2">
+                <div className="w-full bg-surface-300 rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-primary-600 h-2 rounded-full"
                     style={{ width: `${w.completion_rate}%` }}
                   />
                 </div>

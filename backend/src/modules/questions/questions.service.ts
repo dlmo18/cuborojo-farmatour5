@@ -11,6 +11,7 @@ export class CreateQuestionDto {
   @ApiProperty({ required: false }) @IsOptional() imageId?: string;
   @ApiProperty() @IsNumber() orderNum: number;
   @ApiProperty({ default: 1 }) @IsNumber() starsValue: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsString() benefit?: string;
 }
 
 export class CreateAnswerOptionDto {

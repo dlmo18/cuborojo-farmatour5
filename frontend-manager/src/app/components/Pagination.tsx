@@ -1,3 +1,7 @@
+'use client';
+
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+
 export interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -57,9 +61,9 @@ export default function Pagination({
   }
   
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 bg-white border-t border-gray-200">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 bg-white border-t border-surface-200">
       {/* Información de registros */}
-      <div className="text-sm text-gray-700">
+      <div className="text-sm text-secondary-700">
         Mostrando <span className="font-medium">{startItem}</span> a{' '}
         <span className="font-medium">{endItem}</span> de{' '}
         <span className="font-medium">{totalItems}</span> registros
@@ -69,14 +73,14 @@ export default function Pagination({
       <div className="flex items-center gap-4">
         {/* Selector de items por página */}
         <div className="flex items-center gap-2">
-          <label htmlFor="itemsPerPage" className="text-sm text-gray-700">
+          <label htmlFor="itemsPerPage" className="text-sm text-secondary-700">
             Por página:
           </label>
           <select
             id="itemsPerPage"
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-            className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="border border-surface-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
             {itemsPerPageOptions.map((option) => (
               <option key={option} value={option}>
@@ -92,9 +96,9 @@ export default function Pagination({
             key="prev"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+            className="px-3 py-1 rounded-md border border-surface-300 text-sm font-medium text-secondary-700 hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
           >
-            <span className="material-icons text-lg" style={{ fontSize: '20px' }}>chevron_left</span>
+            <MdChevronLeft size={20} />
           </button>
 
           {getPageNumbers().map((page, idx) => {
@@ -129,9 +133,9 @@ export default function Pagination({
             key="next"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+            className="px-3 py-1 rounded-md border border-surface-300 text-sm font-medium text-secondary-700 hover:bg-surface-50 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
           >
-            <span className="material-icons text-lg" style={{ fontSize: '20px' }}>chevron_right</span>
+            <MdChevronRight size={20} />
           </button>
         </div>
       </div>

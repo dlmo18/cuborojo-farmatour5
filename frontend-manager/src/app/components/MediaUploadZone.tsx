@@ -71,8 +71,8 @@ export default function MediaUploadZone({
       onDrop={handleDrop}
       className={`relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
         isDragActive
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+          ? 'border-primary-500 bg-primary-50'
+          : 'border-surface-300 bg-surface-50 hover:border-surface-400'
       } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       <input
@@ -88,31 +88,31 @@ export default function MediaUploadZone({
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={isLoading}
-        className="text-blue-600 hover:text-blue-700 font-semibold underline disabled:opacity-50 disabled:cursor-not-allowed"
+        className="text-primary-600 hover:text-primary-700 font-semibold underline disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Haz clic aquí para seleccionar archivos
       </button>
       
-      <p className="text-gray-600 mt-2">o arrastra y suelta archivos en esta área</p>
+      <p className="text-surface-600 mt-2">o arrastra y suelta archivos en esta área</p>
       
-      <p className="text-sm text-gray-500 mt-4">
+      <p className="text-sm text-surface-500 mt-4">
         Formatos soportados: Imágenes (JPG, PNG, GIF, WebP), Videos (MP4, WebM), 
         Audio (MP3, WAV), Documentos (PDF, Word, Excel, PowerPoint)
       </p>
       
-      <p className="text-xs text-gray-400 mt-2">
+      <p className="text-xs text-surface-400 mt-2">
         Tamaño máximo por archivo: 10 MB
       </p>
 
       {uploadProgress > 0 && uploadProgress < 100 && (
         <div className="mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-surface-200 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
+              className="bg-primary-600 h-2 rounded-full transition-all"
               style={{ width: `${uploadProgress}%` }}
             ></div>
           </div>
-          <p className="text-sm text-gray-600 mt-2">{uploadProgress}%</p>
+          <p className="text-sm text-surface-600 mt-2">{uploadProgress}%</p>
         </div>
       )}
     </div>

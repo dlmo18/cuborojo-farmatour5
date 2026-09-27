@@ -34,6 +34,15 @@ export class MissionItem {
   @Column({ name: 'order_num' })
   orderNum: number;
 
+  @Column({ nullable: true, length: 255 })
+  family: string;
+
+  @Column({ name: 'is_grouped', type: 'boolean', default: false })
+  isGrouped: boolean;
+
+  @Column({ name: 'variant_badges', type: 'jsonb', default: [] })
+  variantBadges: string[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

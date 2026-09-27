@@ -152,11 +152,13 @@ export interface Group {
 export interface CreateGroupDto {
   name: string;
   description?: string;
+  imageId?: string;
 }
 
 export interface UpdateGroupDto {
   name?: string;
   description?: string;
+  imageId?: string;
 }
 
 export const groupsApi = {
@@ -347,6 +349,9 @@ export interface CreateLevelItemDto {
   benefits?: string;
   imageId?: string;
   thumbnailId?: string;
+  family?: string;
+  is_grouped?: boolean;
+  variant_badges?: any[];
   orderNum: number;
 }
 
@@ -490,6 +495,9 @@ export interface UpdateLevelItemDto {
   benefits?: string;
   imageId?: string;
   thumbnailId?: string;
+  family?: string;
+  is_grouped?: boolean;
+  variant_badges?: any[];
   orderNum?: number;
 }
 
@@ -618,6 +626,9 @@ export interface MissionItem {
   benefits?: string;
   contentBadges?: any[];
   detail?: string;
+  family?: string;
+  isGrouped?: boolean;
+  variantBadges?: any[];
   orderNum: number;
   createdAt: string;
   updatedAt: string;
@@ -663,6 +674,9 @@ export interface CreateMissionItemDto {
   benefits?: string;
   contentBadges?: any[];
   detail?: string;
+  family?: string;
+  isGrouped?: boolean;
+  variantBadges?: any[];
   orderNum: number;
 }
 
@@ -673,6 +687,9 @@ export interface UpdateMissionItemDto {
   benefits?: string;
   contentBadges?: any[];
   detail?: string;
+  family?: string;
+  isGrouped?: boolean;
+  variantBadges?: any[];
   orderNum?: number;
 }
 
@@ -734,6 +751,7 @@ export interface Question {
   imageId?: string;
   orderNum: number;
   starsValue: number;
+  benefit?: string;
   isActive: boolean;
   options?: AnswerOption[];
   createdAt: string;
@@ -746,6 +764,7 @@ export interface CreateQuestionDto {
   imageId?: string;
   orderNum: number;
   starsValue?: number;
+  benefit?: string;
 }
 
 export interface UpdateQuestionDto {
@@ -753,6 +772,7 @@ export interface UpdateQuestionDto {
   imageId?: string;
   orderNum?: number;
   starsValue?: number;
+  benefit?: string;
   isActive?: boolean;
 }
 

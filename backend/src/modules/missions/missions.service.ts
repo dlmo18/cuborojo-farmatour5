@@ -21,6 +21,9 @@ export class CreateMissionItemDto {
   @ApiProperty({ required: false }) @IsOptional() benefits?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsArray() contentBadges?: { title: string }[];
   @ApiProperty({ required: false }) @IsOptional() detail?: string;
+  @ApiProperty({ required: false }) @IsOptional() family?: string;
+  @ApiProperty({ required: false }) @IsOptional() isGrouped?: boolean;
+  @ApiProperty({ required: false }) @IsOptional() @IsArray() variantBadges?: string[];
   @ApiProperty() @IsNumber() orderNum: number;
 }
 

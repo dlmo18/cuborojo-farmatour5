@@ -10,6 +10,7 @@ export class Question {
   @Column({ name: 'image_id', nullable: true }) imageId: string;
   @Column({ name: 'order_num' }) orderNum: number;
   @Column({ name: 'stars_value', default: 1 }) starsValue: number;
+  @Column({ type: 'text', nullable: true }) benefit: string;
   @Column({ name: 'is_active', default: true }) isActive: boolean;
   @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
 }

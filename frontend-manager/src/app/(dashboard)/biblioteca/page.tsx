@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MdSearch } from 'react-icons/md';
 import { mediaApi, MediaFile } from '@/app/services/api';
 import MediaUploadZone from '@/app/components/MediaUploadZone';
 import MediaCard from '@/app/components/MediaCard';
@@ -111,10 +112,10 @@ export default function BibliotecaPage() {
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-surface-50 min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">📚 Biblioteca de Medios</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">Biblioteca de Medios</h1>
         <p className="text-gray-600">
           Gestiona tu biblioteca de imágenes, videos, audio y documentos. 
           Sube, organiza y comparte tus archivos de forma segura.
@@ -123,13 +124,13 @@ export default function BibliotecaPage() {
 
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="mb-4 p-4 bg-accent-50 border border-accent-200 text-accent-700 rounded-lg">
           ❌ {error}
         </div>
       )}
       
       {successMessage && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+        <div className="mb-4 p-4 bg-primary-50 border border-primary-200 text-primary-700 rounded-lg">
           ✅ {successMessage}
         </div>
       )}
@@ -155,13 +156,13 @@ export default function BibliotecaPage() {
                 placeholder="Buscar por nombre..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
               <button
                 type="submit"
-                className="px-6 py-2 flex items-center gap-2 bg-red-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                className="px-6 py-2 flex items-center gap-2 bg-accent-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold"
               >
-                <span className="material-icons">search</span> Buscar
+                <MdSearch size={20} /> Buscar
               </button>
             </div>
           </form>
@@ -170,7 +171,7 @@ export default function BibliotecaPage() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-surface-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           >
             <option value="">Todos los tipos</option>
             <option value="image">🖼️ Imágenes</option>
@@ -259,7 +260,7 @@ export default function BibliotecaPage() {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 border border-surface-300 rounded-lg hover:bg-surface-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             ← Anterior
           </button>
@@ -282,8 +283,8 @@ export default function BibliotecaPage() {
                   onClick={() => setCurrentPage(pageNum)}
                   className={`px-3 py-2 rounded-lg transition-colors ${
                     currentPage === pageNum
-                      ? 'bg-blue-600 text-white'
-                      : 'border border-gray-300 hover:bg-gray-100'
+                      ? 'bg-primary-600 text-white'
+                      : 'border border-surface-300 hover:bg-surface-100'
                   }`}
                 >
                   {pageNum}
@@ -295,7 +296,7 @@ export default function BibliotecaPage() {
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 border border-surface-300 rounded-lg hover:bg-surface-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Siguiente →
           </button>

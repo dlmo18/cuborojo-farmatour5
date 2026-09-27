@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 
@@ -32,17 +33,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-secondary-900 to-secondary-800">
+      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-xl w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">⚙️ Farmatour 5</h1>
-          <p className="text-gray-600">Panel de Administración</p>
-          <div className="mt-2 h-1 w-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mx-auto"></div>
+          <h1 className="text-3xl font-bold text-surface-300 mb-2 text-center">
+            <Image src="/images/logo.png" alt="Farmatour 5" width={100} height={50} className='block m-auto' />
+          </h1>
+          <p className="text-surface-600">Panel de Administración</p>
+          <div className="mt-2 h-1 w-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full mx-auto"></div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-gray-700 font-semibold mb-2">
+            <label htmlFor="username" className="block text-secondary-700 font-semibold mb-2">
               Usuario
             </label>
             <input
@@ -51,14 +54,14 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Ingresa tu usuario"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              className="w-full px-4 py-3 border-2 border-surface-300 rounded-lg focus:outline-none focus:border-primary-500 transition"
               disabled={isLoading}
               autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">
+            <label htmlFor="password" className="block text-secondary-700 font-semibold mb-2">
               Contraseña
             </label>
             <input
@@ -67,13 +70,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition"
+              className="w-full px-4 py-3 border-2 border-surface-300 rounded-lg focus:outline-none focus:border-primary-500 transition"
               disabled={isLoading}
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm text-center">
+            <div className="p-3 bg-accent-100 border border-accent-400 text-accent-700 rounded-lg text-sm text-center">
               {error}
             </div>
           )}
@@ -81,7 +84,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading || !username || !password}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105 active:scale-95"
+            className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition transform hover:scale-105 active:scale-95"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -113,9 +116,9 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-500 border-t pt-4">
+        <div className="mt-6 text-center text-sm text-secondary-700 border-t border-surface-200 pt-4">
           <p className="mb-2">¿Problemas para acceder?</p>
-          <p className="text-xs text-gray-400">Contacta al administrador del sistema</p>
+          <p className="text-xs">Contacta al administrador del sistema</p>
         </div>
 
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-gray-700 text-center">

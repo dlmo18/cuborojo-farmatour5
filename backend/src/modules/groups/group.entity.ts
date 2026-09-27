@@ -11,6 +11,9 @@ export class Group {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ name: 'image_id', nullable: true })
+  imageId?: string;
+
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 

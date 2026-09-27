@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdList, MdAdd, MdUploadFile } from 'react-icons/md';
 import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import RichTextEditor from '@/app/components/RichTextEditor';
+import LevelsImportModal from '@/app/components/LevelsImportModal';
 import { levelsApi, missionsApi, worldsApi, Level, World, CreateLevelDto, UpdateLevelDto, LevelType } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { FontSize } from '@tiptap/extension-text-style';
@@ -26,6 +28,7 @@ export default function LevelsPage() {
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingLevel, setEditingLevel] = useState<Level | null>(null);
   const [formData, setFormData] = useState<CreateLevelDto | UpdateLevelDto>({
     worldId: '',
@@ -238,9 +241,9 @@ export default function LevelsPage() {
       render: (value: LevelType) => {
         const typeLabels = { normal: 'Normal', golden: 'Dorado', final: 'Final' };
         const typeColors = { 
-          normal: 'bg-blue-100 text-blue-800',
-          golden: 'bg-yellow-100 text-yellow-800',
-          final: 'bg-purple-100 text-purple-800'
+          normal: 'bg-primary-100 text-primary-800',
+          golden: 'bg-accent-100 text-accent-800',
+          final: 'bg-secondary-100 text-secondary-800'
         };
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-semibold ${typeColors[value] || typeColors.normal}`}>
@@ -268,14 +271,14 @@ export default function LevelsPage() {
         return <span className="text-gray-400">N/A</span>;
       }
     },
-    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
+    { key: 'isActive', label: 'Estado', render: (value) => <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'}`}>{value ? 'Activo' : 'Inactivo'}</span> },
   ];
 
   const additionalOptions: AdditionalOption<Level & { missionCount?: number; worldData?: World }>[] = [
     {
       label: 'Ver Misiones',
       icon: 'assignment',
-      class: 'bg-green-100 text-green-700 hover:bg-green-200',
+      class: 'bg-primary-100 text-primary-700 hover:bg-primary-200',
       title: 'Ver todas las misiones de este nivel',
       callback: (level) => handleViewMissions(level),
       condition: (level) => level.levelType === 'normal',
@@ -283,7 +286,7 @@ export default function LevelsPage() {
     {
       label: 'Gestionar Contenido',
       icon: 'account_tree',
-      class: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
+      class: 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200',
       title: 'Gestionar items y preguntas',
       callback: (level) => handleManageContent(level, new MouseEvent('click') as any),
       condition: (level) => level.levelType === 'golden' || level.levelType === 'final',
@@ -306,9 +309,9 @@ export default function LevelsPage() {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800"><span style={{fontSize: '2rem', width: '2rem'}} className="material-icons">lists</span> Niveles</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Niveles</h1>
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
@@ -331,10 +334,16 @@ export default function LevelsPage() {
             )}
           </div>
         </div>
-        <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
-          Nuevo Nivel
-        </button>
+        <div className="flex gap-3">
+          <button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
+            <MdAdd size={20} />
+            Nuevo Nivel
+          </button>
+          <button onClick={() => setShowImportModal(true)} className="bg-secondary-600 hover:bg-secondary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2">
+            <MdUploadFile size={20} />
+            Importador
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -347,7 +356,7 @@ export default function LevelsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl text-black font-bold mb-6">{editingLevel ? 'Editar Nivel' : 'Nuevo Nivel'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Tipo de Nivel */}
@@ -436,13 +445,13 @@ export default function LevelsPage() {
                 </div>
               )}
 
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
 
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50"
                 >
                   Cancelar
                 </button>
@@ -457,6 +466,17 @@ export default function LevelsPage() {
           </div>
         </div>
       )}
+
+      <LevelsImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        worldId={worldId}
+        onSuccess={() => {
+          setShowImportModal(false);
+          fetchedRef.current = false;
+          fetchWorldAndLevels();
+        }}
+      />
     </div>
   );
 }

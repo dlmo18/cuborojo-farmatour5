@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MdList, MdVisibility, MdLink, MdOpenInNew, MdDelete } from 'react-icons/md';
 import { MediaFile } from '@/app/services/api';
 import MediaPreviewModal from './MediaPreviewModal';
 
@@ -20,7 +21,7 @@ const getFileTypeIcon = (type: string, mimeType?: string): JSX.Element => {
     return <span className="text-4xl">🔊</span>;
   } else if (type === 'document') {
     if (mimeType?.includes('pdf')) return <span className="text-4xl">📄</span>;
-    if (mimeType?.includes('word') || mimeType?.includes('document')) return <span className="text-4xl"><span className="material-icons">lists</span></span>;
+    if (mimeType?.includes('word') || mimeType?.includes('document')) return <span className="text-4xl"><MdList size={40} /></span>;
     if (mimeType?.includes('sheet') || mimeType?.includes('excel')) return <span className="text-4xl">📊</span>;
     if (mimeType?.includes('presentation') || mimeType?.includes('powerpoint')) return <span className="text-4xl">📽️</span>;
     return <span className="text-4xl">📎</span>;
@@ -78,7 +79,7 @@ export default function MediaCard({
     <>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
         {/* Thumbnail */}
-        <div className="relative h-48 bg-gray-100 flex items-center justify-center group overflow-hidden">
+        <div className="relative h-48 bg-surface-100 flex items-center justify-center group overflow-hidden">
           {item.type === 'image' ? (
             <button
               onClick={() => setShowPreview(true)}
@@ -107,22 +108,22 @@ export default function MediaCard({
 
         {/* Content */}
         <div className="p-4">
-          <h3 className="font-semibold text-gray-800 truncate mb-2 text-sm">
+          <h3 className="font-semibold text-secondary-800 truncate mb-2 text-sm">
             {item.name}
           </h3>
           
           <div className="flex items-center justify-between mb-3">
-            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded capitalize">
+            <span className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded capitalize">
               {item.type}
             </span>
             {item.fileSize && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-surface-500">
                 {formatFileSize(item.fileSize)}
               </span>
             )}
           </div>
 
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-surface-500 mb-4">
             {new Date(item.createdAt).toLocaleDateString('es-ES')}
           </p>
 
@@ -133,9 +134,9 @@ export default function MediaCard({
               <button
                 onClick={() => setShowPreview(true)}
                 title="Ver / Previsualizar"
-                className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                className="p-2 rounded-lg bg-surface-100 text-surface-700 hover:bg-primary-100 hover:text-primary-600 transition-colors"
               >
-                <span className="material-icons">visibility</span>
+                <MdVisibility size={20} />
               </button>
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 Previsualizar
@@ -147,9 +148,9 @@ export default function MediaCard({
               <button
                 onClick={handleCopyLink}
                 title="Copiar enlace"
-                className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-600 transition-colors"
+                className="p-2 rounded-lg bg-surface-100 text-surface-700 hover:bg-primary-100 hover:text-primary-600 transition-colors"
               >
-                <span className="material-icons">link</span>
+                <MdLink size={20} />
               </button>
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 Copiar enlace
@@ -161,9 +162,9 @@ export default function MediaCard({
               <button
                 onClick={handleOpenInNewTab}
                 title="Abrir en nueva ventana"
-                className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-purple-100 hover:text-purple-600 transition-colors"
+                className="p-2 rounded-lg bg-surface-100 text-surface-700 hover:bg-primary-100 hover:text-primary-600 transition-colors"
               >
-                <span className="material-icons">open_in_new</span>
+                <MdOpenInNew size={20} />
               </button>
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 Abrir en nueva ventana
@@ -176,9 +177,9 @@ export default function MediaCard({
                 onClick={handleDelete}
                 disabled={isDeleting}
                 title="Eliminar"
-                className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg bg-surface-100 text-surface-700 hover:bg-accent-100 hover:text-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="material-icons">delete</span>
+                <MdDelete size={20} />
               </button>
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
                 Eliminar

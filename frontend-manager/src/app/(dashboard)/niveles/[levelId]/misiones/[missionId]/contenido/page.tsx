@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
@@ -45,6 +46,7 @@ export default function MissionContentPage() {
   const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [newBadge, setNewBadge] = useState('');
+  const [newVariant, setNewVariant] = useState('');
 
   const handleOpenImagePreview = async (imageId?: string) => {
     if (!imageId) return;
@@ -102,8 +104,12 @@ export default function MissionContentPage() {
       title: '',
       orderNum: items.length + 1,
       contentBadges: [],
+      family: '',
+      isGrouped: false,
+      variantBadges: [],
     });
     setNewBadge('');
+    setNewVariant('');
     setShowModal(true);
     setError('');
   };
@@ -117,9 +123,13 @@ export default function MissionContentPage() {
       benefits: item.benefits,
       detail: item.detail,
       contentBadges: item.contentBadges || [],
+      family: (item as any).family || '',
+      isGrouped: (item as any).isGrouped || false,
+      variantBadges: (item as any).variantBadges || [],
       orderNum: item.orderNum,
     });
     setNewBadge('');
+    setNewVariant('');
     setShowModal(true);
     setError('');
   };
@@ -200,7 +210,7 @@ export default function MissionContentPage() {
         <div className="flex flex-wrap gap-1">
           {value && value.length > 0 ? (
             value.slice(0, 3).map((badge: string, idx: number) => (
-              <span key={idx} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+              <span key={idx} className="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs font-medium">
                 {badge}
               </span>
             ))
@@ -231,14 +241,14 @@ export default function MissionContentPage() {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800">📚 Contenido de Misión</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Contenido de Misión</h1>
             {mission && level && world && (
               <p className="text-sm text-gray-600 mt-2">
                 {world.name} / {level.name} / {mission.name}
               </p>
             )}
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
@@ -248,7 +258,7 @@ export default function MissionContentPage() {
           onClick={handleCreate}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
         >
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nuevo Contenido
         </button>
       </div>
@@ -280,7 +290,7 @@ export default function MissionContentPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6 text-black">{editingItem ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -319,6 +329,97 @@ export default function MissionContentPage() {
                   onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
                   label="Seleccionar imagen para este contenido"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Familia de Producto</label>
+                <input 
+                  type="text" 
+                  value={(formData as any).family || ''} 
+                  onChange={(e) => setFormData({ ...formData, family: e.target.value } as any)} 
+                  placeholder="Ej: Vitaminas, Suplementos, etc."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">¿Producto Agrupado?</label>
+                <div className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    checked={(formData as any).isGrouped || false} 
+                    onChange={(e) => setFormData({ ...formData, isGrouped: e.target.checked } as any)} 
+                    className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500" 
+                  />
+                  <span className="ml-2 text-sm text-gray-600">Marcar si este producto es un grupo o paquete</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Variantes / Presentaciones</label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="Ej: 500mg, 1000mg, 2000mg..."
+                      value={newVariant} 
+                      onChange={(e) => setNewVariant(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newVariant.trim()) {
+                            setFormData({
+                              ...formData,
+                              variantBadges: [...((formData as any).variantBadges || []), newVariant.trim()]
+                            } as any);
+                            setNewVariant('');
+                          }
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newVariant.trim()) {
+                          setFormData({
+                            ...formData,
+                            variantBadges: [...((formData as any).variantBadges || []), newVariant.trim()]
+                          } as any);
+                          setNewVariant('');
+                        }
+                      }}
+                      className="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium"
+                    >
+                      +
+                    </button>
+                  </div>
+                  
+                  {(formData as any).variantBadges && ((formData as any).variantBadges as string[]).length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {((formData as any).variantBadges as string[]).map((variant, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
+                        >
+                          {variant}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                variantBadges: ((formData as any).variantBadges as string[]).filter((_, i) => i !== idx)
+                              } as any);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 font-bold"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -367,7 +468,7 @@ export default function MissionContentPage() {
                           setNewBadge('');
                         }
                       }}
-                      className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                      className="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium"
                     >
                       +
                     </button>
@@ -378,7 +479,7 @@ export default function MissionContentPage() {
                       {formData.contentBadges.map((badge, idx) => (
                         <div
                           key={idx}
-                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
+                          className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2"
                         >
                           {badge}
                           <button
@@ -400,13 +501,13 @@ export default function MissionContentPage() {
                 </div>
               </div>
 
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
 
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50"
                 >
                   Cancelar
                 </button>

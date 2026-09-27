@@ -14,7 +14,14 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+        <link 
+          rel="stylesheet" 
+          href="https://fonts.googleapis.com/icon?family=Material+Icons" 
+        />
+        <link 
+          rel="preconnect" 
+          href="https://fonts.googleapis.com"
+        />
       </head>
       <body className="font-sans">
         {children}

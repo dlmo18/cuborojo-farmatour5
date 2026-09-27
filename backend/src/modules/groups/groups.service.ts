@@ -9,6 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateGroupDto {
   @ApiProperty() @IsString() @IsNotEmpty() name: string;
   @ApiProperty({ required: false }) @IsOptional() description?: string;
+  @ApiProperty({ required: false }) @IsOptional() imageId?: string;
 }
 
 @Injectable()

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
@@ -134,12 +135,12 @@ export default function LevelContentPage() {
     { 
       key: 'benefits', 
       label: 'Beneficios',
-      render: (value) => <div className="text-sm text-gray-600 line-clamp-2">{value || '—'}</div>
+      render: (value) => <div className="text-sm text-surface-600 line-clamp-2">{value || '—'}</div>
     },
     { 
       key: 'detail', 
       label: 'Detalle',
-      render: (value) => <div className="text-sm text-gray-600 line-clamp-1">{stripHtmlTags(value, 80)}</div>
+      render: (value) => <div className="text-sm text-surface-600 line-clamp-1">{stripHtmlTags(value, 80)}</div>
     },
   ];
 
@@ -154,19 +155,19 @@ export default function LevelContentPage() {
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={() => router.push(`/mundos`)}
-            className="text-gray-600 hover:text-gray-900 text-2xl"
+            className="text-surface-600 hover:text-surface-900 text-2xl"
           >
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800">📚 Contenido de Nivel</h1>
+            <h1 className="text-4xl font-bold text-surface-800">📚 Contenido de Nivel</h1>
             {level && world && (
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-surface-600 mt-2">
                 {world.name} / {level.name}
               </p>
             )}
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
@@ -176,13 +177,13 @@ export default function LevelContentPage() {
           onClick={handleCreate}
           className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
         >
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
+          <MdAdd size={20} />
           Nuevo Contenido
         </button>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-surface-200">
           <SearchBar 
             value={searchTerm} 
             onChange={(term) => { setSearchTerm(term); setCurrentPage(1); }} 
@@ -212,28 +213,28 @@ export default function LevelContentPage() {
             <h2 className="text-2xl font-bold mb-6 text-black">{editingItem ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Título *</label>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Título *</label>
                 <input 
                   type="text" 
                   required 
                   value={formData.title || ''} 
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })} 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                  className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" 
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Beneficios</label>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Beneficios</label>
                 <textarea 
                   value={formData.benefits || ''} 
                   onChange={(e) => setFormData({ ...formData, benefits: e.target.value })} 
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Detalle</label>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Detalle</label>
                 <RichTextEditor 
                   value={formData.detail || ''} 
                   onChange={(content) => setFormData({ ...formData, detail: content })}
@@ -242,7 +243,7 @@ export default function LevelContentPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Orden *</label>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Orden *</label>
                 <input 
                   type="number" 
                   required 
@@ -253,13 +254,13 @@ export default function LevelContentPage() {
                 />
               </div>
 
-              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+              {error && <div className="bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">{error}</div>}
 
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-surface-300 rounded-md text-surface-700 hover:bg-surface-50"
                 >
                   Cancelar
                 </button>

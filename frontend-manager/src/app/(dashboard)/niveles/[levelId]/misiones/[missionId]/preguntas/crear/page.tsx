@@ -240,7 +240,7 @@ export default function CreateQuestionPage() {
         </button>
         <div className="flex-1">
           <h1 className="text-4xl font-bold text-gray-800">
-            {question ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta'}
+            {question ? 'Editar Pregunta' : 'Nueva Pregunta'}
           </h1>
           {mission && level && world && (
             <p className="text-sm text-gray-600 mt-2">
@@ -251,7 +251,7 @@ export default function CreateQuestionPage() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+        <div className="mb-6 p-4 bg-accent-50 border border-accent-200 text-accent-700 rounded-lg">
           {error}
         </div>
       )}
@@ -335,7 +335,7 @@ export default function CreateQuestionPage() {
             <button
               type="button"
               onClick={handleAddAnswer}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
               + Agregar Opción
             </button>
@@ -411,7 +411,7 @@ export default function CreateQuestionPage() {
           <button
             type="button"
             onClick={() => router.push(`/niveles/${levelId}/misiones/${missionId}/preguntas`)}
-            className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+            className="flex-1 px-6 py-3 border border-surface-300 rounded-lg text-surface-700 font-medium hover:bg-surface-50"
           >
             Cancelar
           </button>

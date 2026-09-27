@@ -8,52 +8,49 @@
   --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
+/* Dark mode disabled - Using custom Tailwind color system */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
-}
+} */
 
-body {
+/* Body color controlled by Tailwind classes */
+/* body {
   color: rgb(var(--foreground-rgb));
-}
+} */
 
 /* Material Icons - Estilos base */
 .material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  display: inline-flex;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  display: inline-flex !important;
+  line-height: 1 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-wrap: normal !important;
+  white-space: nowrap !important;
+  direction: ltr !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-feature-settings: 'liga' !important;
 }
 
-/* Estilos para inputs - Asegurar texto visible */
+/* Estilos para inputs - Permitir clases Tailwind */
 input,
 select,
-textarea,
-button {
-  color: #000000 !important;
+textarea {
+  color: inherit;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af !important;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  color: #000000 !important;
+  color: rgb(212, 212, 212); /* surface-500 */
 }
 
 @layer utilities {
@@ -62,38 +59,48 @@ textarea:focus {
   }
 }
 
-/* Estilos personalizados para el manager */
+/* Estilos personalizados para el manager - CuboRojo */
 .admin-table {
-  @apply w-full border-collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .admin-table th {
-  @apply bg-gray-100 text-left px-4 py-3 font-semibold text-gray-700;
+  background-color: #fafafa;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: #171717;
 }
 
 .admin-table td {
-  @apply border-t border-gray-200 px-4 py-3;
+  border-top: 1px solid #f5f5f5;
+  padding: 0.75rem 1rem;
+  color: #171717;
 }
 
 button.bg-red-600, 
 button.bg-primary-600 {
-  color: #FFFFFF !important;
+  color: rgb(255, 255, 255) !important;
 }
 
 .prose {
-  color: #000000;
+  color: rgb(23, 23, 23); /* secondary-700 */
 
   h1 {
+    color: rgb(23, 23, 23);
     font-size: 2rem;
     font-weight: bold;
   }
 
   h2 {
+    color: rgb(23, 23, 23);
     font-size: 1.6rem;
     font-weight: bold;
   }
 
   h3 {
+    color: rgb(23, 23, 23);
     font-size: 1.2rem;
     font-weight: bold;
   }

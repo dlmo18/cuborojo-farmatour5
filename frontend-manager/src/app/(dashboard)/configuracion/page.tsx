@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { MdSave } from 'react-icons/md';
 import { configApi, SystemConfig } from '@/app/services/api';
 
 export default function ConfigPage() {
@@ -53,7 +54,7 @@ export default function ConfigPage() {
   if (loading) {
     return (
       <div className="p-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">⚙️ Configuración</h1>
+        <h1 className="text-4xl font-bold text-secondary-800 mb-8">⚙️ Configuración</h1>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
@@ -63,16 +64,16 @@ export default function ConfigPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">⚙️ Configuración del Sistema</h1>
+      <h1 className="text-4xl font-bold text-secondary-800 mb-8">⚙️ Configuración del Sistema</h1>
 
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+        <div className="mb-6 bg-primary-50 border border-primary-200 text-primary-700 px-4 py-3 rounded">
           {success}
         </div>
       )}
 
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="mb-6 bg-accent-50 border border-accent-200 text-accent-700 px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -84,17 +85,17 @@ export default function ConfigPage() {
 
           return (
             <div key={groupName} className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">{groupName}</h2>
+              <h2 className="text-2xl font-bold text-secondary-800 mb-4">{groupName}</h2>
               <div className="space-y-4">
                 {groupConfigs.map(config => (
-                  <div key={config.key} className="border-b border-gray-200 pb-4 last:border-0">
+                  <div key={config.key} className="border-b border-surface-200 pb-4 last:border-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-secondary-700 mb-1">
                           {config.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </label>
                         {config.description && (
-                          <p className="text-sm text-gray-500 mb-2">{config.description}</p>
+                          <p className="text-sm text-surface-500 mb-2">{config.description}</p>
                         )}
                         {config.key === 'countdown_datetime' ? (
                           <input
@@ -120,7 +121,7 @@ export default function ConfigPage() {
                         disabled={saving || editValues[config.key] === config.value}
                         className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                       >
-                        <span className="material-icons text-sm" style={{ fontSize: '18px' }}>save</span>
+                        <MdSave size={18} />
                         Guardar
                       </button>
                     </div>
@@ -158,7 +159,7 @@ export default function ConfigPage() {
                       disabled={saving || editValues[config.key] === config.value}
                       className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                     >
-                      <span className="material-icons text-sm" style={{ fontSize: '18px' }}>save</span>
+                      <MdSave size={18} />
                       Guardar
                     </button>
                   </div>

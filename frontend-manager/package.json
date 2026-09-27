@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3002",
+    "dev": "next dev -p 3012",
     "build": "next build",
-    "start": "next start -p 3002",
+    "start": "next start -p 3012",
     "lint": "next lint",
-    "dev:alt": "PORT=3004 next dev"
+    "dev:alt": "PORT=3014 next dev"
   },
   "dependencies": {
     "@tiptap/extension-bullet-list": "^3.30.5",

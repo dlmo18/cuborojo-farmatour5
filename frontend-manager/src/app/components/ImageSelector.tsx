@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { MdImage, MdClose, MdCheckCircle, MdImageNotSupported } from 'react-icons/md';
 import { mediaApi, MediaFile } from '@/app/services/api';
 
 interface ImageSelectorProps {
@@ -149,14 +150,14 @@ export default function ImageSelector({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-secondary-700 mb-2">
         {label} {required && '*'}
       </label>
 
       {/* Selected Image Preview */}
       <div
         onClick={() => setShowModal(true)}
-        className="relative w-full h-40 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 cursor-pointer flex items-center justify-center group overflow-hidden transition-all"
+        className="relative w-full h-40 bg-surface-100 rounded-lg border-2 border-dashed border-surface-300 hover:border-surface-400 cursor-pointer flex items-center justify-center group overflow-hidden transition-all"
       >
         {selectedImage ? (
           <>
@@ -169,7 +170,7 @@ export default function ImageSelector({
               <button
                 type="button"
                 onClick={handleRemoveImage}
-                className="bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-red-700 transition-colors"
+                className="bg-accent-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-accent-700 transition-colors"
               >
                 Cambiar
               </button>
@@ -177,9 +178,11 @@ export default function ImageSelector({
           </>
         ) : (
           <div className="text-center">
-            <span className="material-icons text-4xl text-gray-400 mb-2">image</span>
-            <p className="text-gray-600 font-semibold">Haz clic para seleccionar imagen</p>
-            <p className="text-sm text-gray-500">o arrastra una imagen aquí</p>
+            <div className="text-surface-400 mb-2 mx-auto flex justify-center">
+              <MdImage size={48} />
+            </div>
+            <p className="text-surface-600 font-semibold">Haz clic para seleccionar imagen</p>
+            <p className="text-sm text-surface-500">o arrastra una imagen aquí</p>
           </div>
         )}
       </div>
@@ -189,13 +192,13 @@ export default function ImageSelector({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800">Seleccionar Imagen</h2>
+            <div className="flex justify-between items-center p-6 border-b border-surface-200">
+              <h2 className="text-2xl font-bold text-secondary-800">Seleccionar Imagen</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-surface-500 hover:text-surface-700"
               >
-                <span className="material-icons">close</span>
+                <MdClose size={24} />
               </button>
             </div>
 
@@ -282,7 +285,9 @@ export default function ImageSelector({
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all flex items-center justify-center">
                             {selectedImage?.id === image.id && (
-                              <span className="material-icons text-white text-4xl">check_circle</span>
+                              <div className="text-white">
+                                <MdCheckCircle size={48} />
+                              </div>
                             )}
                           </div>
                         </button>
@@ -290,8 +295,10 @@ export default function ImageSelector({
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <span className="material-icons text-4xl text-gray-400 mb-2">image_not_supported</span>
-                      <p className="text-gray-600">No hay imágenes disponibles</p>
+                      <div className="text-surface-400 mb-2 mx-auto flex justify-center">
+                        <MdImageNotSupported size={48} />
+                      </div>
+                      <p className="text-surface-600">No hay imágenes disponibles</p>
                     </div>
                   )}
 

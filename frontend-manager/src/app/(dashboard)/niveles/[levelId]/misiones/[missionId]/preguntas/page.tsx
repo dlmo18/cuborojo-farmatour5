@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { MdAdd } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import MediaPreviewModal from '@/app/components/MediaPreviewModal';
+import QuestionsImportModal from '@/app/components/QuestionsImportModal';
 import { questionsApi, missionsApi, levelsApi, worldsApi, mediaApi, Question, Mission, Level, World, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { stripHtmlTags } from '@/app/utils/htmlUtils';
@@ -29,6 +31,7 @@ export default function MissionQuestionsPage() {
   const [error, setError] = useState('');
   const [previewImage, setPreviewImage] = useState<MediaFile | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const handleOpenImagePreview = async (imageId?: string) => {
     if (!imageId) return;
@@ -132,7 +135,7 @@ export default function MissionQuestionsPage() {
       label: 'Estrellas',
       width: '100px',
       render: (value) => (
-        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-semibold">
+        <span className="bg-accent-100 text-accent-800 px-2 py-1 rounded-full text-sm font-semibold">
           ⭐ {value}
         </span>
       )
@@ -142,7 +145,7 @@ export default function MissionQuestionsPage() {
       label: 'Estado',
       width: '100px',
       render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${value ? 'bg-primary-100 text-primary-800' : 'bg-accent-100 text-accent-800'}`}>
           {value ? 'Activo' : 'Inactivo'}
         </span>
       )
@@ -165,26 +168,34 @@ export default function MissionQuestionsPage() {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-800">❓ Preguntas</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Preguntas</h1>
             {mission && level && world && (
               <p className="text-sm text-gray-600 mt-2">
                 {world.name} / {level.name} / {mission.name}
               </p>
             )}
             {error && (
-              <div className="mt-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+              <div className="mt-2 p-2 bg-accent-50 border border-accent-200 text-accent-700 rounded text-sm">
                 {error}
               </div>
             )}
           </div>
         </div>
-        <button 
-          onClick={() => router.push(`/niveles/${levelId}/misiones/${missionId}/preguntas/crear`)}
-          className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
-        >
-          <span className="material-icons" style={{ fontSize: '20px' }}>add</span>
-          Nueva Pregunta
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setShowImportModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+          >
+            📥 Importar
+          </button>
+          <button 
+            onClick={() => router.push(`/niveles/${levelId}/misiones/${missionId}/preguntas/crear`)}
+            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+          >
+            <MdAdd size={20} />
+            Nueva Pregunta
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -219,6 +230,18 @@ export default function MissionQuestionsPage() {
           onClose={() => setShowPreview(false)}
         />
       )}
+
+      <QuestionsImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        missionId={missionId}
+        levelId={levelId}
+        onImportComplete={() => {
+          fetchedRef.current = false;
+          fetchData();
+        }}
+      />
     </div>
   );
 }
+
