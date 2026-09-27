@@ -24,7 +24,7 @@ export class GroupsController {
 
   @Get(':id')
   @ApiBearerAuth('access-token')
-  @UseGuards(AdminGuard)
+  @UseGuards(ParticipantGuard)
   findOne(@Param('id') id: string) { return this.service.findOne(id); }
 
   @Post()

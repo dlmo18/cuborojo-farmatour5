@@ -25,7 +25,7 @@ const API_URL =
     ? 'https://farmatour5-api.cuborojo.pe/api'
     : 'http://localhost:3001/api');
 
-// Función para obtener token de localStorage de forma segura
+// Función para obtener token y usuario de localStorage de forma segura
 const getInitialToken = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -36,8 +36,19 @@ const getInitialToken = () => {
   }
 };
 
+const getInitialUser = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const userData = localStorage.getItem('user');
+    return userData ? JSON.parse(userData) : null;
+  } catch (err) {
+    console.error('Error reading user from localStorage:', err);
+    return null;
+  }
+};
+
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
+  user: getInitialUser(),
   token: getInitialToken(),
   isLoading: false,
   error: null,
@@ -48,6 +59,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const response = await axios.post(`${API_URL}/auth/participant/login`, { dni });
       const { access_token, participant } = response.data;
       localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(participant));
       set({ token: access_token, user: participant, isLoading: false });
       return true;
     } catch (err: any) {
@@ -59,8 +71,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     set({ user: null, token: null });
   },
 
-  setUser: (user: User) => set({ user }),
+  setUser: (user: User) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
+  },
 }));

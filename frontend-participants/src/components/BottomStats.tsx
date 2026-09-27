@@ -60,7 +60,7 @@ export default function BottomStats({
   }, [groupId, userId, token]);
   
   return (
-    <div className="bottom-stats fixed bottom-0 left-0 right-0 z-50 pt-12">
+    <div className="bottom-stats fixed bottom-0 left-0 right-0 z-50 pt-24">
       <div className="panel-block  max-w-md mx-auto flex justify-between items-center">
         {/* Contador regresivo (izquierda) */}
         <div className="flex-1">

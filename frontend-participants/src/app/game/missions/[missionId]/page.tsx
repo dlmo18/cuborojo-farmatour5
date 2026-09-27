@@ -5,7 +5,6 @@ import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
-import OptionsMenu from '@/components/OptionsMenu';
 
 interface MissionItem {
   id: string;
@@ -52,7 +51,6 @@ export default function MissionInfoPage() {
 
   const [mission, setMission] = useState<Mission | null>(null);
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const token = useAuthStore((state) => state.token);
@@ -126,15 +124,12 @@ export default function MissionInfoPage() {
             </div>
           </div>
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => router.push('/game/setting')}
             className="bg-white text-primary-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
           >
             ⚙️
           </button>
         </div>
-
-        {/* Menú de opciones */}
-        <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
         {/* Contenedor de información */}
         {currentItem ? (

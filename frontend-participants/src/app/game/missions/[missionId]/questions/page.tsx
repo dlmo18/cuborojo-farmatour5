@@ -5,7 +5,6 @@ import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
-import OptionsMenu from '@/components/OptionsMenu';
 
 interface AnswerOption {
   id: string;
@@ -53,7 +52,6 @@ export default function MissionQuestionsPage() {
 
   const [mission, setMission] = useState<Mission | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -166,14 +164,12 @@ export default function MissionQuestionsPage() {
               </div>
             </div>
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => router.push('/game/setting')}
               className="bg-white text-primary-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
             >
               ⚙️
             </button>
           </div>
-
-          <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <p className="text-white/70 text-lg mb-6">No hay preguntas disponibles para esta misión</p>
@@ -249,15 +245,12 @@ export default function MissionQuestionsPage() {
             </div>
           </div>
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => router.push('/game/setting')}
             className="bg-white text-purple-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
           >
             ⚙️
           </button>
         </div>
-
-        {/* Menú de opciones */}
-        <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
         {/* Contenedor de pregunta */}
         <div className="bg-white rounded-lg shadow-lg p-8">

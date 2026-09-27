@@ -6,7 +6,6 @@ import axios from 'axios';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
-import OptionsMenu from '@/components/OptionsMenu';
 import WorldStarsBar from '@/components/WorldStarsBar';
 import MissionCard from '@/components/MissionCard';
 
@@ -46,7 +45,6 @@ export default function LevelMissionsPage() {
   const [level, setLevel] = useState<Level | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [missionProgress, setMissionProgress] = useState<Record<string, MissionProgress>>({});
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [worldStars, setWorldStars] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -190,7 +188,7 @@ export default function LevelMissionsPage() {
             <h1 className="text-3xl font-bold text-white text-center flex-1" style={{ fontFamily: "'Blinker', sans-serif" }}>
               {level.name}
             </h1>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl">
+            <button onClick={() => router.push('/game/setting')} className="btn-menu rounded-lg shadow-lg hover:shadow-2xl transition text-2xl">
               <Image
                 src="/images/btn-menu.png"
                 alt="Menú"
@@ -202,9 +200,6 @@ export default function LevelMissionsPage() {
             </button>
           </div>
         </div>
-
-        {/* Menú de opciones */}
-        <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
         {/* Espacio para el header fijo */}
         <div className="h-24" />

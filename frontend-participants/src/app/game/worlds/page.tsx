@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
-import OptionsMenu from '@/components/OptionsMenu';
 import BottomStats from '@/components/BottomStats';
 import WorldStarsBar from '@/components/WorldStarsBar';
 import Image from 'next/image';
@@ -46,7 +45,6 @@ export default function WorldsPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelProgress, setLevelProgress] = useState<Record<string, LevelProgress>>({});
   const [worldStars, setWorldStars] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
 
@@ -205,7 +203,7 @@ export default function WorldsPage() {
                   />
                 </h1>
                 <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onClick={() => router.push('/game/setting')}
                   className="rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
                 >
                   <Image
@@ -220,9 +218,6 @@ export default function WorldsPage() {
               </div>
           </div>
         )}
-
-        {/* Menú de opciones */}
-        <OptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
         {!selectedWorld ? (
           <div>
