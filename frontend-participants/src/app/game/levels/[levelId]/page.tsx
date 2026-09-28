@@ -175,7 +175,7 @@ export default function LevelMissionsPage() {
         {/* Header simple (sin clase .header, solo en mundos) */}
         <div className="fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
           <div className="max-w-md mx-auto flex px-4 justify-between items-center">
-            <button onClick={() => router.back()}>
+            <button onClick={() => router.push(`/game/worlds/${level.world.id}`)}>
               <Image
                 src="/images/btn-back.png"
                 alt="Atrás"
