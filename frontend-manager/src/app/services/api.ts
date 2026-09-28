@@ -920,4 +920,103 @@ export const reportsApi = {
     apiClient.get(`/reports/participant/${id}`),
 };
 
+// ============================================================
+// COMO JUGAR (HOW TO PLAY)
+// ============================================================
+
+export interface HowToPlay {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateHowToPlayDto {
+  content: string;
+}
+
+export const howToPlayApi = {
+  get: () => 
+    apiClient.get<HowToPlay>('/how-to-play'),
+  
+  update: (data: UpdateHowToPlayDto) => 
+    apiClient.put<HowToPlay>('/how-to-play', data),
+};
+
+// ============================================================
+// PREGUNTAS FRECUENTES (FAQ)
+// ============================================================
+
+export interface FaqItem {
+  id: string;
+  title: string;
+  detail: string;
+  orderNum: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateFaqItemDto {
+  title: string;
+  detail: string;
+  orderNum: number;
+}
+
+export interface UpdateFaqItemDto {
+  title?: string;
+  detail?: string;
+  orderNum?: number;
+}
+
+export const faqApi = {
+  getAll: (params?: PaginationParams) => 
+    apiClient.get<PaginatedResponse<FaqItem>>('/faq', { params }),
+  
+  getById: (id: string) => 
+    apiClient.get<FaqItem>(`/faq/${id}`),
+  
+  create: (data: CreateFaqItemDto) => 
+    apiClient.post<FaqItem>('/faq', data),
+  
+  update: (id: string, data: UpdateFaqItemDto) => 
+    apiClient.put<FaqItem>(`/faq/${id}`, data),
+  
+  delete: (id: string) => 
+    apiClient.delete(`/faq/${id}`),
+};
+
+// ============================================================
+// MENSAJES (MESSAGES)
+// ============================================================
+
+export interface Message {
+  id: string;
+  fullName: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface CreateMessageDto {
+  fullName: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export const messagesApi = {
+  getAll: (params?: PaginationParams) => 
+    apiClient.get<PaginatedResponse<Message>>('/messages', { params }),
+  
+  getById: (id: string) => 
+    apiClient.get<Message>(`/messages/${id}`),
+  
+  create: (data: CreateMessageDto) => 
+    apiClient.post<Message>('/messages', data),
+  
+  delete: (id: string) => 
+    apiClient.delete(`/messages/${id}`),
+};
+
 export default apiClient;

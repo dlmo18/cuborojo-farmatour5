@@ -5,6 +5,7 @@ interface User {
   id: string;
   fullName: string;
   dni: string;
+  email?: string;
   totalStars: number;
   group: { id: string; name: string } | null;
 }

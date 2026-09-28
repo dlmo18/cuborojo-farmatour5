@@ -13,6 +13,9 @@ import { ProgressModule } from './modules/progress/progress.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { MediaModule } from './modules/media/media.module';
 import { AppConfigModule } from './modules/config/config.module';
+import { HowToPlayModule } from './modules/how-to-play/how-to-play.module';
+import { FaqModule } from './modules/faq/faq.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
@@ -47,6 +50,9 @@ import { AppConfigModule } from './modules/config/config.module';
     ReportsModule,
     MediaModule,
     AppConfigModule,
+    HowToPlayModule,
+    FaqModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

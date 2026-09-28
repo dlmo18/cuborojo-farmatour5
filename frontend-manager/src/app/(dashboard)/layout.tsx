@@ -117,6 +117,24 @@ export default function DashboardLayout({
             📚 Biblioteca de Medios
           </Link>
           <Link
+            href="/como-jugar"
+            className="block px-4 py-2 hover:bg-secondary-800 rounded transition"
+          >
+            🎮 Como Jugar
+          </Link>
+          <Link
+            href="/preguntas-frecuentes"
+            className="block px-4 py-2 hover:bg-secondary-800 rounded transition"
+          >
+            ❓ FAQ
+          </Link>
+          <Link
+            href="/mensajes"
+            className="block px-4 py-2 hover:bg-secondary-800 rounded transition"
+          >
+            💬 Mensajes
+          </Link>
+          <Link
             href="/reporteria"
             className="block px-4 py-2 hover:bg-secondary-800 rounded transition"
           >

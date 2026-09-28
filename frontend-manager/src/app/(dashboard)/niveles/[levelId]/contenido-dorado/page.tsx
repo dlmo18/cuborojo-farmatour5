@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdDownload } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import { RichTextEditor } from '@/app/components/RichTextEditor';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
+import GoldenLevelImportModal from '@/app/components/GoldenLevelImportModal';
 import { levelsApi, goldenLevelsApi, worldsApi, Level, World, GoldenLevelItem, GoldenLevelQuestion, GoldenLevelAnswerOption, CreateGoldenLevelItemDto, UpdateGoldenLevelItemDto, CreateGoldenLevelQuestionDto, UpdateGoldenLevelQuestionDto, CreateGoldenLevelAnswerOptionDto, UpdateGoldenLevelAnswerOptionDto } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { stripHtmlTags } from '@/app/utils/htmlUtils';
@@ -60,6 +61,9 @@ export default function GoldenLevelContentPage() {
   // Estado para Opciones de respuesta
   const [currentAnswers, setCurrentAnswers] = useState<AnswerOption[]>([]);
   const [showAnswersModal, setShowAnswersModal] = useState(false);
+
+  // Estado para Importación
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (fetchedRef.current) return;
@@ -450,13 +454,22 @@ export default function GoldenLevelContentPage() {
               onChange={(term) => { setSearchTermItems(term); setCurrentPageItems(1); }} 
               placeholder="Buscar contenido..." 
             />
-            <button 
-              onClick={handleCreateItem}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
-            >
-              <MdAdd size={20} />
-              Nuevo Contenido
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowImportModal(true)}
+                className="bg-secondary-600 hover:bg-secondary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+              >
+                <MdDownload size={20} />
+                Importar
+              </button>
+              <button 
+                onClick={handleCreateItem}
+                className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+              >
+                <MdAdd size={20} />
+                Nuevo Contenido
+              </button>
+            </div>
           </div>
           <DataTable 
             columns={itemsColumns} 
@@ -485,13 +498,22 @@ export default function GoldenLevelContentPage() {
               onChange={(term) => { setSearchTermQuestions(term); setCurrentPageQuestions(1); }} 
               placeholder="Buscar preguntas..." 
             />
-            <button 
-              onClick={handleCreateQuestion}
-              className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
-            >
-              <MdAdd size={20} />
-              Nueva Pregunta
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowImportModal(true)}
+                className="bg-secondary-600 hover:bg-secondary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+              >
+                <MdDownload size={20} />
+                Importar
+              </button>
+              <button 
+                onClick={handleCreateQuestion}
+                className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2"
+              >
+                <MdAdd size={20} />
+                Nueva Pregunta
+              </button>
+            </div>
           </div>
           <DataTable 
             columns={questionsColumns} 
@@ -667,6 +689,17 @@ export default function GoldenLevelContentPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Importación */}
+      <GoldenLevelImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        levelId={levelId}
+        onSuccess={() => {
+          fetchedRef.current = false;
+          fetchData();
+        }}
+      />
     </div>
   );
 }

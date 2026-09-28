@@ -1,7 +1,7 @@
 -- Adminer 6.0.1 PostgreSQL 15.19 dump
 
 DROP VIEW IF EXISTS "public"."v_group_ranking", "public"."v_participant_ranking", "public"."v_participant_summary", "public"."v_top10_groups", "public"."v_top10_participants";
-DROP TABLE IF EXISTS "public"."activity_logs", "public"."admin_access_logs", "public"."answer_options", "public"."final_level_answer_options", "public"."final_level_questions", "public"."golden_level_answer_options", "public"."golden_level_items", "public"."golden_level_questions", "public"."groups", "public"."level_exam_options", "public"."level_exam_questions", "public"."level_exams", "public"."levels", "public"."media_library", "public"."mission_items", "public"."missions", "public"."participant_answers", "public"."participant_final_level_answers", "public"."participant_final_level_progress", "public"."participant_golden_level_answers", "public"."participant_golden_level_progress", "public"."participant_level_exam_answers", "public"."participant_level_progress", "public"."participant_mission_progress", "public"."participant_world_exam_answers", "public"."participant_world_progress", "public"."participants", "public"."questions", "public"."system_config", "public"."system_users", "public"."world_exam_options", "public"."world_exam_questions", "public"."world_exams", "public"."worlds";
+DROP TABLE IF EXISTS "public"."activity_logs", "public"."admin_access_logs", "public"."answer_options", "public"."faq_items", "public"."final_level_answer_options", "public"."final_level_questions", "public"."golden_level_answer_options", "public"."golden_level_items", "public"."golden_level_questions", "public"."groups", "public"."how_to_play", "public"."level_exam_options", "public"."level_exam_questions", "public"."level_exams", "public"."levels", "public"."media_library", "public"."messages", "public"."mission_items", "public"."missions", "public"."participant_answers", "public"."participant_final_level_answers", "public"."participant_final_level_progress", "public"."participant_golden_level_answers", "public"."participant_golden_level_progress", "public"."participant_level_exam_answers", "public"."participant_level_progress", "public"."participant_mission_progress", "public"."participant_world_exam_answers", "public"."participant_world_progress", "public"."participants", "public"."questions", "public"."system_config", "public"."system_users", "public"."world_exam_options", "public"."world_exam_questions", "public"."world_exams", "public"."worlds";
 
 CREATE TABLE "public"."activity_logs" (
     "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
@@ -156,9 +156,12 @@ CREATE TABLE "public"."groups" (
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "image_id" uuid,
     CONSTRAINT "groups_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
+
+CREATE INDEX idx_groups_image_id ON public.groups USING btree (image_id);
 
 
 CREATE TABLE "public"."level_exam_options" (
@@ -262,11 +265,22 @@ CREATE TABLE "public"."mission_items" (
     "order_num" integer NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "family" character varying(255),
+    "is_grouped" boolean DEFAULT false,
+    "variant_badges" jsonb DEFAULT '[]',
     CONSTRAINT "mission_items_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
 
+COMMENT ON COLUMN "public"."mission_items"."family" IS 'Familia de producto del item - se importa desde Excel';
+
+COMMENT ON COLUMN "public"."mission_items"."is_grouped" IS 'Indica si el producto está agrupado - se importa desde Excel';
+
+COMMENT ON COLUMN "public"."mission_items"."variant_badges" IS 'Array de variantes/presentaciones del producto (separadas por |) - se importa desde Excel';
+
 CREATE INDEX idx_mission_items_mission ON public.mission_items USING btree (mission_id);
+
+CREATE INDEX idx_mission_items_family ON public.mission_items USING btree (family);
 
 
 CREATE TABLE "public"."missions" (
@@ -290,19 +304,6 @@ CREATE INDEX idx_missions_level ON public.missions USING btree (level_id);
 
 CREATE UNIQUE INDEX idx_missions_level_order ON public.missions USING btree (level_id, order_num);
 
-INSERT INTO "missions" ("id", "level_id", "name", "description", "image_id", "order_num", "max_stars", "is_active", "created_at", "updated_at") VALUES
-('b6560aa2-f610-40fd-be36-c83348308ac9',	'20000001-0000-0000-0000-000000000000',	'Nicel 1 - Mision 1 ',	NULL,	'c3080a6b-ebbc-4729-ad7d-61aae10e50ad',	1,	3,	't',	'2026-09-04 19:16:26.262242+00',	'2026-09-04 19:16:26.262242+00'),
-('7fd075ba-0dd2-415b-89b2-53c98a564617',	'20000001-0000-0000-0000-000000000000',	'Nivel 1 - Mision 2',	NULL,	'81755fb5-9edf-4389-b060-a7f9b6ff681d',	2,	3,	't',	'2026-09-04 19:16:42.043397+00',	'2026-09-04 19:17:41.510196+00'),
-('a536a5ca-ec32-4f50-8760-abf975578f93',	'20000001-0000-0000-0000-000000000000',	'Nivel 1 - Mision 3',	NULL,	'cd938867-a5eb-48f5-a45b-deaed387db5f',	3,	3,	't',	'2026-09-04 19:17:52.811402+00',	'2026-09-04 19:17:52.811402+00'),
-('30000011-0000-0000-0000-000000000000',	'20000006-0000-0000-0000-000000000000',	'Misión 1: Proteínas y Grasas',	'Macronutrientes esenciales',	'4891df8a-7353-4399-8c14-c3a55e2a738f',	1,	3,	't',	'2026-09-05 01:00:00.123177+00',	'2026-09-05 01:00:00.123177+00'),
-('30000012-0000-0000-0000-000000000000',	'20000006-0000-0000-0000-000000000000',	'Misión 2: Carbohidratos y Fibra',	'Energía y digestión',	'81755fb5-9edf-4389-b060-a7f9b6ff681d',	2,	3,	't',	'2026-09-05 01:00:00.123177+00',	'2026-09-05 01:00:00.123177+00'),
-('30000013-0000-0000-0000-000000000000',	'20000006-0000-0000-0000-000000000000',	'Misión 3: Agua y Hidratación',	'Vital para el cuerpo',	'cd938867-a5eb-48f5-a45b-deaed387db5f',	3,	3,	't',	'2026-09-05 01:00:00.123177+00',	'2026-09-05 01:00:00.123177+00'),
-('30000021-0000-0000-0000-000000000000',	'20000011-0000-0000-0000-000000000000',	'Misión 1: Beneficios del Ejercicio',	'Movimiento y salud',	'4891df8a-7353-4399-8c14-c3a55e2a738f',	1,	3,	't',	'2026-09-05 01:00:00.360877+00',	'2026-09-05 01:00:00.360877+00'),
-('30000022-0000-0000-0000-000000000000',	'20000011-0000-0000-0000-000000000000',	'Misión 2: Tipos de Ejercicio',	'Cardio, fuerza y flexibilidad',	'81755fb5-9edf-4389-b060-a7f9b6ff681d',	2,	3,	't',	'2026-09-05 01:00:00.360877+00',	'2026-09-05 01:00:00.360877+00'),
-('30000023-0000-0000-0000-000000000000',	'20000011-0000-0000-0000-000000000000',	'Misión 3: Seguridad en Ejercicio',	'Prevenir lesiones',	'cd938867-a5eb-48f5-a45b-deaed387db5f',	3,	3,	't',	'2026-09-05 01:00:00.360877+00',	'2026-09-05 01:00:00.360877+00'),
-('30000031-0000-0000-0000-000000000000',	'20000016-0000-0000-0000-000000000000',	'Misión 1: Tipos de Piel',	'Conocer tu piel',	'4891df8a-7353-4399-8c14-c3a55e2a738f',	1,	3,	't',	'2026-09-05 01:00:00.50433+00',	'2026-09-05 01:00:00.50433+00'),
-('30000032-0000-0000-0000-000000000000',	'20000016-0000-0000-0000-000000000000',	'Misión 2: Rutina Básica',	'Limpieza y cuidado',	'81755fb5-9edf-4389-b060-a7f9b6ff681d',	2,	3,	't',	'2026-09-05 01:00:00.50433+00',	'2026-09-05 01:00:00.50433+00'),
-('30000033-0000-0000-0000-000000000000',	'20000016-0000-0000-0000-000000000000',	'Misión 3: Protección Solar',	'Prevención de daño',	'cd938867-a5eb-48f5-a45b-deaed387db5f',	3,	3,	't',	'2026-09-05 01:00:00.50433+00',	'2026-09-05 01:00:00.50433+00');
 
 CREATE TABLE "public"."participant_answers" (
     "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
@@ -506,6 +507,7 @@ CREATE TABLE "public"."questions" (
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "benefit" text,
     CONSTRAINT "questions_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
@@ -622,6 +624,46 @@ CREATE INDEX idx_worlds_active_order ON public.worlds USING btree (is_active, or
 CREATE UNIQUE INDEX idx_worlds_order ON public.worlds USING btree (order_num);
 
 
+CREATE TABLE "public"."how_to_play" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "content" text NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "how_to_play_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+
+CREATE TABLE "public"."faq_items" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "title" character varying(255) NOT NULL,
+    "detail" text NOT NULL,
+    "order_num" integer NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "faq_items_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX idx_faq_items_order ON public.faq_items USING btree (order_num);
+
+
+CREATE TABLE "public"."messages" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "full_name" character varying(255) NOT NULL,
+    "email" character varying(255) NOT NULL,
+    "subject" character varying(255) NOT NULL,
+    "message" text NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+CREATE INDEX idx_messages_created ON public.messages USING btree (created_at DESC);
+
+CREATE INDEX idx_messages_email ON public.messages USING btree (email);
+
+
 ALTER TABLE ONLY "public"."activity_logs" ADD CONSTRAINT "activity_logs_participant_id_fkey" FOREIGN KEY (participant_id) REFERENCES "public".participants(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY "public"."admin_access_logs" ADD CONSTRAINT "admin_access_logs_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "public".system_users(id) ON DELETE SET NULL;
@@ -641,6 +683,8 @@ ALTER TABLE ONLY "public"."golden_level_answer_options" ADD CONSTRAINT "golden_l
 ALTER TABLE ONLY "public"."golden_level_items" ADD CONSTRAINT "golden_level_items_level_id_fkey" FOREIGN KEY (level_id) REFERENCES "public".levels(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY "public"."golden_level_questions" ADD CONSTRAINT "golden_level_questions_level_id_fkey" FOREIGN KEY (level_id) REFERENCES "public".levels(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY "public"."groups" ADD CONSTRAINT "groups_image_id_fkey" FOREIGN KEY (image_id) REFERENCES "public".media_library(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY "public"."level_exam_options" ADD CONSTRAINT "level_exam_options_exam_question_id_fkey" FOREIGN KEY (exam_question_id) REFERENCES "public".level_exam_questions(id) ON DELETE CASCADE;
 ALTER TABLE ONLY "public"."level_exam_options" ADD CONSTRAINT "level_exam_options_image_id_fkey" FOREIGN KEY (image_id) REFERENCES "public".media_library(id) ON DELETE SET NULL;
@@ -777,4 +821,4 @@ CREATE VIEW "public"."v_top10_participants" AS SELECT v_participant_ranking.id,
    FROM v_participant_ranking
  LIMIT 10;
 
--- 2026-09-25 12:05:23 UTC
+-- 2026-09-27 17:29:21 UTC

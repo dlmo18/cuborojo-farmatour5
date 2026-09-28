@@ -1,44 +1,42 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { faqApi, FaqItem } from '@/services/api';
 
 interface FAQModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const faqItems = [
-  {
-    id: 1,
-    question: '¿Cuál es el objetivo del juego?',
-    answer: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-  },
-  {
-    id: 2,
-    question: '¿Cómo puedo ganar más estrellas?',
-    answer: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.'
-  },
-  {
-    id: 3,
-    question: '¿Qué son los mundos?',
-    answer: 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.'
-  },
-  {
-    id: 4,
-    question: '¿Cómo desbloqueo nuevos niveles?',
-    answer: 'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.'
-  },
-  {
-    id: 5,
-    question: '¿Puedo jugar con mis amigos?',
-    answer: 'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.'
-  }
-];
-
 export default function FAQModal({ isOpen, onClose }: FAQModalProps) {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadFaqItems();
+    }
+  }, [isOpen]);
+
+  const loadFaqItems = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await faqApi.getPublic();
+      setFaqItems(response.data);
+    } catch (err) {
+      console.error('Error cargando FAQ:', err);
+      setError('No se pudo cargar las preguntas frecuentes. Por favor, intenta de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  const toggleExpanded = (id: number) => {
+  const toggleExpanded = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
@@ -56,7 +54,7 @@ export default function FAQModal({ isOpen, onClose }: FAQModalProps) {
             {/* Header */}
             <div className="sticky rounded-lg  top-0 px-8 pb-4 flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-black" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                    Preguntas Frecuentes
+                    FAQ
                 </h2>
                 <button
                 onClick={onClose}
@@ -68,25 +66,39 @@ export default function FAQModal({ isOpen, onClose }: FAQModalProps) {
             <div className='pb-4 bg-[#fff3df] rounded-3xl px-4'>
                 <div className="setting-modal-body max-h-[80vh] pb-4 overflow-y-auto">
                     {/* Content - Accordion */}
-                    {faqItems.map((item) => (
-                    <div key={item.id} className="mb-2 border border-primary rounded-lg overflow-hidden">
-                        <button
-                        onClick={() => toggleExpanded(item.id)}
-                        className="w-full bg-primary-200 hover:bg-primary-100 px-4 py-3 flex justify-between items-center text-left transition font-semibold text-gray-800"
-                        >
-                        <span>{item.question}</span>
-                        <span className={`text-xl transition transform ${expandedId === item.id ? 'rotate-180' : ''}`}>
-                            ▼
-                        </span>
-                        </button>
-                        
-                        {expandedId === item.id && (
-                        <div className="bg-white px-4 py-3 border-t border-gray-300 text-gray-700 text-justify">
-                            {item.answer}
+                    {isLoading ? (
+                      <div className="px-6 py-4 text-center text-gray-700">
+                        <p>Cargando preguntas frecuentes...</p>
+                      </div>
+                    ) : error ? (
+                      <div className="px-6 py-4 text-center text-red-600">
+                        <p>{error}</p>
+                      </div>
+                    ) : faqItems.length > 0 ? (
+                      faqItems.map((item) => (
+                        <div key={item.id} className="mb-2 border border-primary rounded-lg overflow-hidden">
+                            <button
+                            onClick={() => toggleExpanded(item.id)}
+                            className="w-full bg-primary-200 hover:bg-primary-100 px-4 py-3 flex justify-between items-center text-left transition font-semibold text-gray-800"
+                            >
+                            <span>{item.title}</span>
+                            <span className={`text-xl transition transform ${expandedId === item.id ? 'rotate-180' : ''}`}>
+                                ▼
+                            </span>
+                            </button>
+                            
+                            {expandedId === item.id && (
+                            <div className="bg-white px-4 py-3 border-t border-gray-300 text-gray-700 text-justify">
+                                {item.detail}
+                            </div>
+                            )}
                         </div>
-                        )}
-                    </div>
-                    ))}   
+                      ))
+                    ) : (
+                      <div className="px-6 py-4 text-center text-gray-700">
+                        <p>No hay preguntas frecuentes disponibles en este momento.</p>
+                      </div>
+                    )}
 
                     {/* Footer */}
                     <div className="px-6 py-4 flex justify-end">
