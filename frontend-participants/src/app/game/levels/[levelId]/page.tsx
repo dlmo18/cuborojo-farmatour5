@@ -188,7 +188,7 @@ export default function LevelMissionsPage() {
             <h1 className="text-3xl font-bold text-white text-center flex-1" style={{ fontFamily: "'Blinker', sans-serif" }}>
               {level.name}
             </h1>
-            <button onClick={() => router.push('/game/setting')} className="btn-menu rounded-lg shadow-lg hover:shadow-2xl transition text-2xl">
+            <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
                 src="/images/btn-menu.png"
                 alt="Menú"

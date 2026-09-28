@@ -135,7 +135,7 @@ export default function WorldsPage() {
 
   const handleEdit = (world: World) => {
     setEditingWorld(world);
-    setFormData({ name: world.name, description: world.description, orderNum: world.orderNum, imageId: world.imageId, isActive: world.isActive });
+    setFormData({ name: world.name, description: world.description, orderNum: world.orderNum, imageId: world.imageId, slug: world.slug, isActive: world.isActive });
     setShowModal(true);
     setError('');
   };
@@ -286,6 +286,11 @@ export default function WorldsPage() {
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Orden *</label>
                 <input type="number" required min="1" value={formData.orderNum || 1} onChange={(e) => setFormData({ ...formData, orderNum: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary-700 mb-2">Slug (código)</label>
+                <input type="text" value={(formData as any).slug || ''} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="ej: farma, mundo1, aventura" className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <p className="text-xs text-surface-500 mt-1">Identificador único del mundo (sin espacios, minúsculas)</p>
               </div>
               <div>
                 <ImageSelector

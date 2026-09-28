@@ -10,6 +10,7 @@ export class CreateWorldDto {
   @ApiProperty({ required: false }) @IsOptional() description?: string;
   @ApiProperty({ required: false }) @IsOptional() imageId?: string;
   @ApiProperty() @IsNumber() orderNum: number;
+  @ApiProperty({ required: false }) @IsOptional() @IsString() slug?: string;
 }
 
 @Injectable()

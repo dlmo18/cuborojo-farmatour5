@@ -17,6 +17,9 @@ export class World {
   @Column({ name: 'order_num' })
   orderNum: number;
 
+  @Column({ nullable: true, unique: true })
+  slug: string;
+
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 

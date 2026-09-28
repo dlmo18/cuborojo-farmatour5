@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useAuthStore } from '@/store/authStore';
+import { useWorldStore } from '@/store/worldStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import BottomStats from '@/components/BottomStats';
 import WorldStarsBar from '@/components/WorldStarsBar';
@@ -47,6 +48,7 @@ export default function WorldsPage() {
   const [worldStars, setWorldStars] = useState(0);
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
+  const setCurrentWorld = useWorldStore((state) => state.setCurrentWorld);
 
   const fetchWorlds = useCallback(async () => {
     try {
@@ -71,6 +73,12 @@ export default function WorldsPage() {
 
   const handleWorldClick = async (world: World) => {
     setSelectedWorld(world);
+    // Establecer el mundo actual con su slug para aplicar estilos
+    setCurrentWorld({
+      id: world.id,
+      name: world.name,
+      slug: (world as any).slug,
+    });
     try {
       // Fetch all levels for this world
       const res = await axios.get(`${API_URL}/levels/world/${world.id}`, {
@@ -175,8 +183,8 @@ export default function WorldsPage() {
   };
 
   return (
-    <div className="world-page min-h-screen px-8">
-      <div className="max-w-md mx-auto">
+    <div className={`min-h-screen ${!selectedWorld ? 'world-page' : 'level-page' }`}>
+      <div className="max-w-md mx-auto ">
 
         {/* Header con botón de menú */}
         {!selectedWorld && (
@@ -275,31 +283,53 @@ export default function WorldsPage() {
           </div>
         ) : (
           <div>
-            <div className="flex justify-between items-center mb-8">
-              <button
-                onClick={() => { 
-                  setSelectedWorld(null); 
-                  setLevels([]); 
-                  setLevelProgress({});
-                  setWorldStars(0); 
-                }}
-                className="text-white text-4xl hover:opacity-80 transition"
-              >
-                ←
-              </button>
-              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>{selectedWorld.name}</h2>
-              <div className="w-10"></div>
+            <div className="fixed z-10 w-full left-0 ">
+              <div className="level-header flex justify-between items-center mb-8">
+                <button
+                  onClick={() => { 
+                    setSelectedWorld(null); 
+                    setLevels([]); 
+                    setLevelProgress({});
+                    setWorldStars(0); 
+                  }}
+                  className="text-4xl hover:opacity-80 transition"
+                >
+                  <Image
+                    src="/images/btn-back.png"
+                    alt="Atrás"
+                    width={50}
+                    height={50}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </button>
+                <h2 className="text-3xl pt-4 font-bold text-black text-center uppercase leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  <span className="block text-xl">MUNDO</span>
+                  <div className="level-title font-black">{selectedWorld.name}</div>
+                </h2>
+                <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
+                  <Image
+                    src="/images/btn-menu.png"
+                    alt="Menú"
+                    width={50}
+                    height={50}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </button>
+              </div>
             </div>
-            <div className="text-center">
+            
+            <div className="text-center pt-36">
               {levels.map((level) => {
                 const isLocked = level.isLocked;
                 const isFinal = level.levelType === 'final';
                 const isGolden = level.levelType === 'golden';
                 
-                let bgColor = 'bg-white';
-                if (isGolden) bgColor = 'bg-accent-300';
-                if (isFinal) bgColor = 'bg-secondary-300';
-                if (isLocked) bgColor = 'bg-secondary-200';
+                let bgColor = 'item-normal';
+                if (isGolden) bgColor = 'item-golden';
+                if (isFinal) bgColor = 'item-final';
+                if (isLocked) bgColor = 'item-locked';
 
                 return (
                   <div
@@ -307,38 +337,16 @@ export default function WorldsPage() {
                     className={`${bgColor} block w-full mb-4 rounded-lg shadow-lg p-6 ${
                       isLocked ? 'opacity-60' : ''
                     }`}
+
+                    onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}
                   >
                     {isFinal && !isLocked && <div className="text-3xl mb-2">🏆 NIVEL FINAL</div>}
                     {isGolden && !isLocked && <div className="text-3xl mb-2">✨ NIVEL DORADO</div>}
                     {isLocked && <div className="text-3xl mb-2">🔒 BLOQUEADO</div>}
                     
-                    <h3 className={`text-xl font-bold ${
-                      isGolden ? 'text-accent-700' : isFinal ? 'text-secondary-700' : 'text-primary-600'
-                    } mb-2`} style={{ fontFamily: "'Blinker', sans-serif" }}>
+                    <h3 className={`text-xl font-bold text-white`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                       {level.name}
                     </h3>
-                    <p className={`${isLocked ? 'text-gray-600' : 'text-gray-700'} mb-4`}>
-                      {level.description}
-                    </p>
-                    
-                    {isLocked ? (
-                      <div className="text-gray-700 text-sm">
-                        Completa el nivel anterior para desbloquear
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => router.push(`/game/levels/${level.id}`)}
-                        className={`${
-                          isGolden
-                            ? 'bg-accent-500 hover:bg-accent-600'
-                            : isFinal
-                            ? 'bg-secondary-500 hover:bg-secondary-600'
-                            : 'bg-primary-600 hover:bg-primary-700'
-                        } text-white px-4 py-2 rounded-lg transition font-semibold`} style={{ fontFamily: "'Blinker', sans-serif" }}
-                      >
-                        {isFinal ? 'Jugar Nivel Final' : isGolden ? 'Jugar Nivel Dorado' : 'Jugar Nivel'}
-                      </button>
-                    )}
                   </div>
                 );
               })}

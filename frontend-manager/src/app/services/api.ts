@@ -246,6 +246,7 @@ export interface World {
   description?: string;
   imageId?: string;
   orderNum: number;
+  slug?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -256,6 +257,7 @@ export interface CreateWorldDto {
   description?: string;
   imageId?: string;
   orderNum: number;
+  slug?: string;
 }
 
 export interface UpdateWorldDto {
@@ -263,6 +265,7 @@ export interface UpdateWorldDto {
   description?: string;
   imageId?: string;
   orderNum?: number;
+  slug?: string;
   isActive?: boolean;
 }
 
