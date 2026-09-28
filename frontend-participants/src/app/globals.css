@@ -106,7 +106,7 @@ body {
 .world-page {
   background: top center repeat;
   background-image: url('/images/world-bg.jpg');
-
+  min-width: 420px;
 }
 
 .bottom-stats {
@@ -161,4 +161,62 @@ body {
   background: url('/images/setting-panel.png') no-repeat center top;
   background-size: 100% auto;
   
+}
+
+.level-page {
+  background: top center repeat;
+  background-image: url('/images/level-bg.jpg');
+  background-size: 420px auto;
+  min-width: 420px;
+  padding-bottom: 6rem;
+}
+
+.level-header {
+  background: url('/images/level-header.png') no-repeat center top;
+  background-size: 100% auto;
+  padding: 1rem 2rem 2rem;
+  width: 420px;
+  margin: auto;
+}
+
+.level-score {
+  background: url('/images/level-item-score.png') no-repeat center top;
+  background-size: 100% auto;
+  padding: .25rem 1rem 1rem 2rem;
+  width: 160px;
+  margin-bottom: 2rem;
+}
+
+.world-farma {
+  .level-title {
+    color: #e87800;
+  }
+
+  .level-page {
+    background-image: url('/images/level-bg-farma.jpg');
+  }
+}
+
+.world-wellness {
+  .level-title {
+    color: #e87800;
+  }
+}
+
+.world-care {
+  .level-title {
+    color: #e87800;
+  }
+}
+
+.world-infant {
+  .level-title {
+    color: #e87800;
+  }
+}
+
+.world-beauty {
+  .level-title {
+    color: #e87800;
+  }
 }
