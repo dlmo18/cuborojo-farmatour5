@@ -9,6 +9,7 @@ import { useAuthCheck } from '@/hooks/useAuthCheck';
 import BottomStats from '@/components/BottomStats';
 import WorldStarsBar from '@/components/WorldStarsBar';
 import Image from 'next/image';
+import { FaCheck } from "react-icons/fa";
 
 interface World {
   id: string;
@@ -325,6 +326,9 @@ export default function WorldsPage() {
                 const isLocked = level.isLocked;
                 const isFinal = level.levelType === 'final';
                 const isGolden = level.levelType === 'golden';
+                const progress = levelProgress[level.id];
+                const starsEarned = progress?.starsEarned || 0;
+                const isCompleted = progress?.isCompleted || false;
                 
                 let bgColor = 'item-normal';
                 if (isGolden) bgColor = 'item-golden';
@@ -334,17 +338,29 @@ export default function WorldsPage() {
                 return (
                   <div
                     key={level.id}
-                    className={`${bgColor} block w-full mb-4 rounded-lg shadow-lg p-6 ${
+                    className={`level-item ${bgColor} block m-auto font-bold p-2 px-3 ${
                       isLocked ? 'opacity-60' : ''
                     }`}
 
                     onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}
                   >
-                    {isFinal && !isLocked && <div className="text-3xl mb-2">🏆 NIVEL FINAL</div>}
-                    {isGolden && !isLocked && <div className="text-3xl mb-2">✨ NIVEL DORADO</div>}
-                    {isLocked && <div className="text-3xl mb-2">🔒 BLOQUEADO</div>}
-                    
-                    <h3 className={`text-xl font-bold text-white`} style={{ fontFamily: "'Blinker', sans-serif" }}>
+                    <div className="grid grid-cols-2 ">
+                      <div className={`stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
+                        <Image 
+                            src="/images/icon-score.png"
+                            alt="Stars"
+                            width={15}
+                            height={15}
+                            className="inline-block align-middle mr-1"
+                            priority
+                          />
+                          {starsEarned}
+                      </div>
+                      <div className={`stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
+                          <span className="inline-block align-middle"><FaCheck  /></span>
+                      </div>
+                    </div>
+                    <h3 className={`text-lg leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                       {level.name}
                     </h3>
                   </div>

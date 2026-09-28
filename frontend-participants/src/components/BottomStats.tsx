@@ -66,7 +66,7 @@ export default function BottomStats({
   }, [groupId, userId, token]);
   return (
     <div className="bottom-stats fixed bottom-0 left-0 right-0 z-50 pt-24">
-      <div className="panel-block  max-w-md mx-auto flex justify-between items-center">
+      <div className="panel-block mx-auto flex justify-between items-center">
         {/* Contador regresivo (izquierda) */}
         <div className="flex-1">
           <CountdownTimer />
@@ -75,7 +75,7 @@ export default function BottomStats({
         {/* Estrellas (centro) */}
         <div className="flex-1 flex justify-center">
           <div className="bg-white px-6 py-3 bottom-stars flex items-start justify-center">
-            <p className="text-5xl pt-10 font-blinker font-bold">
+            <p className="text-5xl pt-8 font-blinker font-bold">
               {mounted ? totalStars : '0'}
             </p>
           </div>
@@ -84,10 +84,10 @@ export default function BottomStats({
         {/* Puesto en el grupo (derecha) */}
         <div className="flex-1 flex justify-end relative">
           <div className="pr-2 pl-8 py-3 font-blinker font-bold mt-20">
-            <div className="text-3xl absolute top-16 -left-5 bottom-place text-center pt-6 ">
+            <div className="text-3xl absolute top-16 -left-5 bottom-place text-center pt-5 ">
               {mounted ? (loading ? '...' : groupRanking ? `#${groupRanking}` : '1') : '1'}
             </div>
-            <div className="text-md pl-10 leading-4 text-black mb-1 uppercase">Puesto en tu grupo</div>
+            <div className="text-sm pl-8 leading-4 text-black mb-1 uppercase">Puesto en tu grupo</div>
           </div>
         </div>
       </div>

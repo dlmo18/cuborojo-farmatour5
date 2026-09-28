@@ -86,7 +86,7 @@ export default function CountdownTimer({ onTimeExpired }: CountdownTimerProps) {
             isExpired ? 'cursor-pointer' : 'cursor-not-allowed'
           }`}
         >
-          <Image src={isExpired ? "/images/icon-gift.png" : "/images/icon-gift-lock.png"} alt="Gift" width={80} height={80} />
+          <Image src={isExpired ? "/images/icon-gift.png" : "/images/icon-gift-lock.png"} alt="Gift" width={70} height={70} />
         </button>
       </div>
 

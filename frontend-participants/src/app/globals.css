@@ -120,21 +120,22 @@ body {
   background-image: url('/images/panel-bottom.png');
   background-size: contain;
   height: 180px;
+  max-width: 420px;
 }
 
 .bottom-stars {
   background: bottom center no-repeat;
   background-size: contain;
-  width: 160px;
-  height: 160px;
+  width: 140px;
+  height: 140px;
   background-image: url('/images/icon-score.png');
 }
 
 .bottom-place {
   background: bottom center no-repeat;
   background-size: contain;
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background-image: url('/images/icon-place.png');
 }
 
@@ -168,7 +169,7 @@ body {
   background-image: url('/images/level-bg.jpg');
   background-size: 420px auto;
   min-width: 420px;
-  padding-bottom: 6rem;
+  padding-bottom: 7rem;
 }
 
 .level-header {
@@ -187,6 +188,17 @@ body {
   margin-bottom: 2rem;
 }
 
+.level-item {
+  background: url('/images/level-item-enable.png') no-repeat center top;
+  background-size: 100% auto;
+  max-width: 320px;
+  height: 100px;
+}
+
+.item-locked {
+  background-image: url('/images/level-item-locked.png');
+}
+
 .world-farma {
   .level-title {
     color: #e87800;
@@ -194,6 +206,10 @@ body {
 
   .level-page {
     background-image: url('/images/level-bg-farma.jpg');
+  }
+
+  .item-normal {
+    background-image: url('/images/level-item-enable_farma.png');
   }
 }
 
