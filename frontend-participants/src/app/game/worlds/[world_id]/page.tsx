@@ -215,7 +215,7 @@ export default function WorldLevelsPage() {
                 alt="Atrás"
                 width={50}
                 height={50}
-                className="w-full h-auto"
+                className="h-auto"
                 priority
               />
             </button>

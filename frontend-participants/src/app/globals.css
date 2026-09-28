@@ -199,6 +199,14 @@ body {
   background-image: url('/images/level-item-locked.png');
 }
 
+.mission-page {
+  background: top center repeat;
+  background-image: url('/images/level-bg.jpg');
+  background-size: 420px auto;
+  min-width: 420px;
+  padding-bottom: 7rem;
+}
+
 .world-farma {
   .level-title {
     color: #e87800;
@@ -236,3 +244,4 @@ body {
     color: #e87800;
   }
 }
+

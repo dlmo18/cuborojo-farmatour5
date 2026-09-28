@@ -169,24 +169,25 @@ export default function LevelMissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+    <div className="min-h-screen mission-page">
       <div className="max-w-md mx-auto">
 
         {/* Header simple (sin clase .header, solo en mundos) */}
         <div className="fixed top-0 left-0 w-full py-4 pb-10 bg-gradient-to-b from-black/80 to-black/0">
-          <div className="max-w-md mx-auto flex px-4 justify-between items-center">
+          <div className="mission-header max-w-md mx-auto flex px-4 justify-between items-center">
             <button onClick={() => router.push(`/game/worlds/${level.world.id}`)}>
               <Image
                 src="/images/btn-back.png"
                 alt="Atrás"
                 width={50}
                 height={50}
-                className="w-full h-auto"
+                className="h-auto"
                 priority
               />
             </button>
             <h1 className="text-3xl font-bold text-white text-center flex-1" style={{ fontFamily: "'Blinker', sans-serif" }}>
-              {level.name}
+              <span className="block text-xl">NIVEL</span>
+              <div className="level-title font-black">{level.name}</div>
             </h1>
             <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
@@ -194,7 +195,7 @@ export default function LevelMissionsPage() {
                 alt="Menú"
                 width={50}
                 height={50}
-                className="w-full h-auto"
+                className="h-auto"
                 priority
               />
             </button>
