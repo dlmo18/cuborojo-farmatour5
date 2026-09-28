@@ -192,12 +192,11 @@ export default function ContentTreeModal({
           {hasChildren ? (
             <button
               onClick={() => toggleNode(node.id)}
-              className="p-0 hover:bg-gray-200 rounded transition-colors"
+              className={`p-0 hover:bg-gray-200 rounded transition-colors transition-transform ${isExpanded ? 'rotate-90' : ''}`}
               title={isExpanded ? 'Contraer' : 'Expandir'}
             >
               <MdChevronRight
                 size={18}
-                className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}
               />
             </button>
           ) : (

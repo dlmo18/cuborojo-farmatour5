@@ -349,11 +349,11 @@ export default function GoldenLevelImportModal({ isOpen, onClose, levelId, onSuc
 
           {result && (
             <div>
-              <div className="mb-4 flex items-center gap-2">
+              <div className={`mb-4 flex items-center gap-2 ${result.success ? 'bg-green-100 p-2 rounded-lg' : 'bg-red-100 p-2 rounded-lg'}`}>
                 {result.success ? (
-                  <MdCheckCircle className="text-green-600" size={24} />
+                  <MdCheckCircle size={24} />
                 ) : (
-                  <MdErrorOutline className="text-red-600" size={24} />
+                  <MdErrorOutline size={24} />
                 )}
                 <span className={`font-semibold ${result.success ? 'text-green-600' : 'text-red-600'}`}>
                   {result.message}

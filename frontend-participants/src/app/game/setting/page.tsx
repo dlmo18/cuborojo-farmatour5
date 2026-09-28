@@ -181,7 +181,7 @@ export default function SettingPage() {
                 {/* Logo del Grupo */}
                 {groupImageUrl && (
                 <div className="flex flex-col items-center">
-                    <div className="relative w-48 h-16 mb-16 flex items-center justify-center bg-white rounded-lg overflow-hidden">
+                    <div className="relative w-48 h-16 mb-16 flex items-center justify-center">
                     <Image
                         src={groupImageUrl}
                         alt={user?.group?.name || 'Grupo'}

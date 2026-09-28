@@ -107,7 +107,6 @@ export default function ComoJugarPage() {
         <RichTextEditor
           value={content}
           onChange={setContent}
-          height="500px"
         />
       </div>
 

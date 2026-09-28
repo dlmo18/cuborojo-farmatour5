@@ -144,6 +144,7 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
+  imageId?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
