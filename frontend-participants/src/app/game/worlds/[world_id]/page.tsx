@@ -202,7 +202,7 @@ export default function WorldLevelsPage() {
 
   return (
     <div className="min-h-screen level-page">
-      <div className="max-w-md mx-auto">
+      <div className="max-w-sm mx-auto">
         {/* Header with back button */}
         <div className="fixed z-10 w-full left-0">
           <div className="level-header flex justify-between items-center mb-8">
@@ -221,7 +221,7 @@ export default function WorldLevelsPage() {
             </button>
             <h2 className="text-3xl pt-4 font-bold text-black text-center uppercase leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
               <span className="block text-xl">MUNDO</span>
-              <div className="level-title font-black">{world.name}</div>
+              <div className="title font-black">{world.name}</div>
             </h2>
             <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
@@ -229,7 +229,7 @@ export default function WorldLevelsPage() {
                 alt="Menú"
                 width={50}
                 height={50}
-                className="w-full h-auto"
+                className="h-auto"
                 priority
               />
             </button>

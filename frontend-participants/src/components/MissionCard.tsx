@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 interface Mission {
   id: string;
@@ -28,40 +29,40 @@ export default function MissionCard({
     <button
       onClick={onMissionClick}
       disabled={!isUnlocked}
-      className={`w-full rounded-lg shadow-lg p-6 transition transform ${
+      className={`mission-item block m-auto mb-2 px-10 py-3 transition transform ${
         isUnlocked
           ? 'bg-white hover:shadow-2xl hover:scale-105 cursor-pointer'
           : 'bg-secondary-200 opacity-50 cursor-not-allowed'
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div className="text-left flex-1">
-          <h3 className="text-xl font-bold text-primary-600 mb-2" style={{ fontFamily: "'Blinker', sans-serif" }}>{mission.name}</h3>
-          {mission.description && (
-            <p className="text-gray-700 text-sm mb-3">{mission.description}</p>
-          )}
-          {/* Estrellas */}
-          <div className="flex gap-2 rounded bg-black max-w-xs">
-            {stars.map((earned, idx) => (
-              <span key={idx} className={`text-2xl ${earned ? '⭐' : '⭐'}`}>
-                {earned ? '⭐' : '☆'}
-              </span>
-            ))}
-          </div>
+      <div className="flex items-center justify-between h-5 mb-5">
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>{mission.name}</h3>
         </div>
-
-        {/* Estado de la misión */}
-        <div className="text-right ml-4">
-          {isCompleted && (
-            <div className="text-green-600 font-bold text-sm mb-2">✓ Completada</div>
-          )}
-          {!isUnlocked && (
-            <div className="text-gray-700 font-bold text-sm">🔒 Bloqueada</div>
-          )}
-          {isUnlocked && !isCompleted && (
-            <div className="text-primary-600 font-bold text-sm" style={{ fontFamily: "'Blinker', sans-serif" }}>▶ Jugar</div>
-          )}
-        </div>
+      </div>
+      {/* Estrellas */}
+      <div className="m-auto">
+        {
+          isUnlocked && stars ? (
+            <Image
+              src={`/images/level-mision-star-${stars.length}.png`}
+              alt="Estrella"
+              width={50}
+              height={24}
+              className="h-auto block m-auto"
+              priority
+            />
+          ): (
+            <Image
+              src="/images/level-mision-star-disable.png"
+              alt="Estrella"
+              width={50}
+              height={24}
+              className="h-auto block m-auto"
+              priority
+            />
+          )
+        }
       </div>
     </button>
   );

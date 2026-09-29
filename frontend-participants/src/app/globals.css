@@ -195,6 +195,14 @@ body {
   height: 100px;
 }
 
+.mission-item {
+  background: url('/images/level-mision-a.png') no-repeat center top;
+  background-size: 100% auto;
+  max-width: 320px;
+  height: 100px;
+}
+
+
 .item-locked {
   background-image: url('/images/level-item-locked.png');
 }
@@ -207,12 +215,21 @@ body {
   padding-bottom: 7rem;
 }
 
+.mission-header {
+  background: url('/images/mission-header.png') no-repeat center top;
+  background-size: 100% auto;
+  padding: .5rem 1rem 2rem;
+  width: 420px;
+  margin: auto;
+}
+
 .world-farma {
-  .level-title {
+  .title {
     color: #e87800;
   }
 
-  .level-page {
+  .level-page,
+  .mission-page {
     background-image: url('/images/level-bg-farma.jpg');
   }
 
@@ -222,25 +239,26 @@ body {
 }
 
 .world-wellness {
-  .level-title {
+  .title {
     color: #e87800;
   }
+  
 }
 
 .world-care {
-  .level-title {
+  .title {
     color: #e87800;
   }
 }
 
 .world-infant {
-  .level-title {
+  .title {
     color: #e87800;
   }
 }
 
 .world-beauty {
-  .level-title {
+  .title {
     color: #e87800;
   }
 }
