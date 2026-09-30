@@ -243,9 +243,9 @@ export default function MissionInfoPage() {
             {/* variantBadges */}
             <div className="panel-variant">
               <h3 className="panel-subtitle text-lg font-bold mb-3 uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>Contiene:</h3>
-              {currentItem.variantBadges && currentItem.variantBadges.length > 0 && (
+              {currentItem.variantes && currentItem.variantes.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {currentItem.variantBadges.map((badge, idx) => (
+                  {currentItem.variantes.map((badge, idx) => (
                     <span
                       key={idx}
                       className="bg-primary-600 text-white px-3 py-1 rounded-xl text-sm font-semibold"
@@ -263,9 +263,9 @@ export default function MissionInfoPage() {
               <div className="bg-white rounded-2xl">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-l rounded-xl bg-white p-4">
-                      {currentItem.content && currentItem.contentBadges.length > 0 && (
+                      {currentItem.contenido && currentItem.contenido.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-6">
-                          {currentItem.contentBadges.map((badge, idx) => (
+                          {currentItem.contenido.map((badge, idx) => (
                             <div
                               key={idx}
                               className="text-sm"
