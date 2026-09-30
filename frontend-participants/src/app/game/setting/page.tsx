@@ -8,7 +8,7 @@ import { useAuthCheck } from '@/hooks/useAuthCheck';
 import HowToPlayModal from '@/components/HowToPlayModal';
 import FAQModal from '@/components/FAQModal';
 import SupportModal from '@/components/SupportModal';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -36,9 +36,7 @@ export default function SettingPage() {
       try {
         // El usuario ya está en el store (recuperado de localStorage)
         if (user?.group?.id) {
-          const groupRes = await axios.get(`${API_URL}/groups/${user.group.id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const groupRes = await axiosInstance.get(`/groups/${user.group.id}`);
           
           if (groupRes.data?.imageId) {
             const imageUrl = `${API_URL}/media/serve/${groupRes.data.imageId}`;

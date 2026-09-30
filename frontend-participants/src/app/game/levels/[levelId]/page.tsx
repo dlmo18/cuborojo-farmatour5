@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
@@ -14,6 +14,7 @@ interface Mission {
   name: string;
   description: string;
   orderNum: number;
+  order_number?: number;
   maxStars: number;
   isActive: boolean;
 }
@@ -67,15 +68,13 @@ export default function LevelMissionsPage() {
         setLoading(true);
 
         // Obtener nivel
-        const levelRes = await axios.get(`${API_URL}/levels/${levelId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const levelRes = await axiosInstance.get(`/levels/${levelId}`);
         setLevel(levelRes.data);
 
         // Obtener misiones del nivel
         let sortedMissions: Mission[] = [];
         try {
-          const missionsRes = await axios.get(`${API_URL}/missions/level/${levelId}`);
+          const missionsRes = await axiosInstance.get(`/missions/level/${levelId}`);
           sortedMissions = (missionsRes.data || []).sort(
             (a: Mission, b: Mission) => b.orderNum - a.orderNum
           );
@@ -87,9 +86,7 @@ export default function LevelMissionsPage() {
 
         // Obtener progreso del usuario
         try {
-          const progressRes = await axios.get(`${API_URL}/progress/game-state`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const progressRes = await axiosInstance.get(`/progress/game-state`);
 
           if (progressRes.data?.missionProgress && Array.isArray(progressRes.data.missionProgress)) {
             const progressMap: Record<string, MissionProgress> = {};
@@ -202,19 +199,8 @@ export default function LevelMissionsPage() {
           </div>
         </div>
 
-        {/* Espacio para el header fijo */}
-        <div className="h-24" />
-
-        {/* Información y descripción del nivel */}
-        <div className="text-center mb-8">
-          <p className="text-white text-sm font-light mb-2">{level.world.name}</p>
-          {level.description && (
-            <p className="text-white/80">{level.description}</p>
-          )}
-        </div>
-
         {/* Lista de misiones */}
-        <div className="space-y-4 mt-8">
+        <div className="space-y-3 pt-36">
           {missions.length === 0 ? (
             <div className="bg-white rounded-lg shadow-lg p-6 text-center">
               <p className="text-gray-600">No hay misiones en este nivel</p>

@@ -6,6 +6,7 @@ import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
+import ParticipantProgressModal from '@/app/components/ParticipantProgressModal';
 import { participantsApi, groupsApi, Participant, Group, CreateParticipantDto, UpdateParticipantDto } from '@/app/services/api';
 import { downloadParticipantTemplate, getTemplateDescription } from '@/app/utils/participantTemplateGenerator';
 import { parseCSVFile, validateImportRow, findOrCreateGroup, findParticipantByDNI, ImportResult, ImportRow } from '@/app/utils/participantImportProcessor';
@@ -33,6 +34,8 @@ export default function ParticipantsPage() {
   const [showTemplateInfo, setShowTemplateInfo] = useState(false);
   const [showImportResults, setShowImportResults] = useState(false);
   const [importResults, setImportResults] = useState<ImportResult | null>(null);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
 
   useEffect(() => {
     fetchParticipants();
@@ -84,6 +87,11 @@ export default function ParticipantsPage() {
     } catch (err: any) {
       alert('Error: ' + (err.response?.data?.message || err.message));
     }
+  };
+
+  const handleViewProgress = (participant: Participant) => {
+    setSelectedParticipant(participant);
+    setShowProgressModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -278,7 +286,22 @@ export default function ParticipantsPage() {
         <div className="p-6 border-b border-surface-200">
           <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por DNI, nombre o correo..." />
         </div>
-        <DataTable columns={columns} data={participants} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+        <DataTable 
+          columns={columns} 
+          data={participants} 
+          loading={loading} 
+          onEdit={handleEdit} 
+          onDelete={handleDelete}
+          additionalOptions={[
+            {
+              label: 'Ver Progreso',
+              callback: handleViewProgress,
+              class: 'bg-accent-500 hover:bg-accent-600 text-white',
+              icon: 'assignment',
+              title: 'Ver progreso del participante'
+            }
+          ]}
+        />
         <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} onItemsPerPageChange={setItemsPerPage} />
       </div>
 
@@ -478,6 +501,17 @@ export default function ParticipantsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showProgressModal && selectedParticipant && (
+        <ParticipantProgressModal
+          participantId={selectedParticipant.id}
+          participantName={selectedParticipant.fullName}
+          onClose={() => {
+            setShowProgressModal(false);
+            setSelectedParticipant(null);
+          }}
+        />
       )}
     </div>
   );

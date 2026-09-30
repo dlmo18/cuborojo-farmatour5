@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import Image from 'next/image';
 
 interface CountdownTimerProps {
@@ -18,7 +18,7 @@ export default function CountdownTimer({ onTimeExpired }: CountdownTimerProps) {
   useEffect(() => {
     const fetchCountdownConfig = async () => {
       try {
-        const res = await axios.get(`${API_URL}/config`);
+        const res = await axiosInstance.get(`/config`);
         const configs = res.data || [];
         const countdownConfig = configs.find((c: any) => c.key === 'countdown_datetime');
         

@@ -23,6 +23,8 @@ export class MissionsController {
   }
 
   @Get(':id/detail')
+  @UseGuards(ParticipantGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Misión con items de información' })
   findWithItems(@Param('id') id: string) {
     return this.service.findWithItems(id);

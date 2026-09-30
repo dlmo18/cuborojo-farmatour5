@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/authStore';
 import CountdownTimer from './CountdownTimer';
 
@@ -46,9 +46,7 @@ export default function BottomStats({
 
     const fetchRanking = async () => {
       try {
-        const res = await axios.get(`${API_URL}/groups/${groupId}/ranking`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosInstance.get(`/groups/${groupId}/ranking`);
         
         const participants = res.data?.data || res.data || [];
         const ranking = participants.findIndex((p: any) => p.id === userId) + 1;

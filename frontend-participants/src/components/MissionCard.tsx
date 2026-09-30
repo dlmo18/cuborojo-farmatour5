@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 interface Mission {
   id: string;
+  orderNum: number;
   name: string;
   description: string;
   maxStars: number;
@@ -25,27 +26,33 @@ export default function MissionCard({
 }: MissionCardProps) {
   const stars = Array.from({ length: mission.maxStars }, (_, i) => i < starsEarned);
 
+  let starCounter=0;
+  stars.forEach(star => {
+    if (star) starCounter++;
+  });
+
   return (
     <button
       onClick={onMissionClick}
       disabled={!isUnlocked}
-      className={`mission-item block m-auto mb-2 px-10 py-3 transition transform ${
+      className={`mission-item block mx-auto px-10 transition transform ${
         isUnlocked
-          ? 'bg-white hover:shadow-2xl hover:scale-105 cursor-pointer'
-          : 'bg-secondary-200 opacity-50 cursor-not-allowed'
+          ? 'cursor-pointer'
+          : 'is-locked cursor-not-allowed'
       }`}
     >
-      <div className="flex items-center justify-between h-5 mb-5">
-        <div className="text-center">
-          <h3 className="text-xl font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>{mission.name}</h3>
-        </div>
+      <div className="flex items-center justify-center h-[100px] mb-2 w-full ">
+        <h3 className="text-xl font-bold text-white uppercase leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
+          <span className='block'>Misión {mission.orderNum}:</span>
+          {mission.name}
+        </h3>
       </div>
       {/* Estrellas */}
       <div className="m-auto">
         {
           isUnlocked && stars ? (
             <Image
-              src={`/images/level-mision-star-${stars.length}.png`}
+              src={`/images/level-mision-star-${starCounter}.png`}
               alt="Estrella"
               width={50}
               height={24}

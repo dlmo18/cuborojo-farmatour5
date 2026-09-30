@@ -40,6 +40,10 @@ export class ReportsController {
   @ApiOperation({ summary: 'Tabla de posiciones por grupo' })
   groupLeaderboard() { return this.service.getGroupLeaderboard(); }
 
+  @Get('participant-progress/:id')
+  @ApiOperation({ summary: 'Progreso detallado de un participante por mundo, nivel y misión' })
+  participantProgress(@Param('id') id: string) { return this.service.getParticipantProgress(id); }
+
   @Get('participant/:id')
   @ApiOperation({ summary: 'Detalle de progreso de un participante' })
   participantDetail(@Param('id') id: string) { return this.service.getParticipantDetail(id); }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/authStore';
 import { useWorldStore } from '@/store/worldStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
@@ -63,7 +63,7 @@ export default function WorldLevelsPage() {
         setLoading(true);
 
         // Fetch world info
-        const worldRes = await axios.get(`${API_URL}/worlds/${world_id}`);
+        const worldRes = await axiosInstance.get(`/worlds/${world_id}`);
         const worldData = worldRes.data;
         setWorld(worldData);
         
@@ -75,17 +75,13 @@ export default function WorldLevelsPage() {
         });
 
         // Fetch all levels for this world
-        const levelsRes = await axios.get(`${API_URL}/levels/world/${world_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const levelsRes = await axiosInstance.get(`/levels/world/${world_id}`);
         const allLevels = levelsRes.data;
 
         // Fetch level progress for the current user
         let progressMap: Record<string, LevelProgress> = {};
         try {
-          const progressRes = await axios.get(`${API_URL}/progress/game-state`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const progressRes = await axiosInstance.get(`/progress/game-state`);
           if (progressRes.data.levelProgress) {
             progressRes.data.levelProgress.forEach((lp: LevelProgress) => {
               progressMap[lp.levelId] = lp;
@@ -254,29 +250,27 @@ export default function WorldLevelsPage() {
             return (
               <div
                 key={level.id}
-                className={`level-item ${bgColor} block m-auto font-bold p-2 px-3 ${
+                className={`level-item relative ${bgColor} block m-auto font-bold p-2 px-3 ${
                   isLocked ? 'opacity-60' : 'cursor-pointer'
                 }`}
                 onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}
               >
-                <div className="grid grid-cols-2">
-                  <div className={`stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
-                    <Image 
-                      src="/images/icon-score.png"
-                      alt="Stars"
-                      width={15}
-                      height={15}
-                      className="inline-block align-middle mr-1"
-                      priority
-                    />
-                    {starsEarned}
-                  </div>
-                  <div className={`stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
-                    <span className="inline-block align-middle"><FaCheck /></span>
-                  </div>
+                <div className={`absolute top-0 left-0 stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
+                  <Image 
+                    src="/images/icon-score.png"
+                    alt="Stars"
+                    width={15}
+                    height={15}
+                    className="inline-block align-middle mr-1"
+                    priority
+                  />
+                  {starsEarned}
                 </div>
-                <h3 className="text-lg leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                  {level.name}
+                <div className={`absolute top-0 right-0 stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
+                  <span className="inline-block align-middle"><FaCheck /></span>
+                </div>
+                <h3 className="text-lg h-[60px] flex items-center justify-center text-white leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  <span>{level.name}</span>
                 </h3>
               </div>
             );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 
@@ -60,22 +60,22 @@ export default function MissionQuestionsPage() {
   const token = useAuthStore((state) => state.token);
 
   const fetchData = useCallback(async () => {
-    if (!missionId || !token) return;
+    if (!missionId) {
+      setError('ID de misión no encontrado.');
+      setLoading(false);
+      return;
+    }
 
     try {
       setError(null);
       setLoading(true);
 
       // Obtener datos de la misión
-      const missionRes = await axios.get(`${API_URL}/missions/${missionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const missionRes = await axiosInstance.get(`/missions/${missionId}`);
       setMission(missionRes.data);
 
       // Obtener preguntas
-      const questionsRes = await axios.get(`${API_URL}/questions/mission/${missionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const questionsRes = await axiosInstance.get(`/questions/mission/${missionId}`);
       
       const sortedQuestions = (questionsRes.data || []).sort(
         (a: Question, b: Question) => a.orderNum - b.orderNum
@@ -89,22 +89,35 @@ export default function MissionQuestionsPage() {
       });
       setAnswers(initialAnswers);
     } catch (err: any) {
-      console.error('Error fetching data:', err);
-      setError(err.response?.data?.message || 'Error al cargar las preguntas');
+      console.error('Error completo:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        message: err.response?.data?.message,
+        error: err.message,
+        url: err.config?.url,
+      });
+      
+      if (err.response?.status === 401) {
+        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      } else if (err.response?.status === 404) {
+        setError('Las preguntas no fueron encontradas para esta misión.');
+      } else {
+        setError(err.response?.data?.message || err.message || 'Error al cargar las preguntas');
+      }
     } finally {
       setLoading(false);
     }
-  }, [missionId, token]);
+  }, [missionId]);
 
   useEffect(() => {
-    if (isHydrated && missionId && token) {
+    if (isHydrated && missionId) {
       fetchData();
     }
-  }, [isHydrated, missionId, token, fetchData]);
+  }, [isHydrated, missionId, fetchData]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <p className="text-white">Cargando preguntas...</p>
@@ -115,7 +128,7 @@ export default function MissionQuestionsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
+      <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40">
         <div className="max-w-md mx-auto">
           <p className="text-white text-center mb-4">❌ {error}</p>
           <button
@@ -131,7 +144,7 @@ export default function MissionQuestionsPage() {
 
   if (!mission) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
+      <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40">
         <div className="max-w-md mx-auto">
           <p className="text-white text-center">Misión no encontrada</p>
           <button
@@ -147,7 +160,7 @@ export default function MissionQuestionsPage() {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
+      <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
@@ -205,14 +218,11 @@ export default function MissionQuestionsPage() {
     try {
       const answerId = answers[currentQuestion.id] as string;
 
-      await axios.post(
-        `${API_URL}/progress/answer`,
+      await axiosInstance.post(
+        `/progress/answer`,
         {
           questionId: currentQuestion.id,
           answerId,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -228,7 +238,7 @@ export default function MissionQuestionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-blue-500 p-8 pb-40">
+    <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">

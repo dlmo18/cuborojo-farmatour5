@@ -102,4 +102,131 @@ export class ReportsService {
 
     return { participant, recentActivity: logs };
   }
+
+  async getParticipantProgress(participantId: string) {
+    // Obtener datos del participante
+    const [participant] = await this.dataSource.query(`
+      SELECT id, full_name, dni FROM participants WHERE id = $1
+    `, [participantId]);
+
+    if (!participant) {
+      return null;
+    }
+
+    // Obtener todos los mundos con sus niveles y misiones
+    const worldsData = await this.dataSource.query(`
+      SELECT 
+        w.id as world_id,
+        w.name as world_name,
+        w.order_num,
+        l.id as level_id,
+        l.name as level_name,
+        l.level_type,
+        l.max_stars,
+        m.id as mission_id,
+        m.name as mission_name,
+        COALESCE(pmp.stars_earned, 0) as mission_stars_earned,
+        COALESCE(pmp.is_completed, false) as mission_completed,
+        COALESCE(plp.stars_earned, 0) as level_stars_earned,
+        COALESCE(plp.is_completed, false) as level_completed
+      FROM worlds w
+      LEFT JOIN levels l ON l.world_id = w.id AND l.is_active = true
+      LEFT JOIN missions m ON m.level_id = l.id AND m.is_active = true
+      LEFT JOIN participant_mission_progress pmp ON pmp.mission_id = m.id AND pmp.participant_id = $1
+      LEFT JOIN participant_level_progress plp ON plp.level_id = l.id AND plp.participant_id = $1
+      WHERE w.is_active = true
+      ORDER BY w.order_num, l.order_num, m.order_num
+    `, [participantId]);
+
+    // Calcular estadísticas totales por mundo, nivel y misión
+    const totalStarsData = await this.dataSource.query(`
+      SELECT COALESCE(SUM(pmp.stars_earned), 0) as total_stars
+      FROM participant_mission_progress pmp
+      WHERE pmp.participant_id = $1
+    `, [participantId]);
+
+    // Calcular máximo de estrellas posibles
+    const maxStarsData = await this.dataSource.query(`
+      SELECT COALESCE(SUM(COALESCE(l.max_stars, 0)), 0) as max_stars
+      FROM levels l
+      WHERE l.is_active = true
+    `);
+
+    // Agrupar datos por mundo y nivel
+    const worldsMap = new Map();
+    
+    worldsData.forEach((row: any) => {
+      const { world_id, world_name, order_num, level_id, level_name, level_type, max_stars, mission_id, mission_name, mission_stars_earned, mission_completed, level_stars_earned, level_completed } = row;
+      
+      if (!worldsMap.has(world_id)) {
+        worldsMap.set(world_id, {
+          worldId: world_id,
+          worldName: world_name,
+          orderNum: order_num,
+          totalStars: 0,
+          maxStars: 0,
+          completedLevels: 0,
+          totalLevels: 0,
+          levels: new Map()
+        });
+      }
+      
+      const world = worldsMap.get(world_id);
+      
+      if (level_id && !world.levels.has(level_id)) {
+        world.levels.set(level_id, {
+          levelId: level_id,
+          levelName: level_name,
+          levelType: level_type || 'normal',
+          starsEarned: level_stars_earned || 0,
+          maxStars: max_stars || 0,
+          isCompleted: level_completed || false,
+          missions: []
+        });
+        world.totalLevels += 1;
+        world.maxStars += (max_stars || 0);
+        if (level_completed) world.completedLevels += 1;
+      }
+      
+      if (level_id && mission_id) {
+        const level = world.levels.get(level_id);
+        level.missions.push({
+          missionId: mission_id,
+          missionName: mission_name,
+          starsEarned: mission_stars_earned || 0,
+          maxStars: level_type === 'golden' ? 5 : level_type === 'final' ? 10 : 3,
+          isCompleted: mission_completed || false
+        });
+        world.totalStars += (mission_stars_earned || 0);
+      }
+    });
+
+    // Convertir maps a arrays
+    const worlds = Array.from(worldsMap.values())
+      .map(world => ({
+        worldId: world.worldId,
+        worldName: world.worldName,
+        totalStars: world.totalStars,
+        maxStars: world.maxStars,
+        completedLevels: world.completedLevels,
+        totalLevels: world.totalLevels,
+        levels: Array.from(world.levels.values())
+      }))
+      .sort((a, b) => {
+        const aOrder = worldsData.find((w: any) => w.world_id === a.worldId)?.order_num || 0;
+        const bOrder = worldsData.find((w: any) => w.world_id === b.worldId)?.order_num || 0;
+        return aOrder - bOrder;
+      });
+
+    return {
+      participant: {
+        id: participant.id,
+        fullName: participant.full_name,
+        dni: participant.dni
+      },
+      worlds,
+      totalStars: parseInt(totalStarsData[0]?.total_stars) || 0,
+      totalMaxStars: parseInt(maxStarsData[0]?.max_stars) || 0
+    };
+  }
 }

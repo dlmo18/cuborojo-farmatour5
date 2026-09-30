@@ -48,8 +48,21 @@ export class MissionsService {
   }
 
   async findWithItems(id: string) {
-    const mission = await this.findOne(id);
-    const items = await this.itemRepo.find({ where: { missionId: id }, order: { orderNum: 'ASC' } });
+    // Usar QueryBuilder para hacer una sola query optimizada
+    const mission = await this.missionRepo.createQueryBuilder('m')
+      .leftJoinAndSelect('m.level', 'l')
+      .leftJoinAndSelect('l.world', 'w')
+      .where('m.id = :id', { id })
+      .getOne();
+    
+    if (!mission) throw new NotFoundException('Misión no encontrada');
+    
+    // Obtener items en una sola query
+    const items = await this.itemRepo.find({
+      where: { missionId: id },
+      order: { orderNum: 'ASC' },
+    });
+    
     return { ...mission, items };
   }
 

@@ -1,34 +1,13 @@
-import axios, { AxiosInstance } from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   (process.env.NODE_ENV === 'production'
     ? 'https://farmatour5-api.cuborojo.pe/api'
-    : 'http://localhost:3001/api');
+    : 'http://localhost:3011/api');
 
-// Crear instancia de axios con configuración base
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Interceptor para agregar token en cada petición
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Usar la instancia de axios configurada con interceptores
+const apiClient = axiosInstance;
 
 // ============================================================
 // TIPOS

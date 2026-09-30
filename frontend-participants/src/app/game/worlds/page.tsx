@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import axiosInstance from '@/lib/axiosInstance';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
 import BottomStats from '@/components/BottomStats';
 import Image from 'next/image';
@@ -24,7 +24,7 @@ export default function WorldsPage() {
 
   const fetchWorlds = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/worlds`);
+      const res = await axiosInstance.get(`/worlds`);
       const reversedWorlds = res.data.data?.reverse();
       setWorlds(reversedWorlds || res.data);
     } catch (err) {

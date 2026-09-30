@@ -198,8 +198,11 @@ body {
 .mission-item {
   background: url('/images/level-mision-a.png') no-repeat center top;
   background-size: 100% auto;
-  max-width: 320px;
-  height: 100px;
+  width: 320px;
+
+  &.is-locked {
+    background-image: url('/images/level-mision-disable.png');
+  }
 }
 
 
@@ -212,15 +215,40 @@ body {
   background-image: url('/images/level-bg.jpg');
   background-size: 420px auto;
   min-width: 420px;
-  padding-bottom: 7rem;
+  padding-bottom: 5rem;
 }
 
 .mission-header {
+  background: url('/images/mission-header.png') no-repeat center top;
+  background-size: auto 100%;
+  padding: 1rem 1rem 2rem;
+  width: 420px;
+  margin: auto;
+}
+
+.content-page {
+  background: url('/images/level-bg.jpg') repeat center top;
+  background-size: 100% auto;
+  padding: .5rem 1rem 2rem;
+  min-width: 420px;
+  margin: auto;
+}
+
+.content-header {
   background: url('/images/mission-header.png') no-repeat center top;
   background-size: 100% auto;
   padding: .5rem 1rem 2rem;
   width: 420px;
   margin: auto;
+}
+
+.panel-benefit {
+  background: url('/images/panel-detail.png') no-repeat center top;
+  background-size: 100% auto;
+  padding: 5rem 4rem 0;
+  width: 120%;
+  height: 320px;
+  margin: -2rem 0 0 -10%;
 }
 
 .world-farma {

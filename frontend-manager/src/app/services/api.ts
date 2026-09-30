@@ -4,7 +4,7 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   (process.env.NODE_ENV === 'production'
     ? 'https://farmatour5-api.cuborojo.pe/api'
-    : 'http://localhost:3001/api');
+    : 'http://localhost:3011/api');
 
 // Crear instancia de axios con configuración base
 const apiClient: AxiosInstance = axios.create({
@@ -922,6 +922,9 @@ export const reportsApi = {
   
   participantDetail: (id: string) => 
     apiClient.get(`/reports/participant/${id}`),
+
+  participantProgress: (id: string) => 
+    apiClient.get(`/reports/participant-progress/${id}`),
 };
 
 // ============================================================
