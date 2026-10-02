@@ -12,12 +12,12 @@ interface MissionItem {
   title: string;
   imageId: string;
   benefits: string;
-  variantes?: string[];
+  variantBadges?: string[];
+  contentBadges?: string[];
   detail: string;
   thumbnailId: string;
   orderNum: number;
   missionId: string;
-  contenido?: string[]; // content_budget JSONB array
   createdAt: string;
   updatedAt: string;
 }
@@ -26,7 +26,7 @@ interface Mission {
   id: string;
   name: string;
   description: string;
-  order_number?: number; // order_num from database
+  orderNum?: number; // order_num from database
   level: {
     id: string;
     name: string;
@@ -36,6 +36,18 @@ interface Mission {
     };
   };
   items: MissionItem[];
+  completed?: boolean;
+  evaluationTaken?: boolean;
+}
+
+interface MissionProgress {
+  id: string;
+  participantId: string;
+  missionId: string;
+  starsEarned: number;
+  isCompleted: boolean;
+  startedAt: string;
+  completedAt: string | null;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -56,6 +68,8 @@ export default function MissionInfoPage() {
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [missionCompleted, setMissionCompleted] = useState(false);
 
   const token = useAuthStore((state) => state.token);
 
@@ -65,11 +79,40 @@ export default function MissionInfoPage() {
 
     try {
       setLoading(true);
+      setError(null);
       const res = await axiosInstance.get(`/missions/${missionId}/detail`);
+      console.log('Mission data received:', res.data);
+      console.log('Mission orderNum:', res.data?.orderNum);
       setMission(res.data);
       setCurrentItemIndex(0);
-    } catch (err) {
+
+      // Obtener progreso para verificar si la evaluación ya fue completada
+      try {
+        const progressRes = await axiosInstance.get(`/progress/game-state`);
+        if (progressRes.data?.missionProgress && Array.isArray(progressRes.data.missionProgress)) {
+          const missionProgress = progressRes.data.missionProgress.find(
+            (p: MissionProgress) => p.missionId === missionId
+          );
+          setMissionCompleted(missionProgress?.isCompleted || false);
+        }
+      } catch (progressErr) {
+        console.warn('Could not fetch progress');
+        setMissionCompleted(false);
+      }
+    } catch (err: any) {
       console.error('Error fetching mission:', err);
+      
+      // Manejar errores específicos
+      if (err.response?.status === 401) {
+        setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+        // El interceptor y useAuthCheck manejarán la redirección
+      } else if (err.response?.status === 404) {
+        setError('Misión no encontrada');
+      } else if (err.response?.status === 403) {
+        setError('No tienes permiso para acceder a esta misión');
+      } else {
+        setError('Error al cargar la misión. Por favor, intenta nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -82,8 +125,11 @@ export default function MissionInfoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}>Cargando misión...</p>
+        </div>
       </div>
     );
   }
@@ -92,7 +138,9 @@ export default function MissionInfoPage() {
     return (
       <div className="min-h-screen content-page p-8 pb-40">
         <div className="max-w-md mx-auto">
-          <p className="text-white text-center">Misión no encontrada</p>
+          <p className="text-white text-center">
+            {error || 'Misión no encontrada'}
+          </p>
           <button
             onClick={() => router.back()}
             className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
@@ -110,7 +158,9 @@ export default function MissionInfoPage() {
 
   // Manejar confirmación de evaluación
   const handleStartEvaluation = () => {
-    setShowConfirmation(true);
+    if (!missionCompleted) {
+      setShowConfirmation(true);
+    }
   };
 
   const handleConfirmEvaluation = () => {
@@ -122,13 +172,19 @@ export default function MissionInfoPage() {
     setShowConfirmation(false);
   };
 
+  // Scroll al top y cambiar índice
+  const handleNavigateItem = (newIndex: number) => {
+    setCurrentItemIndex(newIndex);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen content-page p-8 pb-40">
       {/* Modal de Confirmación */}
-      {showConfirmation && (
-        <div className="modal-evaluation-start fixed inset-0 bg-black/70 flex flex-col z-50 p-4">
+      {showConfirmation && !missionCompleted && (
+        <div className="modal-evaluation-start fixed inset-0 bg-black/70 flex flex-col z-50">
           {/* Header del Modal */}
-          <div className="pb-10 bg-gradient-to-b from-black/80 to-black/0">
+          <div className="pb-10">
             <div className="mission-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
               <button onClick={handleCancelEvaluation}>
                 <Image
@@ -141,8 +197,8 @@ export default function MissionInfoPage() {
                 />
               </button>
               <h1 className="text-3xl font-bold text-white text-center flex-1 leading-none uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                <span className="block text-lg">MISIÓN {mission.order_number}</span>
-                <div className="content-title font-black text-2xl leading-none">{mission.name}</div>
+                <span className="block text-lg">MISIÓN {mission?.orderNum || '?'}:</span>
+                <div className="content-title px-2 font-black text-2xl leading-none">{mission.name}</div>
               </h1>
               <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
                 <Image
@@ -158,18 +214,20 @@ export default function MissionInfoPage() {
           </div>
 
           {/* Contenido del Modal */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-8 text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                ¿Ya estás listo para la evaluación?
+          <div className="flex-1 flex items-end justify-center">
+            <div className="max-w-sm w-full p-8 text-center uppercase text-white" style={{ fontFamily: "'Bowlby One SC', sans-serif" }} >
+              <h2 className="text-[5rem] mb-4" >
+                ¡WOW!
               </h2>
-              <p className="text-gray-600 mb-8">
-                Asegúrate de haber revisado toda la información de la misión antes de continuar.
+              <p className="text-green-600 mb-8 text-2xl">
+                ¡llegaste al final de la misión!
+              </p>
+              <p className="mb-8 text-xl">
+                ¿estás preparado para tu evaluación?
               </p>
               <button
                 onClick={handleConfirmEvaluation}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-bold transition"
-                style={{ fontFamily: "'Blinker', sans-serif" }}
               >
                 Continuar
               </button>
@@ -178,7 +236,7 @@ export default function MissionInfoPage() {
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto pt-[120px]">
+      <div className="max-w-2xl mx-auto pt-[120px] pb-16">
         {/* Header */}
         <div className="fixed top-0 left-0 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0">
           <div className="mission-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
@@ -193,8 +251,8 @@ export default function MissionInfoPage() {
               />
             </button>
             <h1 className="text-3xl font-bold text-white text-center flex-1 leading-none uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>
-              <span className="block text-lg">MISIÓN {mission.order_number}</span>
-              <div className="content-title font-black text-2xl leading-none">{mission.name}</div>
+              <span className="block text-lg">MISIÓN {mission?.orderNum || '?'}:</span>
+              <div className="content-title px-2 font-black text-2xl leading-none">{mission.name}</div>
             </h1>
             <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
@@ -233,7 +291,7 @@ export default function MissionInfoPage() {
             <div className="panel-benefit">
               {currentItem.benefits && (
                 <div className="overflow-y-scroll h-[180px]">
-                  <div className="text-black text-center text-lg font-black leading-relaxed prose prose-sm max-w-none">
+                  <div className="text-primary-600 text-center text-lg pr-2 font-black leading-relaxed prose prose-sm max-w-none">
                     <div dangerouslySetInnerHTML={{ __html: currentItem.benefits }} />
                   </div>
                 </div>
@@ -242,13 +300,13 @@ export default function MissionInfoPage() {
             
             {/* variantBadges */}
             <div className="panel-variant">
-              <h3 className="panel-subtitle text-lg font-bold mb-3 uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>Contiene:</h3>
-              {currentItem.variantes && currentItem.variantes.length > 0 && (
+              <h3 className="panel-subtitle text-xl font-black mb-3 uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>Variantes:</h3>
+              {currentItem.variantBadges && currentItem.variantBadges.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {currentItem.variantes.map((badge, idx) => (
+                  {currentItem.variantBadges.map((badge, idx) => (
                     <span
                       key={idx}
-                      className="bg-primary-600 text-white px-3 py-1 rounded-xl text-sm font-semibold"
+                      className="bg-primary-600 text-white px-3 py-1 rounded-xl text-sm font-bold uppercase"
                     >
                       {badge}
                     </span>
@@ -259,30 +317,41 @@ export default function MissionInfoPage() {
             
              {/* contentBadges */}
             <div className="panel-content">
-              <h3 className="panel-subtitle text-lg font-bold mb-3 uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>Detalles:</h3>
-              <div className="bg-white rounded-2xl">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-l rounded-xl bg-white p-4">
-                      {currentItem.contenido && currentItem.contenido.length > 0 && (
+              <h3 className="panel-subtitle text-xl font-black mb-3 uppercase" style={{ fontFamily: "'Blinker', sans-serif" }}>Detalles:</h3>
+              <div className="bg-[#f3f7f4] ml-5 rounded-2xl">
+                <div className="grid grid-cols-[1fr_150px] gap-4">
+                  <div className="col-l rounded-xl p-4">
+                      {currentItem.contentBadges && currentItem.contentBadges.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-6">
-                          {currentItem.contenido.map((badge, idx) => (
-                            <div
-                              key={idx}
-                              className="text-sm"
-                            >
-                              {badge}
-                            </div>
-                          ))}
+                          {currentItem.contentBadges.map((badge, idx) => {
+                            const parts = badge.split(':');
+                            return (
+                              <div
+                                key={idx}
+                                className="text-xs bull-ls relative"
+                              >
+                                <div className="bull"></div>
+                                {parts.length > 1 ? (
+                                  <>
+                                    <span className="font-bold block">{parts[0]}:</span>
+                                    {parts.slice(1).join(':')}
+                                  </>
+                                ) : (
+                                  badge
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                   </div>
-                  <div className="col-r rounded-xl bg-white p-4">
+                  <div className="col-r rounded-xl bg-white p-4 flex items-center justify-center  ">
                       {currentItem.imageId && (
                           <Image
                             src={getImageUrl(currentItem.imageId)}
                             alt={currentItem.title}
-                            width={250}
-                            height={250}
+                            width={200}
+                            height={200}
                             className="block m-auto"
                             onError={(e) => (e.currentTarget.style.display = 'none')}
                           />
@@ -291,34 +360,6 @@ export default function MissionInfoPage() {
                 </div>
               </div>
             </div>
-
-            {/* Navegación y contador */}
-            <div className="mx-auto flex items-center justify-between pt-6" style={{ maxWidth: '120px' }}>
-              <button
-                onClick={() => setCurrentItemIndex(currentItemIndex - 1)}
-                disabled={!hasPrevItem}
-                className="text-black hover:opacity-75 font-bold disabled:opacity-50 disabled:cursor-not-allowed" style={{ fontFamily: "'Blinker', sans-serif" }}
-              >
-                <Image src="/images/content-arrow-left.png" alt="Anterior" width={50} height={50} className="inline-block mr-2" />
-              </button>
-
-              {hasNextItem ? (
-                <button
-                  onClick={() => setCurrentItemIndex(currentItemIndex + 1)}
-                  className="text-black hover:opacity-75 font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}
-                >
-                 <Image src="/images/content-arrow-right.png" alt="Siguiente" width={50} height={50} className="inline-block ml-2" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleStartEvaluation}
-                  className="text-black hover:opacity-75 font-bold"
-                  style={{ fontFamily: "'Blinker', sans-serif" }}
-                >
-                  <Image src="/images/content-arrow-right.png" alt="Ir a Evaluacion" width={50} height={50} className="inline-block ml-2" />
-                </button>
-              )}
-            </div>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
@@ -326,6 +367,39 @@ export default function MissionInfoPage() {
           </div>
         )}
       </div>
+
+      {/* Navegación y contador - Fijo en la base */}
+      {currentItem && (
+        <div className="panel-control fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 bg-gradient-to-t from-green-500 to-transparent">
+          <div className="flex items-center justify-between" style={{ maxWidth: '120px' }}>
+            <button
+              onClick={() => handleNavigateItem(currentItemIndex - 1)}
+              disabled={!hasPrevItem}
+              className="text-black hover:opacity-75 font-bold disabled:opacity-50 disabled:cursor-not-allowed" style={{ fontFamily: "'Blinker', sans-serif" }}
+            >
+              <Image src="/images/content-arrow-left.png" alt="Anterior" width={50} height={50} className="inline-block mr-2" />
+            </button>
+
+            {hasNextItem ? (
+              <button
+                onClick={() => handleNavigateItem(currentItemIndex + 1)}
+                className="text-black hover:opacity-75 font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}
+              >
+               <Image src="/images/content-arrow-right.png" alt="Siguiente" width={50} height={50} className="inline-block ml-2" />
+              </button>
+            ) : (
+              <button
+                onClick={handleStartEvaluation}
+                disabled={missionCompleted}
+                className="text-black hover:opacity-75 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontFamily: "'Blinker', sans-serif" }}
+              >
+                <Image src="/images/content-arrow-right.png" alt="Ir a Evaluacion" width={50} height={50} className="inline-block ml-2" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

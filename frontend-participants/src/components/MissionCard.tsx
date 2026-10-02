@@ -30,7 +30,7 @@ export default function MissionCard({
   stars.forEach(star => {
     if (star) starCounter++;
   });
-
+  console.log('isUnlocked', isUnlocked, 'isCompleted', isCompleted, 'stars', stars, 'starCounter', starCounter);
   return (
     <button
       onClick={onMissionClick}
@@ -50,7 +50,7 @@ export default function MissionCard({
       {/* Estrellas */}
       <div className="m-auto">
         {
-          isUnlocked && stars ? (
+          isCompleted ? (
             <Image
               src={`/images/level-mision-star-${starCounter}.png`}
               alt="Estrella"

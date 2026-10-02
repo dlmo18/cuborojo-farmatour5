@@ -27,6 +27,32 @@ const API_URL =
     ? 'https://farmatour5-api.cuborojo.pe/api'
     : 'http://localhost:3001/api');
 
+// Función para guardar token en cookies
+const setTokenCookie = (token: string | null) => {
+  if (typeof document === 'undefined') return;
+  
+  if (token) {
+    // Guardar con expiración de 24 horas
+    const expiryDate = new Date();
+    expiryDate.setHours(expiryDate.getHours() + 24);
+    document.cookie = `token=${token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
+  } else {
+    // Limpiar cookie
+    document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict';
+  }
+};
+
+// Función para obtener token de localStorage de forma segura
+const getInitialToken = () => {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('token');
+  } catch (err) {
+    console.error('Error reading token from localStorage:', err);
+    return null;
+  }
+};
+
 // Función para obtener DNI de localStorage de forma segura
 const getInitialDni = () => {
   if (typeof window === 'undefined') return null;
@@ -38,17 +64,7 @@ const getInitialDni = () => {
   }
 };
 
-// Función para obtener token y usuario de localStorage de forma segura
-const getInitialToken = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    return localStorage.getItem('token');
-  } catch (err) {
-    console.error('Error reading token from localStorage:', err);
-    return null;
-  }
-};
-
+// Función para obtener usuario de localStorage de forma segura
 const getInitialUser = () => {
   if (typeof window === 'undefined') return null;
   try {
@@ -85,6 +101,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(participant));
       localStorage.setItem('dni', dni);
+      
+      // Guardar token en cookies también
+      setTokenCookie(access_token);
+      
       set({ token: access_token, user: participant, dni, isLoading: false });
       return true;
     } catch (err: any) {
@@ -98,6 +118,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('dni');
+    
+    // Limpiar cookie también
+    setTokenCookie(null);
+    
     set({ user: null, token: null, dni: null });
   },
 
@@ -127,6 +151,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const { access_token, participant } = await response.json();
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(participant));
+      
+      // Guardar token en cookies también
+      setTokenCookie(access_token);
+      
       set({ token: access_token, user: participant });
       return true;
     } catch (err: any) {
@@ -135,6 +163,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('dni');
+      
+      // Limpiar cookie también
+      setTokenCookie(null);
+      
       set({ user: null, token: null, dni: null });
       return false;
     }

@@ -57,6 +57,18 @@ export class ProgressController {
     return this.service.answerFinalLevelQuestion(req.user.id, dto.questionId, dto.answerId);
   }
 
+  @Get('mission/:missionId/answers')
+  @ApiOperation({ summary: 'Obtener respuestas del participante para una misión específica' })
+  getMissionAnswers(@Req() req: any, @Param('missionId') missionId: string) {
+    return this.service.getMissionAnswers(req.user.id, missionId);
+  }
+
+  @Post('complete-mission')
+  @ApiOperation({ summary: 'Marcar misión como completada' })
+  completeMission(@Req() req: any, @Body() dto: any) {
+    return this.service.completeMission(req.user.id, dto.missionId);
+  }
+
   @Get('group-ranking')
   @ApiOperation({ summary: 'Ranking del grupo del participante (top 10 + posición propia)' })
   getGroupRanking(@Req() req: any) {

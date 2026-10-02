@@ -255,18 +255,18 @@ export default function WorldLevelsPage() {
                 }`}
                 onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}
               >
-                <div className={`absolute top-0 left-0 stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
+                <div className={`absolute top-2 left-3 stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
                   <Image 
-                    src="/images/icon-score.png"
+                    src="/images/icon-star.png"
                     alt="Stars"
-                    width={15}
-                    height={15}
+                    width={20}
+                    height={20}
                     className="inline-block align-middle mr-1"
                     priority
                   />
-                  {starsEarned}
+                  0{starsEarned}
                 </div>
-                <div className={`absolute top-0 right-0 stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
+                <div className={`absolute top-2 right-3 stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
                   <span className="inline-block align-middle"><FaCheck /></span>
                 </div>
                 <h3 className="text-lg h-[60px] flex items-center justify-center text-white leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>

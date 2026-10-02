@@ -53,6 +53,33 @@ export default function LevelMissionsPage() {
   const user = useAuthStore((state) => state.user);
   const token = useAuthStore((state) => state.token);
 
+  // Función para refrescar el progreso
+  const refreshProgress = useCallback(async (missionsData: Mission[]) => {
+    try {
+      const progressRes = await axiosInstance.get(`/progress/game-state`);
+
+      if (progressRes.data?.missionProgress && Array.isArray(progressRes.data.missionProgress)) {
+        const progressMap: Record<string, MissionProgress> = {};
+        let totalWorldStars = 0;
+        progressRes.data.missionProgress.forEach((p: MissionProgress) => {
+          progressMap[p.missionId] = p;
+          if (missionsData.some((m: Mission) => m.id === p.missionId)) {
+            totalWorldStars += p.starsEarned || 0;
+          }
+        });
+        setMissionProgress(progressMap);
+        setWorldStars(totalWorldStars);
+      } else {
+        setMissionProgress({});
+        setWorldStars(0);
+      }
+    } catch (progressErr) {
+      console.warn('Error fetching progress, continuing without it');
+      setMissionProgress({});
+      setWorldStars(0);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isHydrated || !levelId) return;
 
@@ -76,7 +103,7 @@ export default function LevelMissionsPage() {
         try {
           const missionsRes = await axiosInstance.get(`/missions/level/${levelId}`);
           sortedMissions = (missionsRes.data || []).sort(
-            (a: Mission, b: Mission) => b.orderNum - a.orderNum
+            (a: Mission, b: Mission) => a.orderNum - b.orderNum
           );
           setMissions(sortedMissions);
         } catch (missionErr) {
@@ -85,40 +112,29 @@ export default function LevelMissionsPage() {
         }
 
         // Obtener progreso del usuario
-        try {
-          const progressRes = await axiosInstance.get(`/progress/game-state`);
-
-          if (progressRes.data?.missionProgress && Array.isArray(progressRes.data.missionProgress)) {
-            const progressMap: Record<string, MissionProgress> = {};
-            let totalWorldStars = 0;
-            progressRes.data.missionProgress.forEach((p: MissionProgress) => {
-              progressMap[p.missionId] = p;
-              if (sortedMissions.some((m: Mission) => m.id === p.missionId)) {
-                totalWorldStars += p.starsEarned || 0;
-              }
-            });
-            setMissionProgress(progressMap);
-            setWorldStars(totalWorldStars);
-          } else {
-            setMissionProgress({});
-            setWorldStars(0);
-          }
-        } catch (progressErr) {
-          console.warn('Error fetching progress, continuing without it');
-          setMissionProgress({});
-          setWorldStars(0);
-        }
+        await refreshProgress(sortedMissions);
 
         setLoading(false);
       } catch (err: any) {
         console.error('Error fetching level data:', err);
-        setError(err?.response?.data?.message || 'Error al cargar el nivel');
+        
+        // Manejar errores específicos
+        if (err.response?.status === 401) {
+          setError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+          // El interceptor y useAuthCheck manejarán la redirección
+        } else if (err.response?.status === 404) {
+          setError('Nivel no encontrado');
+        } else if (err.response?.status === 403) {
+          setError('No tienes permiso para acceder a este nivel');
+        } else {
+          setError(err?.response?.data?.message || 'Error al cargar el nivel');
+        }
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [isHydrated, levelId, token, router]);
+  }, [isHydrated, levelId, token, router, refreshProgress]);
 
   if (loading) {
     return (
@@ -184,7 +200,7 @@ export default function LevelMissionsPage() {
             </button>
             <h1 className="text-3xl font-bold text-white text-center flex-1 leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
               <span className="block text-lg">NIVEL</span>
-              <div className="level-title font-black text-2xl leading-none">{level.name}</div>
+              <div className="level-title uppercase font-black text-2xl leading-none">{level.name}</div>
             </h1>
             <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
@@ -199,21 +215,24 @@ export default function LevelMissionsPage() {
           </div>
         </div>
 
-        {/* Lista de misiones */}
+        {/* Lista de misiones - en orden inverso */}
         <div className="space-y-3 pt-36">
           {missions.length === 0 ? (
             <div className="bg-white rounded-lg shadow-lg p-6 text-center">
               <p className="text-gray-600">No hay misiones en este nivel</p>
             </div>
           ) : (
-            missions.map((mission, index) => {
+            [...missions].reverse().map((mission) => {
               const progress = missionProgress[mission.id];
               const isCompleted = progress?.isCompleted || false;
               const starsEarned = progress?.starsEarned || 0;
-              const isLastMission = index === missions.length - 1;
-              const nextCompleted =
-                index === missions.length - 1 || missionProgress[missions[index + 1].id]?.isCompleted;
-              const isUnlocked = isLastMission || nextCompleted;
+              
+              // Una misión está habilitada si es la primera (orderNum = 1) o si la misión anterior está completada
+              const isFirstMission = mission.orderNum === 1;
+              const prevMission = missions.find(m => m.orderNum === mission.orderNum - 1);
+              const prevMissionProgress = prevMission ? missionProgress[prevMission.id] : null;
+              const prevHasProgress = prevMissionProgress && (prevMissionProgress.isCompleted || prevMissionProgress.starsEarned > 0);
+              const isUnlocked: boolean = isFirstMission || !!prevHasProgress;
 
               return (
                 <MissionCard

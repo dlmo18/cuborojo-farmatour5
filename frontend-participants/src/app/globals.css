@@ -223,6 +223,7 @@ body {
   background-size: auto 100%;
   padding: 1rem 1rem 2rem;
   width: 420px;
+  height: 105px;
   margin: auto;
 }
 
@@ -249,6 +250,82 @@ body {
   width: 120%;
   height: 320px;
   margin: -2rem 0 0 -10%;
+}
+
+.panel-subtitle {
+  padding-left: 2rem;
+  background: center left no-repeat;
+  background-image: url('/images/content-down.png');
+  background-size: auto 1rem;
+}
+
+.panel-content {
+  .bull-ls {
+    position: relative;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: calc(100% + 1rem);
+      top: 0;
+      left: -2rem;
+      position: absolute;
+      background-color: #fff;
+    }
+
+    &:last-child {
+      &::before {
+        display: none;
+      }
+    }
+  }
+
+  .bull {
+    width: 15px;
+    height: 15px;
+    background-color: #fff;
+    border-radius: 100%;
+    position: absolute;
+    left: -2.5rem;
+    top: 0;
+    
+    &::before {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      margin: 5px auto 0;
+      background-color: rgb(31 90 46);
+      border-radius: 100%;
+    }
+  }
+}
+
+.modal-evaluation-start {
+  background: center no-repeat;
+  background-image: url('/images/modal-evaluation-start.jpg');
+  background-size: cover;
+}
+
+.modal-result {
+  background: center center repeat-x;
+
+  &.modal-result-correct {
+    background-image: url('/images/question-correct.jpg');
+  }
+
+  &.modal-result-incorrect {
+      background-image: url('/images/question-incorrect.jpg');
+  } 
+}
+
+.question-score {
+  background: top center no-repeat;
+  background-image: url('/images/question-result.png');
+  background-size: contain;
+  height: 300px;
+  padding: 11.5rem 0 0 5rem;
 }
 
 .world-farma {

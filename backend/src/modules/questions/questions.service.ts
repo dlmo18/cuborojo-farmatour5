@@ -45,7 +45,7 @@ export class QuestionsService {
       result.push({
         ...q,
         options: forParticipant
-          ? options.map(({ isCorrect, detail, ...o }) => o)
+          ? options.map(({ isCorrect, ...o }) => o)
           : options,
       });
     }
@@ -87,14 +87,38 @@ export class QuestionsService {
     return { message: 'Opción eliminada' };
   }
 
-  async checkAnswer(questionId: string, answerId: string): Promise<{ isCorrect: boolean; stars: number; detail: string }> {
+  async checkAnswer(questionId: string, answerId: string): Promise<{ isCorrect: boolean; stars: number; detail: string; correctOptionId?: string; correctOptionText?: string; correctOptionDetail?: string; correctOptionImageId?: string; questionBenefit?: string; }> {
     const option = await this.aRepo.findOne({ where: { id: answerId, questionId } });
     if (!option) throw new NotFoundException('Opción no encontrada');
     const question = await this.qRepo.findOne({ where: { id: questionId } });
+    
+    // Obtener la opción correcta usando query raw para asegurar que se devuelven todos los campos
+    const correctOptions = await this.aRepo.find({ 
+      where: { questionId, isCorrect: true } 
+    });
+    
+    const correctOption = correctOptions[0] || null;
+
+    console.log('DEBUG checkAnswer:', {
+      answerId: option.id,
+      isCorrect: option.isCorrect,
+      questionId,
+      correctOptionId: correctOption?.id,
+      correctOptionText: correctOption?.text,
+      correctOptionDetail: correctOption?.detail,
+      correctOptionImageId: correctOption?.imageId,
+      questionBenefit: question?.benefit,
+    });
+
     return {
       isCorrect: option.isCorrect,
       stars: option.isCorrect ? question.starsValue : 0,
       detail: option.isCorrect ? null : option.detail,
+      correctOptionId: correctOption?.id,
+      correctOptionText: correctOption?.text,
+      correctOptionDetail: correctOption?.detail,
+      correctOptionImageId: correctOption?.imageId,
+      questionBenefit: question?.benefit,
     };
   }
 }

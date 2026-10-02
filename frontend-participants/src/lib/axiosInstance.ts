@@ -55,7 +55,7 @@ axiosInstance.interceptors.response.use(
 
     // Si no es 401 o ya reintentó una vez, rechazar
     if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
+      throw error;
     }
 
     // Evitar bucles infinitos
@@ -67,7 +67,16 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return axiosInstance(originalRequest);
         })
-        .catch((err) => Promise.reject(err));
+        .catch((err) => {
+          // Si la cola de reintento falla, trigger logout
+          const authStore = useAuthStore.getState();
+          authStore.logout();
+          // Emitir evento global para que los componentes puedan reaccionar
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth-failed', { detail: { reason: 'token_refresh_failed' } }));
+          }
+          throw err;
+        });
     }
 
     originalRequest._retry = true;
@@ -85,14 +94,29 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return axiosInstance(originalRequest);
       } else {
-        // Refresh falló, rechazar
-        const err = new Error('Token refresh failed');
+        // Refresh falló, rechazar y hacer logout
+        const authStore = useAuthStore.getState();
+        authStore.logout();
+        
+        // Emitir evento global para que los componentes puedan reaccionar
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth-failed', { detail: { reason: 'token_refresh_failed' } }));
+        }
+        
         processQueue(error);
-        return Promise.reject(error);
+        throw error;
       }
     } catch (refreshError) {
+      // Error en el refresh: logout y emitir evento
+      const authStore = useAuthStore.getState();
+      authStore.logout();
+      
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth-failed', { detail: { reason: 'token_refresh_error', error: refreshError } }));
+      }
+      
       processQueue(error);
-      return Promise.reject(refreshError);
+      throw refreshError;
     }
   }
 );

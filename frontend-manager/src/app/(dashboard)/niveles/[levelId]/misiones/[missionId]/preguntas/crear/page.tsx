@@ -41,6 +41,7 @@ export default function CreateQuestionPage() {
     content: '',
     orderNum: 1,
     starsValue: 1,
+    benefit: '',
   });
 
   const [answers, setAnswers] = useState<AnswerOption[]>([
@@ -75,6 +76,7 @@ export default function CreateQuestionPage() {
           content: q.content,
           orderNum: q.orderNum,
           starsValue: q.starsValue,
+          benefit: q.benefit || '',
           imageId: q.imageId,
         });
         if (q.options) {
@@ -270,8 +272,8 @@ export default function CreateQuestionPage() {
           />
         </div>
 
-        {/* Valor de estrellas y orden */}
-        <div className="grid grid-cols-2 gap-6">
+        {/* Valor de estrellas, orden y sustento */}
+        <div className="grid grid-cols-3 gap-6">
           <div>
             <label className="block text-lg font-semibold text-gray-700 mb-3">
               ⭐ Valor de Estrellas (Puntos)
@@ -303,6 +305,20 @@ export default function CreateQuestionPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
+
+        </div>
+
+        {/* Sustento - Formato Enriquecido */}
+        <div>
+          <label className="block text-lg font-semibold text-gray-700 mb-3">
+            💡 Sustento (Referencia) - Formato Enriquecido (opcional)
+          </label>
+          <RichTextEditor
+            value={formData.benefit || ''}
+            onChange={(benefit) => setFormData({ ...formData, benefit })}
+            placeholder="Ej: Art. 10, Libro 2, Cap. 3 o cualquier referencia adicional..."
+            minHeight="150px"
+          />
         </div>
 
         {/* Imagen de la pregunta */}
