@@ -925,6 +925,16 @@ export const reportsApi = {
 
   participantProgress: (id: string) => 
     apiClient.get(`/reports/participant-progress/${id}`),
+
+  updateQuestionAnswer: (participantId: string, questionId: string, newAnswer: string) =>
+    apiClient.put(`/reports/participant-progress/${participantId}/questions/${questionId}`, {
+      selectedAnswer: newAnswer,
+    }),
+
+  updateQuestionAnswers: (participantId: string, answers: Record<string, string>) =>
+    apiClient.put(`/reports/participant-progress/${participantId}/questions`, {
+      answers,
+    }),
 };
 
 // ============================================================

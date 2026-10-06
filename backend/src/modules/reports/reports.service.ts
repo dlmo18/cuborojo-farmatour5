@@ -138,6 +138,45 @@ export class ReportsService {
       ORDER BY w.order_num, l.order_num, m.order_num
     `, [participantId]);
 
+    // Obtener preguntas y respuestas del participante
+    const questionsData = await this.dataSource.query(`
+      SELECT 
+        m.id as mission_id,
+        q.id as question_id,
+        q.content,
+        (SELECT "text" FROM answer_options WHERE question_id = q.id AND is_correct = true LIMIT 1) as correct_answer,
+        COALESCE(ao.text, NULL) as selected_answer,
+        CASE 
+          WHEN pa.id IS NULL THEN NULL
+          ELSE ao.is_correct
+        END as is_correct,
+        q.created_at
+      FROM missions m
+      LEFT JOIN questions q ON q.mission_id = m.id
+      LEFT JOIN participant_answers pa ON pa.question_id = q.id 
+        AND pa.participant_id = $1
+      LEFT JOIN answer_options ao ON ao.id = pa.answer_id
+      WHERE q.id IS NOT NULL
+      ORDER BY m.id, q.created_at
+    `, [participantId]);
+
+    // Agrupar preguntas por misión
+    const questionsByMission = new Map<string, any[]>();
+    questionsData.forEach((row: any) => {
+      const missionId = row.mission_id;
+      if (!questionsByMission.has(missionId)) {
+        questionsByMission.set(missionId, []);
+      }
+      questionsByMission.get(missionId)!.push({
+        questionId: row.question_id,
+        questionText: row.question_text,
+        selectedAnswer: row.selected_answer,
+        correctAnswer: row.correct_answer,
+        isCorrect: row.is_correct,
+        answerOptions: []
+      });
+    });
+
     // Calcular estadísticas totales por mundo, nivel y misión
     const totalStarsData = await this.dataSource.query(`
       SELECT COALESCE(SUM(pmp.stars_earned), 0) as total_stars
@@ -195,7 +234,8 @@ export class ReportsService {
           missionName: mission_name,
           starsEarned: mission_stars_earned || 0,
           maxStars: level_type === 'golden' ? 5 : level_type === 'final' ? 10 : 3,
-          isCompleted: mission_completed || false
+          isCompleted: mission_completed || false,
+          questions: questionsByMission.get(mission_id) || []
         });
         world.totalStars += (mission_stars_earned || 0);
       }
