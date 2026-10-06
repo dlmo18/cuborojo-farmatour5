@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
+import { useMusicStore } from '@/store/musicStore';
 import HowToPlayModal from '@/components/HowToPlayModal';
 import FAQModal from '@/components/FAQModal';
 import SupportModal from '@/components/SupportModal';
@@ -17,6 +18,7 @@ export default function SettingPage() {
   const { isHydrated } = useAuthCheck({ redirectTo: '/login' });
   const { logout, user } = useAuthStore();
   const token = useAuthStore((state) => state.token);
+  const { isPlaying, toggleMusic } = useMusicStore();
 
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
   const [isFAQOpen, setIsFAQOpen] = useState(false);
@@ -139,6 +141,17 @@ export default function SettingPage() {
           </div>  
           <div className=" pt-16">
             <div className="controls px-6">
+
+                {/* Controlar Música */}
+                <button
+                onClick={toggleMusic}
+                className="block m-auto setting-button text-white font-bold pt-1 pb-4 px-6 mb-4 flex items-center justify-center"
+                style={{ fontFamily: "'Blinker', sans-serif" }}
+                >
+                <span className="text-2xl leading-6 uppercase">
+                  {isPlaying ? 'Apagar música' : 'Encender música'}
+                </span>
+                </button>
 
                 {/* ¿Cómo Jugar? */}
                 <button
