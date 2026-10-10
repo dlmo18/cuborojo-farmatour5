@@ -29,7 +29,100 @@ export class ProgressService {
     const missionProgress = await this.missionProgressRepo.find({ where: { participantId } });
     const levelProgress = await this.levelProgressRepo.find({ where: { participantId } });
     const worldProgress = await this.worldProgressRepo.find({ where: { participantId } });
-    return { missionProgress, levelProgress, worldProgress };
+
+    // Obtener progreso de golden levels - completo cuando todas las preguntas están respondidas
+    const goldenLevelData = await this.dataSource.query(
+      `SELECT 
+        l.id as "levelId",
+        COALESCE(SUM(CASE WHEN pga.is_correct THEN 2 ELSE 0 END), 0) as "starsEarned",
+        CASE 
+          WHEN COUNT(DISTINCT glq.id) > 0 AND COUNT(DISTINCT pga.id) = COUNT(DISTINCT glq.id)
+          THEN TRUE 
+          ELSE FALSE 
+        END as "isCompleted",
+        COUNT(DISTINCT pga.id) as "answeredCount",
+        COUNT(DISTINCT glq.id) as "totalQuestions"
+      FROM levels l
+      LEFT JOIN golden_level_questions glq ON glq.level_id = l.id AND glq.is_active = TRUE
+      LEFT JOIN participant_golden_level_answers pga ON pga.participant_id = $1 AND pga.question_id = glq.id
+      WHERE l.level_type = 'golden' AND pga.id IS NOT NULL
+      GROUP BY l.id
+      UNION ALL
+      SELECT 
+        plp.level_id as "levelId",
+        COALESCE(plp.stars_earned, 0) as "starsEarned",
+        COALESCE(plp.is_completed, FALSE) as "isCompleted",
+        0 as "answeredCount",
+        0 as "totalQuestions"
+      FROM participant_level_progress plp
+      JOIN levels l ON l.id = plp.level_id
+      WHERE l.level_type = 'golden' AND plp.participant_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM golden_level_questions glq 
+          WHERE glq.level_id = plp.level_id AND glq.is_active = TRUE
+        )`,
+      [participantId]
+    );
+
+    // Obtener progreso de final levels - completo cuando todas las preguntas están respondidas
+    const finalLevelData = await this.dataSource.query(
+      `SELECT 
+        l.id as "levelId",
+        COALESCE(SUM(CASE WHEN pfa.is_correct THEN 2 ELSE 0 END), 0) as "starsEarned",
+        CASE 
+          WHEN COUNT(DISTINCT flq.id) > 0 AND COUNT(DISTINCT pfa.id) = COUNT(DISTINCT flq.id)
+          THEN TRUE 
+          ELSE FALSE 
+        END as "isCompleted",
+        COUNT(DISTINCT pfa.id) as "answeredCount",
+        COUNT(DISTINCT flq.id) as "totalQuestions"
+      FROM levels l
+      LEFT JOIN final_level_questions flq ON flq.level_id = l.id AND flq.is_active = TRUE
+      LEFT JOIN participant_final_level_answers pfa ON pfa.participant_id = $1 AND pfa.question_id = flq.id
+      WHERE l.level_type = 'final' AND pfa.id IS NOT NULL
+      GROUP BY l.id
+      UNION ALL
+      SELECT 
+        plp.level_id as "levelId",
+        COALESCE(plp.stars_earned, 0) as "starsEarned",
+        COALESCE(plp.is_completed, FALSE) as "isCompleted",
+        0 as "answeredCount",
+        0 as "totalQuestions"
+      FROM participant_level_progress plp
+      JOIN levels l ON l.id = plp.level_id
+      WHERE l.level_type = 'final' AND plp.participant_id = $1
+        AND NOT EXISTS (
+          SELECT 1 FROM final_level_questions flq 
+          WHERE flq.level_id = plp.level_id AND flq.is_active = TRUE
+        )`,
+      [participantId]
+    );
+
+    // Organizar en objetos por levelId para fácil acceso
+    const goldenLevelProgress: Record<string, any> = {};
+    const finalLevelProgress: Record<string, any> = {};
+
+    goldenLevelData.forEach((progress: any) => {
+      goldenLevelProgress[progress.levelId] = {
+        levelId: progress.levelId,
+        starsEarned: parseInt(progress.starsEarned),
+        isCompleted: progress.isCompleted,
+        answeredCount: parseInt(progress.answeredCount),
+        totalQuestions: parseInt(progress.totalQuestions)
+      };
+    });
+
+    finalLevelData.forEach((progress: any) => {
+      finalLevelProgress[progress.levelId] = {
+        levelId: progress.levelId,
+        starsEarned: parseInt(progress.starsEarned),
+        isCompleted: progress.isCompleted,
+        answeredCount: parseInt(progress.answeredCount),
+        totalQuestions: parseInt(progress.totalQuestions)
+      };
+    });
+
+    return { missionProgress, levelProgress, worldProgress, goldenLevelProgress, finalLevelProgress };
   }
 
   /** Progreso de mundos del participante */
@@ -341,7 +434,7 @@ export class ProgressService {
     }
 
     const isCorrect = answerOption.is_correct;
-    const starsEarned = isCorrect ? 1 : 0;
+    const starsEarned = isCorrect ? 2 : 0;  // 2 stars for correct answer in golden level
 
     // Guardar respuesta
     await this.dataSource.query(`
@@ -411,6 +504,23 @@ export class ProgressService {
       WHERE pa.participant_id = $1 AND q.mission_id = $2
       ORDER BY q.order_num ASC
     `, [participantId, missionId]);
+
+    return answers;
+  }
+
+  /** Obtener respuestas anteriores de un nivel dorado */
+  async getGoldenLevelAnswers(participantId: string, levelId: string) {
+    const answers = await this.dataSource.query(`
+      SELECT 
+        pga.question_id as "questionId",
+        pga.answer_id as "answerId",
+        pga.is_correct as "isCorrect",
+        pga.stars_earned as "starsEarned"
+      FROM participant_golden_level_answers pga
+      JOIN golden_level_questions glq ON glq.id = pga.question_id
+      WHERE pga.participant_id = $1 AND glq.level_id = $2
+      ORDER BY glq.order_num ASC
+    `, [participantId, levelId]);
 
     return answers;
   }

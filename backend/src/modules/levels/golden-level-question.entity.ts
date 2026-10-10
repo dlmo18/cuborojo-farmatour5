@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Level } from './level.entity';
+import { GoldenLevelAnswerOption } from './golden-level-answer-option.entity';
 
 @Entity('golden_level_questions')
 export class GoldenLevelQuestion {
@@ -21,6 +22,9 @@ export class GoldenLevelQuestion {
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
+
+  @OneToMany(() => GoldenLevelAnswerOption, (option) => option.question, { eager: false })
+  options: GoldenLevelAnswerOption[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

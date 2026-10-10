@@ -204,8 +204,9 @@ export default function FinalLevelContentPage() {
 
     try {
       if (editingQuestion) {
-        // Actualizar pregunta
-        await finalLevelsApi.updateQuestion(editingQuestion.id, formData as UpdateFinalLevelQuestionDto);
+        // Actualizar pregunta (remover levelId que no es necesario para update)
+        const { levelId, ...updateData } = formData;
+        await finalLevelsApi.updateQuestion(editingQuestion.id, updateData as UpdateFinalLevelQuestionDto);
 
         // Procesar respuestas
         const existingIds = new Set(currentAnswers.filter(a => !a.tempId?.startsWith('1') && !a.tempId?.startsWith('2')).map(a => a.tempId));

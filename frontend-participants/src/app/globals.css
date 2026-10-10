@@ -210,6 +210,20 @@ body {
   background-image: url('/images/level-item-locked.png');
 }
 
+.item-golden {
+  background-image: url('/images/level-item-gold.png');
+}
+.item-locked.item-golden {
+  background-image: url('/images/level-item-gold-disabled.png');
+}
+
+.item-final {
+  background-image: url('/images/level-item-final.png');
+}
+.item-locked.item-final {
+  background-image: url('/images/level-item-final-disabled.png');
+}
+
 .mission-page {
   background: top center repeat;
   background-image: url('/images/level-bg.jpg');
@@ -323,7 +337,7 @@ body {
 .question-score {
   background: top center no-repeat;
   background-image: url('/images/question-result.png');
-  background-size: contain;
+  background-size: auto 300px;
   height: 300px;
   padding: 11.5rem 0 0 5rem;
 }

@@ -11,6 +11,7 @@ import { FinalLevelQuestion } from './final-level-question.entity';
 import { FinalLevelAnswerOption } from './final-level-answer-option.entity';
 import { GoldenLevelsService } from './golden-levels.service';
 import { FinalLevelsService } from './final-levels.service';
+import { MediaItem } from '../media/media.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FinalLevelsService } from './final-levels.service';
       GoldenLevelAnswerOption,
       FinalLevelQuestion,
       FinalLevelAnswerOption,
+      MediaItem,
     ]),
   ],
   controllers: [LevelsController],

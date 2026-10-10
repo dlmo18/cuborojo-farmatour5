@@ -110,6 +110,7 @@ export class CreateFinalLevelAnswerDetailDto {
 
 export class UpdateFinalLevelAnswerOptionDto {
   @ApiProperty({ required: false }) @IsOptional() text?: string;
+  @ApiProperty({ required: false }) @IsOptional() imageId?: string;
   @ApiProperty({ required: false }) @IsOptional() detail?: string;
   @ApiProperty({ required: false }) @IsOptional() isCorrect?: boolean;
   @ApiProperty({ required: false }) @IsOptional() orderNum?: number;

@@ -2,11 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ActivityLog } from '../progress/activity-log.entity';
+import { ProgressService } from '../progress/progress.service';
 import { AdminGuard } from '../auth/guards';
 
 @Injectable()
 export class ReportsService {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    private progressService: ProgressService,
+  ) {}
 
   async getTop10Participants() {
     return this.dataSource.query(`
@@ -160,8 +164,32 @@ export class ReportsService {
       ORDER BY m.id, q.created_at
     `, [participantId]);
 
+    // Obtener todas las opciones de respuesta para cada pregunta
+    const allAnswerOptions = await this.dataSource.query(`
+      SELECT DISTINCT 
+        q.id as question_id,
+        ao."text" as answer_text
+      FROM questions q
+      LEFT JOIN answer_options ao ON ao.question_id = q.id
+      WHERE ao.id IS NOT NULL
+      ORDER BY q.id, ao."text"
+    `);
+
     // Agrupar preguntas por misión
     const questionsByMission = new Map<string, any[]>();
+    const answerOptionsByQuestion = new Map<string, string[]>();
+
+    // Agrupar opciones de respuesta por pregunta
+    allAnswerOptions.forEach((row: any) => {
+      const questionId = row.question_id;
+      if (!answerOptionsByQuestion.has(questionId)) {
+        answerOptionsByQuestion.set(questionId, []);
+      }
+      if (row.answer_text) {
+        answerOptionsByQuestion.get(questionId)!.push(row.answer_text);
+      }
+    });
+
     questionsData.forEach((row: any) => {
       const missionId = row.mission_id;
       if (!questionsByMission.has(missionId)) {
@@ -169,11 +197,11 @@ export class ReportsService {
       }
       questionsByMission.get(missionId)!.push({
         questionId: row.question_id,
-        questionText: row.question_text,
+        questionText: row.content,
         selectedAnswer: row.selected_answer,
         correctAnswer: row.correct_answer,
         isCorrect: row.is_correct,
-        answerOptions: []
+        answerOptions: answerOptionsByQuestion.get(row.question_id) || []
       });
     });
 
@@ -267,6 +295,259 @@ export class ReportsService {
       worlds,
       totalStars: parseInt(totalStarsData[0]?.total_stars) || 0,
       totalMaxStars: parseInt(maxStarsData[0]?.max_stars) || 0
+    };
+  }
+
+  async updateParticipantAnswer(participantId: string, questionId: string, selectedAnswer: string) {
+    try {
+      console.log(`[UpdateAnswer] Starting - Participant: ${participantId}, Question: ${questionId}, Answer: ${selectedAnswer}`);
+
+      // Encontrar el answer_options.id que coincida con el texto
+      const answerOption = await this.dataSource.query(`
+        SELECT id, is_correct
+        FROM answer_options
+        WHERE question_id = $1 AND "text" = $2
+        LIMIT 1
+      `, [questionId, selectedAnswer]);
+
+      if (!answerOption || answerOption.length === 0) {
+        throw new Error(`No se encontró la opción de respuesta: "${selectedAnswer}"`);
+      }
+
+      const answerId = answerOption[0].id;
+      const isCorrect = answerOption[0].is_correct;
+
+      console.log(`[UpdateAnswer] Found answer option - ID: ${answerId}, IsCorrect: ${isCorrect}`);
+
+      // Usar UPSERT (INSERT ON CONFLICT) para garantizar que se guarda
+      const result = await this.dataSource.query(`
+        INSERT INTO participant_answers (participant_id, question_id, answer_id, is_correct, answered_at)
+        VALUES ($1, $2, $3, $4, NOW())
+        ON CONFLICT (participant_id, question_id) 
+        DO UPDATE SET 
+          answer_id = $3, 
+          is_correct = $4, 
+          answered_at = NOW()
+        RETURNING *
+      `, [participantId, questionId, answerId, isCorrect]);
+
+      if (!result || result.length === 0) {
+        throw new Error('Error: La base de datos no devolvió el registro guardado');
+      }
+
+      const savedRecord = result[0];
+      console.log(`[UpdateAnswer] Successfully saved - ID: ${savedRecord.id}, AnswerId: ${savedRecord.answer_id}, IsCorrect: ${savedRecord.is_correct}`);
+
+      // Verificar que el answer_id sea el correcto
+      if (String(savedRecord.answer_id) !== String(answerId)) {
+        throw new Error(`Error crítico: El answer_id no coincide. Esperado: ${answerId}, Guardado: ${savedRecord.answer_id}`);
+      }
+
+      // Recalcular estrellas en cascada: pregunta → misión → nivel → mundo
+      console.log(`[UpdateAnswer] Starting star recalculation...`);
+      await this.recalculateStarsInCascade(participantId, questionId);
+
+      // Obtener estadísticas actualizadas
+      const updatedStats = await this.getUpdatedStars(participantId);
+      console.log(`[UpdateAnswer] Complete - Total stars: ${updatedStats.totalStars}`);
+
+      return {
+        success: true,
+        message: 'Respuesta actualizada correctamente',
+        isCorrect,
+        selectedAnswer,
+        updatedStats,
+        debug: {
+          answerId,
+          savedRecordId: savedRecord.id,
+        }
+      };
+    } catch (error: any) {
+      console.error('[UpdateAnswer ERROR]:', error.message);
+      console.error('[UpdateAnswer ERROR Stack]:', error.stack);
+      throw error;
+    }
+  }
+
+  private async recalculateStarsInCascade(participantId: string, questionId: string) {
+    try {
+      // Obtener misionId de la pregunta
+      const missionRes = await this.dataSource.query(
+        `SELECT mission_id FROM questions WHERE id = $1`,
+        [questionId]
+      );
+
+      if (!missionRes || missionRes.length === 0) {
+        return;
+      }
+
+      const missionId = missionRes[0].mission_id;
+
+      // Recalcular progreso de misión
+      const missionProgress = await this.recalculateMissionProgress(participantId, missionId);
+
+      // Si la misión se completó, recalcular nivel
+      if (missionProgress.isCompleted) {
+        const levelRes = await this.dataSource.query(
+          `SELECT level_id FROM missions WHERE id = $1`,
+          [missionId]
+        );
+
+        if (levelRes && levelRes.length > 0) {
+          const levelId = levelRes[0].level_id;
+          const levelProgress = await this.recalculateLevelProgress(participantId, levelId);
+
+          // Si el nivel se completó, recalcular mundo
+          if (levelProgress.isCompleted) {
+            const worldRes = await this.dataSource.query(
+              `SELECT world_id FROM levels WHERE id = $1`,
+              [levelId]
+            );
+
+            if (worldRes && worldRes.length > 0) {
+              const worldId = worldRes[0].world_id;
+              await this.recalculateWorldProgress(participantId, worldId);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error recalculando estrellas:', error);
+      // No fallar la respuesta si hay error en recalcular
+    }
+  }
+
+  private async recalculateMissionProgress(participantId: string, missionId: string) {
+    // Contar preguntas totales
+    const [totalQ] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt FROM questions WHERE mission_id = $1 AND is_active = TRUE`,
+      [missionId]
+    );
+
+    // Contar preguntas respondidas
+    const [answeredQ] = await this.dataSource.query(
+      `SELECT COUNT(DISTINCT pa.question_id) as cnt FROM participant_answers pa
+       WHERE pa.participant_id = $1 AND pa.question_id IN (
+         SELECT id FROM questions WHERE mission_id = $2 AND is_active = TRUE
+       )`,
+      [participantId, missionId]
+    );
+
+    // Sumar estrellas SOLO de respuestas correctas
+    const [correctQ] = await this.dataSource.query(
+      `SELECT COALESCE(SUM(CASE WHEN pa.is_correct THEN 1 ELSE 0 END), 0) as cnt
+       FROM participant_answers pa
+       JOIN questions q ON q.id = pa.question_id
+       WHERE pa.participant_id = $1 AND q.mission_id = $2 AND pa.is_correct = TRUE`,
+      [participantId, missionId]
+    );
+
+    const isCompleted = parseInt(answeredQ.cnt) === parseInt(totalQ.cnt);
+    const correctCount = parseInt(correctQ.cnt);
+
+    // Determinar estrellas (3 estrellas si todas son correctas)
+    let starsEarned = 0;
+    if (isCompleted) {
+      const incorrectCount = parseInt(answeredQ.cnt) - correctCount;
+      if (incorrectCount === 0) {
+        starsEarned = 3;
+      } else if (incorrectCount === 1) {
+        starsEarned = 2;
+      } else {
+        starsEarned = 1;
+      }
+    }
+
+    // Actualizar o insertar progreso de misión
+    await this.dataSource.query(`
+      INSERT INTO participant_mission_progress (participant_id, mission_id, stars_earned, is_completed, completed_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, mission_id) DO UPDATE
+      SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_mission_progress.completed_at END
+    `, [participantId, missionId, starsEarned, isCompleted, isCompleted ? new Date() : null]);
+
+    return { isCompleted, starsEarned };
+  }
+
+  private async recalculateLevelProgress(participantId: string, levelId: string) {
+    // Contar misiones totales del nivel
+    const [totalM] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt FROM missions WHERE level_id = $1 AND is_active = TRUE`,
+      [levelId]
+    );
+
+    // Contar misiones completadas y sumar estrellas
+    const [missionStats] = await this.dataSource.query(
+      `SELECT 
+        COUNT(*) as completed_cnt,
+        COALESCE(SUM(stars_earned), 0) as stars
+       FROM participant_mission_progress
+       WHERE participant_id = $1 
+         AND mission_id IN (SELECT id FROM missions WHERE level_id = $2 AND is_active = TRUE)
+         AND is_completed = TRUE`,
+      [participantId, levelId]
+    );
+
+    const totalMissions = parseInt(totalM.cnt);
+    const completedMissions = parseInt(missionStats.completed_cnt);
+    const starsEarned = parseInt(missionStats.stars);
+    const isCompleted = completedMissions === totalMissions;
+
+    // Actualizar o insertar progreso de nivel
+    await this.dataSource.query(`
+      INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, level_id) DO UPDATE
+      SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_level_progress.completed_at END
+    `, [participantId, levelId, starsEarned, isCompleted, isCompleted ? new Date() : null]);
+
+    return { isCompleted, starsEarned };
+  }
+
+  private async recalculateWorldProgress(participantId: string, worldId: string) {
+    // Contar niveles totales del mundo
+    const [totalL] = await this.dataSource.query(
+      `SELECT COUNT(*) as cnt FROM levels WHERE world_id = $1 AND is_active = TRUE`,
+      [worldId]
+    );
+
+    // Contar niveles completados y sumar estrellas
+    const [levelStats] = await this.dataSource.query(
+      `SELECT 
+        COUNT(*) as completed_cnt,
+        COALESCE(SUM(stars_earned), 0) as stars
+       FROM participant_level_progress
+       WHERE participant_id = $1 
+         AND level_id IN (SELECT id FROM levels WHERE world_id = $2 AND is_active = TRUE)
+         AND is_completed = TRUE`,
+      [participantId, worldId]
+    );
+
+    const totalLevels = parseInt(totalL.cnt);
+    const completedLevels = parseInt(levelStats.completed_cnt);
+    const starsEarned = parseInt(levelStats.stars);
+    const isCompleted = completedLevels === totalLevels;
+
+    // Actualizar o insertar progreso de mundo
+    await this.dataSource.query(`
+      INSERT INTO participant_world_progress (participant_id, world_id, stars_earned, is_completed, completed_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, world_id) DO UPDATE
+      SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_world_progress.completed_at END
+    `, [participantId, worldId, starsEarned, isCompleted, isCompleted ? new Date() : null]);
+
+    return { isCompleted, starsEarned };
+  }
+
+  private async getUpdatedStars(participantId: string) {
+    // Obtener total de estrellas del participante
+    const [totalStars] = await this.dataSource.query(
+      `SELECT COALESCE(SUM(stars_earned), 0) as total FROM participant_world_progress WHERE participant_id = $1`,
+      [participantId]
+    );
+
+    return {
+      totalStars: parseInt(totalStars.total),
     };
   }
 }

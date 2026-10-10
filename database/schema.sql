@@ -57,6 +57,20 @@ WITH (oids = false);
 CREATE INDEX idx_answer_options_question ON public.answer_options USING btree (question_id);
 
 
+CREATE TABLE "public"."faq_items" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "title" character varying(255) NOT NULL,
+    "detail" text NOT NULL,
+    "order_num" integer NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "faq_items_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+CREATE UNIQUE INDEX idx_faq_items_order ON public.faq_items USING btree (order_num);
+
+
 CREATE TABLE "public"."final_level_answer_options" (
     "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
     "question_id" uuid NOT NULL,
@@ -164,6 +178,16 @@ WITH (oids = false);
 CREATE INDEX idx_groups_image_id ON public.groups USING btree (image_id);
 
 
+CREATE TABLE "public"."how_to_play" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "content" text NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    "updated_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "how_to_play_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+
 CREATE TABLE "public"."level_exam_options" (
     "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
     "exam_question_id" uuid NOT NULL,
@@ -251,6 +275,22 @@ CREATE TABLE "public"."media_library" (
 WITH (oids = false);
 
 CREATE INDEX idx_media_type ON public.media_library USING btree (type);
+
+
+CREATE TABLE "public"."messages" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "full_name" character varying(255) NOT NULL,
+    "email" character varying(255) NOT NULL,
+    "subject" character varying(255) NOT NULL,
+    "message" text NOT NULL,
+    "created_at" timestamptz DEFAULT now() NOT NULL,
+    CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
+)
+WITH (oids = false);
+
+CREATE INDEX idx_messages_created ON public.messages USING btree (created_at DESC);
+
+CREATE INDEX idx_messages_email ON public.messages USING btree (email);
 
 
 CREATE TABLE "public"."mission_items" (
@@ -615,6 +655,7 @@ CREATE TABLE "public"."worlds" (
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "slug" character varying,
     CONSTRAINT "worlds_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
@@ -623,45 +664,7 @@ CREATE INDEX idx_worlds_active_order ON public.worlds USING btree (is_active, or
 
 CREATE UNIQUE INDEX idx_worlds_order ON public.worlds USING btree (order_num);
 
-
-CREATE TABLE "public"."how_to_play" (
-    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
-    "content" text NOT NULL,
-    "created_at" timestamptz DEFAULT now() NOT NULL,
-    "updated_at" timestamptz DEFAULT now() NOT NULL,
-    CONSTRAINT "how_to_play_pkey" PRIMARY KEY ("id")
-)
-WITH (oids = false);
-
-
-CREATE TABLE "public"."faq_items" (
-    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
-    "title" character varying(255) NOT NULL,
-    "detail" text NOT NULL,
-    "order_num" integer NOT NULL,
-    "created_at" timestamptz DEFAULT now() NOT NULL,
-    "updated_at" timestamptz DEFAULT now() NOT NULL,
-    CONSTRAINT "faq_items_pkey" PRIMARY KEY ("id")
-)
-WITH (oids = false);
-
-CREATE UNIQUE INDEX idx_faq_items_order ON public.faq_items USING btree (order_num);
-
-
-CREATE TABLE "public"."messages" (
-    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
-    "full_name" character varying(255) NOT NULL,
-    "email" character varying(255) NOT NULL,
-    "subject" character varying(255) NOT NULL,
-    "message" text NOT NULL,
-    "created_at" timestamptz DEFAULT now() NOT NULL,
-    CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
-)
-WITH (oids = false);
-
-CREATE INDEX idx_messages_created ON public.messages USING btree (created_at DESC);
-
-CREATE INDEX idx_messages_email ON public.messages USING btree (email);
+CREATE UNIQUE INDEX worlds_slug_idx ON public.worlds USING btree (slug);
 
 
 ALTER TABLE ONLY "public"."activity_logs" ADD CONSTRAINT "activity_logs_participant_id_fkey" FOREIGN KEY (participant_id) REFERENCES "public".participants(id) ON DELETE SET NULL;
@@ -821,4 +824,4 @@ CREATE VIEW "public"."v_top10_participants" AS SELECT v_participant_ranking.id,
    FROM v_participant_ranking
  LIMIT 10;
 
--- 2026-09-27 17:29:21 UTC
+-- 2026-10-06 15:53:27 UTC

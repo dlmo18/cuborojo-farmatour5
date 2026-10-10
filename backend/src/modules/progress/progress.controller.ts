@@ -63,6 +63,12 @@ export class ProgressController {
     return this.service.getMissionAnswers(req.user.id, missionId);
   }
 
+  @Get('golden-level/:levelId/answers')
+  @ApiOperation({ summary: 'Obtener respuestas del participante para un nivel dorado específico' })
+  getGoldenLevelAnswers(@Req() req: any, @Param('levelId') levelId: string) {
+    return this.service.getGoldenLevelAnswers(req.user.id, levelId);
+  }
+
   @Post('complete-mission')
   @ApiOperation({ summary: 'Marcar misión como completada' })
   completeMission(@Req() req: any, @Body() dto: any) {

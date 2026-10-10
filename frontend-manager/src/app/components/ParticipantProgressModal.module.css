@@ -1,3 +1,12 @@
+.pageContainer {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -38,12 +47,11 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 24px;
   border-bottom: 1px solid #e5e7eb;
   background: linear-gradient(135deg, #e00018 0%, #171717 100%);
   color: white;
-  border-radius: 12px 12px 0 0;
 }
 
 .header h2 {
@@ -56,6 +64,26 @@
   margin: 8px 0 0 0;
   font-size: 14px;
   opacity: 0.9;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .closeBtn {
@@ -514,6 +542,29 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
+.answerSelect {
+  padding: 8px 12px;
+  border: 1px solid #fbbf24;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #1f2937;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.answerSelect:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.answerSelect option {
+  color: #1f2937;
+  background: white;
+}
+
 .editActions {
   display: flex;
   gap: 8px;
@@ -571,10 +622,9 @@
   padding: 16px 24px;
   border-top: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 12px;
   background: #f9fafb;
-  border-radius: 0 0 12px 12px;
 }
 
 .closeAction {
@@ -587,6 +637,9 @@
   cursor: pointer;
   transition: background-color 0.2s;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .closeAction:hover {

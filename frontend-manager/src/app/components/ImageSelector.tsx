@@ -8,14 +8,16 @@ interface ImageSelectorProps {
   selectedImageId?: string;
   onImageSelect: (imageId: string, imageUrl?: string) => void;
   label?: string;
-  required?: boolean;
-}
+  required?: boolean; 
+  className?: string;
+  }
 
 export default function ImageSelector({
   selectedImageId,
   onImageSelect,
   label = 'Imagen',
   required = false,
+  className = 'h-40',
 }: ImageSelectorProps) {
   const [showModal, setShowModal] = useState(false);
   const [images, setImages] = useState<MediaFile[]>([]);
@@ -157,14 +159,14 @@ export default function ImageSelector({
       {/* Selected Image Preview */}
       <div
         onClick={() => setShowModal(true)}
-        className="relative w-full h-40 bg-surface-100 rounded-lg border-2 border-dashed border-surface-300 hover:border-surface-400 cursor-pointer flex items-center justify-center group overflow-hidden transition-all"
+        className={`relative w-full ${className} bg-surface-100 rounded-lg border-2 border-dashed border-surface-300 hover:border-surface-400 cursor-pointer flex items-center justify-center group overflow-hidden transition-all`}
       >
         {selectedImage ? (
           <>
             <img
               src={selectedImage.url}
               alt={selectedImage.name}
-              className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+              className="w-full h-full object-contain group-hover:opacity-75 transition-opacity"
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
               <button

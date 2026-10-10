@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { AdminGuard } from '../auth/guards';
@@ -47,4 +47,14 @@ export class ReportsController {
   @Get('participant/:id')
   @ApiOperation({ summary: 'Detalle de progreso de un participante' })
   participantDetail(@Param('id') id: string) { return this.service.getParticipantDetail(id); }
+
+  @Put('participant-progress/:participantId/questions/:questionId')
+  @ApiOperation({ summary: 'Actualizar respuesta de un participante a una pregunta' })
+  updateParticipantAnswer(
+    @Param('participantId') participantId: string,
+    @Param('questionId') questionId: string,
+    @Body() body: { selectedAnswer: string }
+  ) {
+    return this.service.updateParticipantAnswer(participantId, questionId, body.selectedAnswer);
+  }
 }

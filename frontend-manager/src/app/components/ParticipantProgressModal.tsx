@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MdClose, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel } from 'react-icons/md';
+import { MdArrowBack, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel } from 'react-icons/md';
 import styles from './ParticipantProgressModal.module.css';
 import { reportsApi } from '@/app/services/api';
 
@@ -58,6 +58,7 @@ interface ParticipantProgressModalProps {
   participantId: string;
   participantName: string;
   onClose: () => void;
+  isDniParam?: boolean;
 }
 
 // Helper functions to calculate maxStars from actual data
@@ -83,6 +84,7 @@ export default function ParticipantProgressModal({
   participantId,
   participantName,
   onClose,
+  isDniParam = false,
 }: ParticipantProgressModalProps) {
   const [data, setData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ export default function ParticipantProgressModal({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
+    // Removed - no longer needed for page view
   };
 
   const handleEditAnswer = (questionId: string, currentAnswer: string) => {
@@ -138,31 +140,11 @@ export default function ParticipantProgressModal({
       // Llamar al backend para guardar
       await reportsApi.updateQuestionAnswer(participantId, question.questionId, newAnswer);
       
-      // Actualizar respuesta localmente
-      if (data) {
-        const updatedData = JSON.parse(JSON.stringify(data));
-        let found = false;
-        
-        updatedData.worlds.forEach((world: WorldProgress) => {
-          world.levels.forEach((level: LevelProgress) => {
-            level.missions.forEach((mission: MissionProgress) => {
-              if (mission.questions) {
-                const q = mission.questions.find((q: QuestionResult) => q.questionId === question.questionId);
-                if (q) {
-                  q.selectedAnswer = newAnswer;
-                  q.isCorrect = newAnswer === q.correctAnswer;
-                  found = true;
-                }
-              }
-            });
-          });
-        });
-        
-        if (found) {
-          setData(updatedData);
-          setEditingQuestionId(null);
-        }
-      }
+      // Refrescar todos los datos para obtener estrellas recalculadas en cascada
+      await fetchProgressData();
+      
+      // Limpiar estado de edición
+      setEditingQuestionId(null);
     } catch (err: any) {
       setSaveError(err.response?.data?.message || err.message || 'Error guardando respuesta');
       console.error('Error saving answer:', err);
@@ -173,17 +155,17 @@ export default function ParticipantProgressModal({
 
   if (loading) {
     return (
-      <div className={styles.overlay} onClick={onClose}>
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.header}>
-            <h2>Cargando progreso...</h2>
-            <button onClick={onClose} className={styles.closeBtn}>
-              <MdClose size={24} />
-            </button>
-          </div>
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-          </div>
+      <div className={styles.pageContainer}>
+        <div className={styles.header}>
+          <button onClick={onClose} className={styles.backBtn}>
+            <MdArrowBack size={24} />
+            Atrás
+          </button>
+          <h2>Cargando progreso...</h2>
+          <div style={{ width: '80px' }}></div>
+        </div>
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
         </div>
       </div>
     );
@@ -191,66 +173,58 @@ export default function ParticipantProgressModal({
 
   if (error || !data) {
     return (
-      <div className={styles.overlay} onClick={onClose}>
-        <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.header}>
-            <h2>Error</h2>
-            <button onClick={onClose} className={styles.closeBtn}>
-              <MdClose size={24} />
-            </button>
-          </div>
-          <div className={styles.errorMessage}>
-            {error || 'Error desconocido al cargar el progreso'}
-          </div>
-          <div className={styles.actions}>
-            <button onClick={onClose} className={styles.closeAction}>
-              Cerrar
-            </button>
-          </div>
+      <div className={styles.pageContainer}>
+        <div className={styles.header}>
+          <button onClick={onClose} className={styles.backBtn}>
+            <MdArrowBack size={24} />
+            Atrás
+          </button>
+          <h2>Error</h2>
+          <div style={{ width: '80px' }}></div>
+        </div>
+        <div className={styles.errorMessage}>
+          {error || 'Error desconocido al cargar el progreso'}
+        </div>
+        <div className={styles.actions}>
+          <button onClick={onClose} className={styles.closeAction}>
+            Atrás
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className={styles.overlay}
-      onClick={onClose}
-      onKeyDown={handleKeyDown}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        className={styles.modal}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <div>
-            <h2>{participantName}</h2>
-            <p className={styles.subtitle}>DNI: {data.participant.dni}</p>
-          </div>
-          <button onClick={onClose} className={styles.closeBtn}>
-            <MdClose size={24} />
-          </button>
+    <div className={styles.pageContainer}>
+      <div className={styles.header}>
+        <button onClick={onClose} className={styles.backBtn}>
+          <MdArrowBack size={24} />
+          Atrás
+        </button>
+        <div>
+          <h2>{participantName}</h2>
+          <p className={styles.subtitle}>DNI: {data.participant.dni}</p>
         </div>
+        <div style={{ width: '80px' }}></div>
+      </div>
 
-        <div className={styles.totalStats}>
-          <div className={styles.statBox}>
-            <div className={styles.statLabel}>Total de Estrellas</div>
-            <div className={styles.statValue}>
-              {data.totalStars} / {calculateTotalMaxStars(data.worlds)}
-              <MdStar className={styles.starIcon} />
-            </div>
-          </div>
-          <div className={styles.statBox}>
-            <div className={styles.statLabel}>Mundos Completados</div>
-            <div className={styles.statValue}>
-              {data.worlds.filter((w) => w.completedLevels === w.totalLevels).length} / {data.worlds.length}
-            </div>
+      <div className={styles.totalStats}>
+        <div className={styles.statBox}>
+          <div className={styles.statLabel}>Total de Estrellas</div>
+          <div className={styles.statValue}>
+            {data.totalStars} / {calculateTotalMaxStars(data.worlds)}
+            <MdStar className={styles.starIcon} />
           </div>
         </div>
+        <div className={styles.statBox}>
+          <div className={styles.statLabel}>Mundos Completados</div>
+          <div className={styles.statValue}>
+            {data.worlds.filter((w) => w.completedLevels === w.totalLevels).length} / {data.worlds.length}
+          </div>
+        </div>
+      </div>
 
-        <div className={styles.content}>
+      <div className={styles.content}>
           {data.worlds.map((world) => (
             <div key={world.worldId} className={styles.worldSection}>
               <div
@@ -406,18 +380,38 @@ export default function ParticipantProgressModal({
                                                 <span className={styles.answerLabel}>
                                                   Cambiar respuesta:
                                                 </span>
-                                                <input
-                                                  type="text"
-                                                  className={styles.answerInput}
-                                                  value={editedAnswers[question.questionId] || question.selectedAnswer || ''}
-                                                  onChange={(e) =>
-                                                    setEditedAnswers({
-                                                      ...editedAnswers,
-                                                      [question.questionId]: e.target.value,
-                                                    })
-                                                  }
-                                                  placeholder="Ingresa la nueva respuesta"
-                                                />
+                                                {question.answerOptions && question.answerOptions.length > 0 ? (
+                                                  <select
+                                                    className={styles.answerSelect}
+                                                    value={editedAnswers[question.questionId] || question.selectedAnswer || ''}
+                                                    onChange={(e) =>
+                                                      setEditedAnswers({
+                                                        ...editedAnswers,
+                                                        [question.questionId]: e.target.value,
+                                                      })
+                                                    }
+                                                  >
+                                                    <option value="">Selecciona una respuesta</option>
+                                                    {question.answerOptions.map((option) => (
+                                                      <option key={option} value={option}>
+                                                        {option}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+                                                ) : (
+                                                  <input
+                                                    type="text"
+                                                    className={styles.answerInput}
+                                                    value={editedAnswers[question.questionId] || question.selectedAnswer || ''}
+                                                    onChange={(e) =>
+                                                      setEditedAnswers({
+                                                        ...editedAnswers,
+                                                        [question.questionId]: e.target.value,
+                                                      })
+                                                    }
+                                                    placeholder="Ingresa la respuesta"
+                                                  />
+                                                )}
                                                 {saveError && (
                                                   <div className={styles.errorText}>
                                                     {saveError}
@@ -509,13 +503,12 @@ export default function ParticipantProgressModal({
               )}
             </div>
           ))}
-        </div>
+      </div>
 
-        <div className={styles.actions}>
-          <button onClick={onClose} className={styles.closeAction}>
-            Cerrar
-          </button>
-        </div>
+      <div className={styles.actions}>
+        <button onClick={onClose} className={styles.closeAction}>
+          Atrás
+        </button>
       </div>
     </div>
   );

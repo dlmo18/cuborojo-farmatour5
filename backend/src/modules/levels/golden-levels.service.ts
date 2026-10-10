@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { GoldenLevelItem } from './golden-level-item.entity';
 import { GoldenLevelQuestion } from './golden-level-question.entity';
 import { GoldenLevelAnswerOption } from './golden-level-answer-option.entity';
+import { MediaItem } from '../media/media.entity';
 import { CreateGoldenLevelItemDto, UpdateGoldenLevelItemDto, CreateGoldenLevelQuestionDto, UpdateGoldenLevelQuestionDto, CreateGoldenLevelAnswerOptionDto, UpdateGoldenLevelAnswerOptionDto } from './levels.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class GoldenLevelsService {
     @InjectRepository(GoldenLevelItem) private itemsRepo: Repository<GoldenLevelItem>,
     @InjectRepository(GoldenLevelQuestion) private questionsRepo: Repository<GoldenLevelQuestion>,
     @InjectRepository(GoldenLevelAnswerOption) private answersRepo: Repository<GoldenLevelAnswerOption>,
+    @InjectRepository(MediaItem) private mediaRepo: Repository<MediaItem>,
   ) {}
 
   // ============================================================
@@ -19,7 +21,33 @@ export class GoldenLevelsService {
   // ============================================================
 
   async getItemsByLevel(levelId: string) {
-    return this.itemsRepo.find({ where: { levelId }, order: { orderNum: 'ASC' } });
+    const items = await this.itemsRepo.find({ where: { levelId }, order: { orderNum: 'ASC' } });
+
+    // For each item, if detail is a media ID, fetch the media URL
+    const itemsWithImages = await Promise.all(
+      items.map(async (item) => {
+        let detail = item.detail;
+        
+        // If detail looks like a UUID (media ID), try to fetch the media item
+        if (detail && detail.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+          try {
+            const media = await this.mediaRepo.findOne({ where: { id: detail } });
+            if (media) {
+              detail = media.url;
+            }
+          } catch (err) {
+            // If media not found, keep the original detail value
+          }
+        }
+
+        return {
+          ...item,
+          detail,
+        };
+      })
+    );
+
+    return itemsWithImages;
   }
 
   async getItemById(id: string) {
@@ -49,7 +77,14 @@ export class GoldenLevelsService {
   // ============================================================
 
   async getQuestionsByLevel(levelId: string) {
-    return this.questionsRepo.find({ where: { levelId, isActive: true }, order: { orderNum: 'ASC' } });
+    return this.questionsRepo
+      .createQueryBuilder('glq')
+      .leftJoinAndSelect('glq.options', 'options')
+      .where('glq.levelId = :levelId', { levelId })
+      .andWhere('glq.isActive = :isActive', { isActive: true })
+      .orderBy('glq.orderNum', 'ASC')
+      .addOrderBy('options.orderNum', 'ASC')
+      .getMany();
   }
 
   async getQuestionById(id: string) {

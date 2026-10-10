@@ -7,6 +7,7 @@ import DataTable, { Column, AdditionalOption } from '@/app/components/DataTable'
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import RichTextEditor from '@/app/components/RichTextEditor';
+import ImageSelector from '@/app/components/ImageSelector';
 import LevelsImportModal from '@/app/components/LevelsImportModal';
 import { levelsApi, missionsApi, worldsApi, Level, World, CreateLevelDto, UpdateLevelDto, LevelType } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
@@ -152,6 +153,7 @@ export default function LevelsPage() {
       worldId: level.worldId, 
       name: level.name, 
       description: level.description, 
+      imageId: level.imageId,
       orderNum: level.orderNum,
       levelType: level.levelType,
       isActive: level.isActive,
@@ -391,8 +393,8 @@ export default function LevelsPage() {
                 />
               </div>
 
-              {/* Descripción - Mostrar para Normal y Golden */}
-              {(currentLevelType === 'normal' || currentLevelType === 'golden') && (
+              {/* Descripción - Solo para Normal */}
+              {currentLevelType === 'normal' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                   <RichTextEditor
@@ -400,6 +402,18 @@ export default function LevelsPage() {
                     onChange={(content) => setFormData({ ...formData, description: content })}
                     placeholder="Escribe la descripción del nivel con formato..."
                     minHeight="200px"
+                  />
+                </div>
+              )}
+
+              {/* Imagen - Solo para Golden */}
+              {currentLevelType === 'golden' && (
+                <div>
+                  <ImageSelector
+                    selectedImageId={(formData as any).imageId}
+                    onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
+                    label="Imagen del Nivel"
+                    required={false}
                   />
                 </div>
               )}

@@ -28,6 +28,9 @@ interface Level {
   missions?: any[];
   levelType?: 'normal' | 'golden' | 'final';
   isLocked?: boolean;
+  imageId?: string;
+  introVideoUrl?: string;
+  introVideoId?: string;
 }
 
 interface LevelProgress {
@@ -47,6 +50,8 @@ export default function WorldLevelsPage() {
   const [world, setWorld] = useState<World | null>(null);
   const [levels, setLevels] = useState<Level[]>([]);
   const [levelProgress, setLevelProgress] = useState<Record<string, LevelProgress>>({});
+  const [goldenLevelProgress, setGoldenLevelProgress] = useState<Record<string, any>>({});
+  const [finalLevelProgress, setFinalLevelProgress] = useState<Record<string, any>>({});
   const [worldStars, setWorldStars] = useState(0);
   const [loading, setLoading] = useState(true);
   
@@ -80,6 +85,8 @@ export default function WorldLevelsPage() {
 
         // Fetch level progress for the current user
         let progressMap: Record<string, LevelProgress> = {};
+        let goldenProgressMap: Record<string, any> = {};
+        let finalProgressMap: Record<string, any> = {};
         try {
           const progressRes = await axiosInstance.get(`/progress/game-state`);
           if (progressRes.data.levelProgress) {
@@ -87,7 +94,15 @@ export default function WorldLevelsPage() {
               progressMap[lp.levelId] = lp;
             });
           }
+          if (progressRes.data.goldenLevelProgress) {
+            goldenProgressMap = progressRes.data.goldenLevelProgress;
+          }
+          if (progressRes.data.finalLevelProgress) {
+            finalProgressMap = progressRes.data.finalLevelProgress;
+          }
           setLevelProgress(progressMap);
+          setGoldenLevelProgress(goldenProgressMap);
+          setFinalLevelProgress(finalProgressMap);
         } catch (err) {
           console.error('Error fetching level progress:', err);
         }
@@ -120,13 +135,18 @@ export default function WorldLevelsPage() {
         // Golden level is unlocked if all normal levels are completed
         let goldenLocked = true;
         if (goldenLevel) {
-          goldenLocked = levelsWithLockStatus.some((l: Level) => l.isLocked);
+          const goldenProgress = goldenProgressMap[goldenLevel.id];
+          // Golden level is locked if any normal level is locked, but if it has progress, show it as accessible
+          goldenLocked = levelsWithLockStatus.some((l: Level) => l.isLocked) && !goldenProgress;
         }
 
         // Final level is unlocked if all normal and golden levels are completed
         let finalLocked = true;
         if (finalLevel) {
-          finalLocked = goldenLocked || levelsWithLockStatus.some((l: Level) => l.isLocked);
+          const finalProgress = finalProgressMap[finalLevel.id];
+          const goldenProgress = goldenProgressMap[goldenLevel?.id];
+          // Final level is locked if golden level is locked, but if it has progress, show it as accessible
+          finalLocked = (goldenLocked || levelsWithLockStatus.some((l: Level) => l.isLocked)) && !finalProgress;
         }
 
         // Build final sorted list: final on top, then golden, then normal levels (reversed for bottom-to-top display)
@@ -238,24 +258,37 @@ export default function WorldLevelsPage() {
             const isLocked = level.isLocked;
             const isFinal = level.levelType === 'final';
             const isGolden = level.levelType === 'golden';
-            const progress = levelProgress[level.id];
+            
+            // Get progress based on level type
+            const progress = isGolden ? goldenLevelProgress[level.id] : (isFinal ? finalLevelProgress[level.id] : levelProgress[level.id]);
             const starsEarned = progress?.starsEarned || 0;
             const isCompleted = progress?.isCompleted || false;
+            
+            // Also set individual variables for consistency
+            const progressG = goldenLevelProgress[level.id];
+            const starsEarnedG = progressG?.starsEarned || 0;
+            const isCompletedG = progressG?.isCompleted || false;
+            
+            const progressF = finalLevelProgress[level.id];
+            const starsEarnedF = progressF?.starsEarned || 0;
+            const isCompletedF = progressF?.isCompleted || false;
+
+            const isCompletedI = isGolden ? isCompletedG : (isFinal ? isCompletedF : isCompleted);
+            const starsEarnedI = isGolden ? starsEarnedG : (isFinal ? starsEarnedF : starsEarned);
             
             let bgColor = 'item-normal';
             if (isGolden) bgColor = 'item-golden';
             if (isFinal) bgColor = 'item-final';
-            if (isLocked) bgColor = 'item-locked';
 
             return (
               <div
                 key={level.id}
                 className={`level-item relative ${bgColor} block m-auto font-bold p-2 px-3 ${
-                  isLocked ? 'opacity-60' : 'cursor-pointer'
+                  isLocked ? 'item-locked opacity-60' : 'cursor-pointer'
                 }`}
                 onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}
               >
-                <div className={`absolute top-2 left-3 stars text-left ${starsEarned > 0 ? '' : 'opacity-0'}`}>
+                <div className={`absolute top-2 left-3 stars text-left ${starsEarnedI > 0 ? '' : 'opacity-0'}`}>
                   <Image 
                     src="/images/icon-star.png"
                     alt="Stars"
@@ -264,13 +297,16 @@ export default function WorldLevelsPage() {
                     className="inline-block align-middle mr-1"
                     priority
                   />
-                  0{starsEarned}
+                  {starsEarnedI > 9 ? starsEarnedI : '0' + starsEarnedI}
                 </div>
-                <div className={`absolute top-2 right-3 stars text-right ${isCompleted ? '' : 'opacity-0'}`}>
+                <div className={`absolute top-2 right-3 stars text-right ${isCompletedI ? '' : 'opacity-0'}`}>
                   <span className="inline-block align-middle"><FaCheck /></span>
                 </div>
-                <h3 className="text-lg h-[60px] flex items-center justify-center text-white leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                  <span>{level.name}</span>
+                <h3 className={`text-lg h-[60px] ${!isFinal && !isGolden ? 'pt-2 px-8' : ''} uppercase flex items-center justify-center text-white leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
+                  <div>
+                    {isGolden ? <span className="block">Nivel Dorado</span> : isFinal ? <span className="block">Role Play</span> : ''} 
+                    <span>{level.name}</span>
+                  </div>
                 </h3>
               </div>
             );

@@ -6,7 +6,7 @@ import { MdAdd, MdDownload } from 'react-icons/md';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
-import { RichTextEditor } from '@/app/components/RichTextEditor';
+import ImageSelector from '@/app/components/ImageSelector';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
 import GoldenLevelImportModal from '@/app/components/GoldenLevelImportModal';
 import { levelsApi, goldenLevelsApi, worldsApi, Level, World, GoldenLevelItem, GoldenLevelQuestion, GoldenLevelAnswerOption, CreateGoldenLevelItemDto, UpdateGoldenLevelItemDto, CreateGoldenLevelQuestionDto, UpdateGoldenLevelQuestionDto, CreateGoldenLevelAnswerOptionDto, UpdateGoldenLevelAnswerOptionDto } from '@/app/services/api';
@@ -40,6 +40,7 @@ export default function GoldenLevelContentPage() {
   const [searchTermItems, setSearchTermItems] = useState('');
   const [showModalItem, setShowModalItem] = useState(false);
   const [editingItem, setEditingItem] = useState<GoldenLevelItem | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string>('');
   const [formDataItem, setFormDataItem] = useState<CreateGoldenLevelItemDto>({
     levelId: '',
     title: '',
@@ -117,6 +118,7 @@ export default function GoldenLevelContentPage() {
       title: '',
       orderNum: items.length + 1,
     });
+    setSelectedImageId('');
     setShowModalItem(true);
     setError('');
   };
@@ -129,6 +131,7 @@ export default function GoldenLevelContentPage() {
       detail: item.detail,
       orderNum: item.orderNum,
     });
+    setSelectedImageId(item.detail || '');
     setShowModalItem(true);
     setError('');
   };
@@ -148,7 +151,13 @@ export default function GoldenLevelContentPage() {
     setError('');
     try {
       if (editingItem) {
-        await goldenLevelsApi.updateItem(editingItem.id, formDataItem as UpdateGoldenLevelItemDto);
+        // Para actualización, no enviar levelId
+        const updateData: UpdateGoldenLevelItemDto = {
+          title: formDataItem.title,
+          detail: formDataItem.detail,
+          orderNum: formDataItem.orderNum,
+        };
+        await goldenLevelsApi.updateItem(editingItem.id, updateData);
       } else {
         await goldenLevelsApi.createItem(formDataItem);
       }
@@ -273,8 +282,12 @@ export default function GoldenLevelContentPage() {
 
     try {
       if (editingQuestion) {
-        // Actualizar pregunta
-        await goldenLevelsApi.updateQuestion(editingQuestion.id, formDataQuestion as UpdateGoldenLevelQuestionDto);
+        // Actualizar pregunta sin enviar levelId
+        const updateData: UpdateGoldenLevelQuestionDto = {
+          content: formDataQuestion.content,
+          orderNum: formDataQuestion.orderNum,
+        };
+        await goldenLevelsApi.updateQuestion(editingQuestion.id, updateData);
 
         // Procesar respuestas
         const existingIds = new Set(currentAnswers.filter(a => !a.tempId?.startsWith('1') && !a.tempId?.startsWith('2')).map(a => a.tempId));
@@ -348,8 +361,26 @@ export default function GoldenLevelContentPage() {
     },
     { 
       key: 'detail', 
-      label: 'Detalle',
-      render: (value) => <div style={{width: '250px'}}><div className="whitespace-break-spaces text-sm text-gray-600 line-clamp-2">{stripHtmlTags(value, 200)}</div></div>
+      label: 'Imagen',
+      width: '120px',
+      render: (value) => {
+        if (!value) {
+          return <div className="text-sm text-surface-500">Sin imagen</div>;
+        }
+        // Check if it looks like a URL or an image ID/path
+        if (value.startsWith('http') || value.includes('/')) {
+          return (
+            <div className="w-24 h-24 rounded-lg overflow-hidden border border-surface-200">
+              <img 
+                src={value} 
+                alt="Detalle" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          );
+        }
+        return <div className="text-sm text-surface-500">-</div>;
+      }
     },
   ];
 
@@ -551,11 +582,15 @@ export default function GoldenLevelContentPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-surface-700 mb-2">Detalle</label>
-                <RichTextEditor 
-                  value={formDataItem.detail || ''} 
-                  onChange={(content) => setFormDataItem({ ...formDataItem, detail: content })}
-                  minHeight="250px"
+                <label className="block text-sm font-medium text-surface-700 mb-2">Imagen</label>
+                <ImageSelector
+                  selectedImageId={selectedImageId}
+                  onImageSelect={(imageId) => {
+                    setSelectedImageId(imageId);
+                    setFormDataItem({ ...formDataItem, detail: imageId });
+                  }}
+                  label="Imagen del Contenido" 
+                  className="h-80"
                 />
               </div>
 
