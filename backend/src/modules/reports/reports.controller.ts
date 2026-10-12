@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { AdminGuard } from '../auth/guards';
@@ -56,5 +56,14 @@ export class ReportsController {
     @Body() body: { selectedAnswer: string }
   ) {
     return this.service.updateParticipantAnswer(participantId, questionId, body.selectedAnswer);
+  }
+
+  @Delete('participant-progress/:participantId/questions/:questionId')
+  @ApiOperation({ summary: 'Eliminar respuesta de un participante a una pregunta' })
+  deleteParticipantAnswer(
+    @Param('participantId') participantId: string,
+    @Param('questionId') questionId: string
+  ) {
+    return this.service.deleteParticipantAnswer(participantId, questionId);
   }
 }

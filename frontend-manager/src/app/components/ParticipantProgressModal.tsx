@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel } from 'react-icons/md';
+import { MdArrowBack, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel, MdDelete, MdAdd } from 'react-icons/md';
 import styles from './ParticipantProgressModal.module.css';
 import { reportsApi } from '@/app/services/api';
 
@@ -30,7 +30,8 @@ interface LevelProgress {
   starsEarned: number;
   maxStars: number;
   isCompleted: boolean;
-  missions: MissionProgress[];
+  missions?: MissionProgress[];
+  questions?: QuestionResult[];
 }
 
 interface WorldProgress {
@@ -67,8 +68,12 @@ const calculateMissionMaxStars = (mission: MissionProgress): number => {
 };
 
 const calculateLevelMaxStars = (level: LevelProgress): number => {
-  if (level.missions.length === 0) return 0;
-  return level.missions.reduce((sum, mission) => sum + calculateMissionMaxStars(mission), 0);
+  // Para niveles normales, calcular desde misiones
+  if (level.missions && level.missions.length > 0) {
+    return level.missions.reduce((sum, mission) => sum + calculateMissionMaxStars(mission), 0);
+  }
+  // Para niveles dorados y finales, usar maxStars directamente
+  return level.maxStars || 0;
 };
 
 const calculateWorldMaxStars = (world: WorldProgress): number => {
@@ -152,6 +157,34 @@ export default function ParticipantProgressModal({
       setSaving(false);
     }
   };
+
+  const handleDeleteAnswer = async (question: QuestionResult) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta respuesta?')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setSaveError('');
+      
+      // Llamar al backend para eliminar
+      await reportsApi.deleteQuestionAnswer(participantId, question.questionId);
+      
+      // Refrescar todos los datos para obtener estrellas recalculadas en cascada
+      await fetchProgressData();
+      
+      // Limpiar estado de edición si estaba en modo edit
+      if (editingQuestionId === question.questionId) {
+        setEditingQuestionId(null);
+      }
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || err.message || 'Error eliminando respuesta');
+      console.error('Error deleting answer:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -288,9 +321,10 @@ export default function ParticipantProgressModal({
                         </div>
                       </div>
 
-                      {expandedLevel === level.levelId && level.missions.length > 0 && (
+                      {expandedLevel === level.levelId && (
                         <div className={styles.missionsList}>
-                          {level.missions.map((mission) => (
+                          {/* Mostrar misiones para niveles normales */}
+                          {level.missions && level.missions.length > 0 && level.missions.map((mission) => (
                             <div
                               key={mission.missionId}
                               className={styles.missionItem}
@@ -451,18 +485,48 @@ export default function ParticipantProgressModal({
                                                   }`}>
                                                     {question.selectedAnswer || 'Sin responder'}
                                                   </span>
-                                                  <button
-                                                    className={styles.editIconBtn}
-                                                    onClick={() =>
-                                                      handleEditAnswer(
-                                                        question.questionId,
-                                                        question.selectedAnswer || ''
-                                                      )
-                                                    }
-                                                    title="Editar respuesta"
-                                                  >
-                                                    <MdEdit size={16} />
-                                                  </button>
+                                                  <div className='w-20 flex gap-2'>
+                                                  {question.selectedAnswer && (
+                                                    <button
+                                                      className={styles.editIconBtn}
+                                                      onClick={() =>
+                                                        handleEditAnswer(
+                                                          question.questionId,
+                                                          question.selectedAnswer || ''
+                                                        )
+                                                      }
+                                                      title="Editar respuesta"
+                                                      disabled={saving}
+                                                    >
+                                                      <MdEdit size={16} />
+                                                    </button>
+                                                  )}
+                                                  {question.selectedAnswer && (
+                                                    <button
+                                                      className={styles.deleteIconBtn}
+                                                      onClick={() => handleDeleteAnswer(question)}
+                                                      title="Eliminar respuesta"
+                                                      disabled={saving}
+                                                    >
+                                                      <MdDelete size={16} />
+                                                    </button>
+                                                  )}
+                                                  {!question.selectedAnswer && (
+                                                    <button
+                                                      className={styles.addAnswerBtn}
+                                                      onClick={() =>
+                                                        handleEditAnswer(
+                                                          question.questionId,
+                                                          ''
+                                                        )
+                                                      }
+                                                      title="Asignar respuesta"
+                                                      disabled={saving}
+                                                    >
+                                                      <MdAdd size={16} />
+                                                    </button>
+                                                  )}
+                                                  </div>
                                                 </div>
                                               </div>
                                               {question.selectedAnswer && !question.isCorrect && (
@@ -491,6 +555,202 @@ export default function ParticipantProgressModal({
                                       )}
                                     </div>
                                   ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          
+                          {/* Mostrar preguntas para niveles dorados y finales */}
+                          {level.questions && level.questions.length > 0 && level.questions.map((question, idx) => (
+                            <div
+                              key={question.questionId}
+                              className={styles.questionItem}
+                            >
+                              <div
+                                className={styles.questionHeader}
+                                onClick={() =>
+                                  setExpandedQuestion(
+                                    expandedQuestion === question.questionId
+                                      ? null
+                                      : question.questionId
+                                  )
+                                }
+                              >
+                                <div className={styles.questionInfo}>
+                                  <span className={styles.questionNumber}>
+                                    P{idx + 1}
+                                  </span>
+                                  <span className={styles.questionText}>
+                                    {question.questionText}
+                                  </span>
+                                  <span
+                                    className={`${styles.questionResult} ${
+                                      question.selectedAnswer === null || question.selectedAnswer === undefined
+                                        ? styles.unansweredQuestion
+                                        : question.isCorrect
+                                        ? styles.correctAnswer
+                                        : styles.incorrectAnswer
+                                    }`}
+                                  >
+                                    {question.selectedAnswer === null || question.selectedAnswer === undefined
+                                      ? '? Sin responder'
+                                      : question.isCorrect
+                                      ? '✓ Correcta'
+                                      : '✗ Incorrecta'}
+                                  </span>
+                                </div>
+                                <span className={styles.arrow}>
+                                  {expandedQuestion === question.questionId
+                                    ? '▼'
+                                    : '▶'}
+                                </span>
+                              </div>
+
+                              {expandedQuestion === question.questionId && (
+                                <div className={styles.questionDetails}>
+                                  {editingQuestionId === question.questionId ? (
+                                    <>
+                                      <div className={styles.editMode}>
+                                        <span className={styles.answerLabel}>
+                                          Cambiar respuesta:
+                                        </span>
+                                        {question.answerOptions && question.answerOptions.length > 0 ? (
+                                          <select
+                                            className={styles.answerSelect}
+                                            value={editedAnswers[question.questionId] || question.selectedAnswer || ''}
+                                            onChange={(e) =>
+                                              setEditedAnswers({
+                                                ...editedAnswers,
+                                                [question.questionId]: e.target.value,
+                                              })
+                                            }
+                                          >
+                                            <option value="">Selecciona una respuesta</option>
+                                            {question.answerOptions.map((option) => (
+                                              <option key={option} value={option}>
+                                                {option}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        ) : (
+                                          <input
+                                            type="text"
+                                            className={styles.answerInput}
+                                            value={editedAnswers[question.questionId] || question.selectedAnswer || ''}
+                                            onChange={(e) =>
+                                              setEditedAnswers({
+                                                ...editedAnswers,
+                                                [question.questionId]: e.target.value,
+                                              })
+                                            }
+                                            placeholder="Ingresa la respuesta"
+                                          />
+                                        )}
+                                        {saveError && (
+                                          <div className={styles.errorText}>
+                                            {saveError}
+                                          </div>
+                                        )}
+                                        <div className={styles.editActions}>
+                                          <button
+                                            className={styles.saveBtn}
+                                            onClick={() => handleSaveAnswer(question, idx)}
+                                            disabled={saving}
+                                          >
+                                            <MdSave size={16} />
+                                            {saving ? 'Guardando...' : 'Guardar'}
+                                          </button>
+                                          <button
+                                            className={styles.cancelBtn}
+                                            onClick={handleCancelEdit}
+                                            disabled={saving}
+                                          >
+                                            <MdCancel size={16} />
+                                            Cancelar
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className={styles.answerOption}>
+                                        <span className={styles.answerLabel}>
+                                          Tu respuesta:
+                                        </span>
+                                        <div className={styles.answerWithEdit}>
+                                          <span className={`${styles.answerText} ${
+                                            (question.selectedAnswer === null || question.selectedAnswer === undefined)
+                                              ? styles.unansweredText
+                                              : ''
+                                          }`}>
+                                            {question.selectedAnswer || 'Sin responder'}
+                                          </span>
+                                          <div className='w-20 flex gap-2'>
+                                          {question.selectedAnswer && (
+                                            <button
+                                              className={styles.editIconBtn}
+                                              onClick={() =>
+                                                handleEditAnswer(
+                                                  question.questionId,
+                                                  question.selectedAnswer || ''
+                                                )
+                                              }
+                                              title="Editar respuesta"
+                                              disabled={saving}
+                                            >
+                                              <MdEdit size={16} />
+                                            </button>
+                                          )}
+                                          {question.selectedAnswer && (
+                                            <button
+                                              className={styles.deleteIconBtn}
+                                              onClick={() => handleDeleteAnswer(question)}
+                                              title="Eliminar respuesta"
+                                              disabled={saving}
+                                            >
+                                              <MdDelete size={16} />
+                                            </button>
+                                          )}
+                                          {!question.selectedAnswer && (
+                                            <button
+                                              className={styles.addAnswerBtn}
+                                              onClick={() =>
+                                                handleEditAnswer(
+                                                  question.questionId,
+                                                  ''
+                                                )
+                                              }
+                                              title="Asignar respuesta"
+                                              disabled={saving}
+                                            >
+                                              <MdAdd size={16} />
+                                            </button>
+                                          )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {question.selectedAnswer && !question.isCorrect && (
+                                        <div className={styles.answerOption}>
+                                          <span className={styles.answerLabel}>
+                                            Respuesta correcta:
+                                          </span>
+                                          <span className={styles.answerText}>
+                                            {question.correctAnswer}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {question.selectedAnswer === null || question.selectedAnswer === undefined ? (
+                                        <div className={styles.answerOption}>
+                                          <span className={styles.answerLabel}>
+                                            Respuesta correcta:
+                                          </span>
+                                          <span className={styles.answerText}>
+                                            {question.correctAnswer}
+                                          </span>
+                                        </div>
+                                      ) : null}
+                                    </>
+                                  )}
                                 </div>
                               )}
                             </div>

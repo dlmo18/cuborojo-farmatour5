@@ -88,7 +88,7 @@ export class GoldenLevelsService {
   }
 
   async getQuestionById(id: string) {
-    const question = await this.questionsRepo.findOne({ where: { id }, relations: [''] });
+    const question = await this.questionsRepo.findOne({ where: { id } });
     if (!question) throw new NotFoundException('Pregunta no encontrada');
     return question;
   }

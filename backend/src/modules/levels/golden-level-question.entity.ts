@@ -14,6 +14,9 @@ export class GoldenLevelQuestion {
   @JoinColumn({ name: 'level_id' })
   level: Level;
 
+  @Column({ type: 'text', nullable: true })
+  title?: string;
+
   @Column({ type: 'text' })
   content: string;
 

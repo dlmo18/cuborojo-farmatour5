@@ -515,6 +515,66 @@
   transform: scale(0.98);
 }
 
+.deleteIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.deleteIconBtn:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+.deleteIconBtn:active {
+  transform: scale(0.98);
+}
+
+.deleteIconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addAnswerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: #dbeafe;
+  color: #0ea5e9;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.addAnswerBtn:hover {
+  background: #bae6fd;
+  transform: scale(1.05);
+}
+
+.addAnswerBtn:active {
+  transform: scale(0.98);
+}
+
+.addAnswerBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .editMode {
   display: flex;
   flex-direction: column;

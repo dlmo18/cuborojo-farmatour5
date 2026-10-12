@@ -153,6 +153,7 @@ export default function GoldenLevelImportModal({ isOpen, onClose, levelId, onSuc
           const progressPercentage = 60 + (i / (questionRows.length + 1) * 35);
 
           try {
+            const titular = (row['Titular'] || '').trim();
             const pregunta = (row['Pregunta'] || '').trim();
             const opcionA = (row['Opción A'] || '').trim();
             const opcionB = (row['Opción B'] || '').trim();
@@ -194,6 +195,7 @@ export default function GoldenLevelImportModal({ isOpen, onClose, levelId, onSuc
             // Crear pregunta
             const createQuestionDto: CreateGoldenLevelQuestionDto = {
               levelId,
+              title: titular || pregunta.substring(0, 100),
               content: pregunta,
               orderNum: questionsCreated + 1,
             };

@@ -135,18 +135,16 @@ export default function WorldLevelsPage() {
         // Golden level is unlocked if all normal levels are completed
         let goldenLocked = true;
         if (goldenLevel) {
-          const goldenProgress = goldenProgressMap[goldenLevel.id];
-          // Golden level is locked if any normal level is locked, but if it has progress, show it as accessible
-          goldenLocked = levelsWithLockStatus.some((l: Level) => l.isLocked) && !goldenProgress;
+          // Golden level is locked if any normal level is locked
+          goldenLocked = levelsWithLockStatus.some((l: Level) => l.isLocked);
         }
 
-        // Final level is unlocked if all normal and golden levels are completed
+        // Final level is unlocked if golden level is completed
         let finalLocked = true;
-        if (finalLevel) {
-          const finalProgress = finalProgressMap[finalLevel.id];
-          const goldenProgress = goldenProgressMap[goldenLevel?.id];
-          // Final level is locked if golden level is locked, but if it has progress, show it as accessible
-          finalLocked = (goldenLocked || levelsWithLockStatus.some((l: Level) => l.isLocked)) && !finalProgress;
+        if (finalLevel && goldenLevel) {
+          const goldenProgress = goldenProgressMap[goldenLevel.id];
+          // Final level is locked if golden level is not completed
+          finalLocked = !goldenProgress?.isCompleted;
         }
 
         // Build final sorted list: final on top, then golden, then normal levels (reversed for bottom-to-top display)
@@ -217,7 +215,7 @@ export default function WorldLevelsPage() {
   }
 
   return (
-    <div className="min-h-screen level-page">
+    <div className="h-screen level-page">
       <div className="max-w-sm mx-auto">
         {/* Header with back button */}
         <div className="fixed z-10 w-full left-0">
@@ -305,7 +303,7 @@ export default function WorldLevelsPage() {
                 <h3 className={`text-lg h-[60px] ${!isFinal && !isGolden ? 'pt-2 px-8' : ''} uppercase flex items-center justify-center text-white leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                   <div>
                     {isGolden ? <span className="block">Nivel Dorado</span> : isFinal ? <span className="block">Role Play</span> : ''} 
-                    <span>{level.name}</span>
+                    <span>{isFinal ? world.name : level.name}</span>
                   </div>
                 </h3>
               </div>

@@ -384,7 +384,7 @@ export default function MissionQuestionsPage() {
   };
 
   return (
-    <div className="evaluation-page min-h-screen content-page p-8 pb-40">
+    <div className="evaluation-page min-h-screen content-page pt-8 pb-40">
       {/* Header */}
       <div className="fixed top-0 left-0 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0 z-30">
         <div className="mission-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
@@ -543,19 +543,19 @@ export default function MissionQuestionsPage() {
 
       {/* Modal de Resultado */}
       {showResultModal && resultData && (
-        <div className={`modal-result modal-result-${resultData.isCorrect ? 'correct' : 'incorrect'} fixed inset-0 bg-black/80 z-50 overflow-auto p-4`}>
+        <div className={`modal-result modal-result-${resultData.isCorrect ? 'correct' : 'incorrect'} fixed inset-0 bg-black/80 z-50 overflow-auto py-4`}>
           <div className="w-full relative">
             {/* Botón cerrar */}
             <button
               onClick={handleCloseResultModal}
-              className="absolute top-2 right-0 text-gray-500 hover:text-gray-700 z-10"
+              className="absolute top-2 right-4 text-gray-500 hover:text-gray-700 z-10"
             >
               <Image src="/images/icon-close.png" alt="Cerrar" width={48} height={48} />
             </button>
 
             {resultData.isCorrect ? (
               // Respuesta Correcta
-              <div className="p-6 pt-12 text-center">
+              <div className="pt-6 pt-12 text-center">
                 <Image 
                   src="/images/icon-tick.png"
                   alt="X"

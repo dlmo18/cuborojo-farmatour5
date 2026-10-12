@@ -34,7 +34,7 @@ export class ProgressService {
     const goldenLevelData = await this.dataSource.query(
       `SELECT 
         l.id as "levelId",
-        COALESCE(SUM(CASE WHEN pga.is_correct THEN 2 ELSE 0 END), 0) as "starsEarned",
+        COALESCE(SUM(pga.stars_earned), 0) as "starsEarned",
         CASE 
           WHEN COUNT(DISTINCT glq.id) > 0 AND COUNT(DISTINCT pga.id) = COUNT(DISTINCT glq.id)
           THEN TRUE 
@@ -45,7 +45,7 @@ export class ProgressService {
       FROM levels l
       LEFT JOIN golden_level_questions glq ON glq.level_id = l.id AND glq.is_active = TRUE
       LEFT JOIN participant_golden_level_answers pga ON pga.participant_id = $1 AND pga.question_id = glq.id
-      WHERE l.level_type = 'golden' AND pga.id IS NOT NULL
+      WHERE l.level_type = 'golden'
       GROUP BY l.id
       UNION ALL
       SELECT 
@@ -68,7 +68,7 @@ export class ProgressService {
     const finalLevelData = await this.dataSource.query(
       `SELECT 
         l.id as "levelId",
-        COALESCE(SUM(CASE WHEN pfa.is_correct THEN 2 ELSE 0 END), 0) as "starsEarned",
+        COALESCE(SUM(pfa.stars_earned), 0) as "starsEarned",
         CASE 
           WHEN COUNT(DISTINCT flq.id) > 0 AND COUNT(DISTINCT pfa.id) = COUNT(DISTINCT flq.id)
           THEN TRUE 
@@ -79,7 +79,7 @@ export class ProgressService {
       FROM levels l
       LEFT JOIN final_level_questions flq ON flq.level_id = l.id AND flq.is_active = TRUE
       LEFT JOIN participant_final_level_answers pfa ON pfa.participant_id = $1 AND pfa.question_id = flq.id
-      WHERE l.level_type = 'final' AND pfa.id IS NOT NULL
+      WHERE l.level_type = 'final'
       GROUP BY l.id
       UNION ALL
       SELECT 
@@ -218,7 +218,7 @@ export class ProgressService {
       `SELECT COUNT(*) as cnt FROM missions WHERE level_id = $1 AND is_active = TRUE`, [levelId]
     );
     
-    // Contar misiones completadas del nivel y sumar estrellas de TODAS las misiones
+    // Contar misiones completadas del nivel y sumar estrellas de TODAS las misiones completadas
     const [missionStats] = await this.dataSource.query(
       `SELECT 
         COUNT(*) as completed_cnt,
@@ -233,18 +233,21 @@ export class ProgressService {
     const totalMissions = parseInt(totalM.cnt);
     const completedMissions = parseInt(missionStats.completed_cnt);
     const starsEarned = parseInt(missionStats.stars);
-    const isCompleted = completedMissions === totalMissions;
+    const isLevelCompleted = completedMissions === totalMissions;
 
-    console.log(`[Level Progress] Participant: ${participantId}, Level: ${levelId}, Stars: ${starsEarned}, Completed: ${isCompleted} (${completedMissions}/${totalMissions})`);
+    console.log(`[Level Progress] Participant: ${participantId}, Level: ${levelId}, Stars: ${starsEarned}, Completed: ${isLevelCompleted} (${completedMissions}/${totalMissions})`);
 
-    if (isCompleted) {
-      await this.dataSource.query(`
-        INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
-        VALUES ($1, $2, $3, TRUE, NOW())
-        ON CONFLICT (participant_id, level_id) DO UPDATE
-        SET stars_earned = $3, is_completed = TRUE, completed_at = NOW()
-      `, [participantId, levelId, starsEarned]);
+    // SIEMPRE actualizar participant_level_progress, no solo cuando está completamente completado
+    // Esto permite reflejar el progreso acumulado de estrellas a medida que se completan misiones
+    await this.dataSource.query(`
+      INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (participant_id, level_id) DO UPDATE
+      SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_level_progress.completed_at END
+    `, [participantId, levelId, starsEarned, isLevelCompleted, isLevelCompleted ? new Date() : null]);
 
+    // Solo registrar en log y continuar cadena de validación si el nivel se COMPLETÓ (todas las misiones hechas)
+    if (isLevelCompleted) {
       await this.logRepo.save(this.logRepo.create({
         participantId, action: 'level_complete', entityType: 'level', entityId: levelId,
         metadata: { starsEarned }

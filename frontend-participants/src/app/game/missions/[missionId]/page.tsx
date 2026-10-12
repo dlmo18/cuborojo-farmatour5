@@ -164,7 +164,7 @@ export default function MissionInfoPage() {
   };
 
   const handleConfirmEvaluation = () => {
-    setShowConfirmation(false);
+    //setShowConfirmation(false);
     router.push(`/game/missions/${missionId}/questions`);
   };
 
@@ -238,7 +238,7 @@ export default function MissionInfoPage() {
 
       <div className="max-w-2xl mx-auto pt-[120px] pb-16">
         {/* Header */}
-        <div className="fixed top-0 left-0 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0">
+        <div className="fixed top-0 left-0 z-10 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0">
           <div className="mission-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
             <button onClick={() => router.back()} >
               <Image
@@ -403,3 +403,4 @@ export default function MissionInfoPage() {
     </div>
   );
 }
+

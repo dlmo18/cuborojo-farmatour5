@@ -117,33 +117,43 @@ export class ReportsService {
       return null;
     }
 
-    // Obtener todos los mundos con sus niveles y misiones
-    const worldsData = await this.dataSource.query(`
+    // Obtener todos los mundos con sus niveles (normal, golden, final)
+    const levelsData = await this.dataSource.query(`
       SELECT 
         w.id as world_id,
         w.name as world_name,
-        w.order_num,
+        w.order_num as world_order,
         l.id as level_id,
         l.name as level_name,
         l.level_type,
+        l.order_num as level_order,
         l.max_stars,
-        m.id as mission_id,
-        m.name as mission_name,
-        COALESCE(pmp.stars_earned, 0) as mission_stars_earned,
-        COALESCE(pmp.is_completed, false) as mission_completed,
         COALESCE(plp.stars_earned, 0) as level_stars_earned,
         COALESCE(plp.is_completed, false) as level_completed
       FROM worlds w
       LEFT JOIN levels l ON l.world_id = w.id AND l.is_active = true
-      LEFT JOIN missions m ON m.level_id = l.id AND m.is_active = true
-      LEFT JOIN participant_mission_progress pmp ON pmp.mission_id = m.id AND pmp.participant_id = $1
       LEFT JOIN participant_level_progress plp ON plp.level_id = l.id AND plp.participant_id = $1
       WHERE w.is_active = true
-      ORDER BY w.order_num, l.order_num, m.order_num
+      ORDER BY w.order_num, l.order_num
     `, [participantId]);
 
-    // Obtener preguntas y respuestas del participante
-    const questionsData = await this.dataSource.query(`
+    // ========== NORMAL LEVELS ==========
+    // Obtener misiones para niveles normales
+    const missionsData = await this.dataSource.query(`
+      SELECT 
+        m.id as mission_id,
+        m.name as mission_name,
+        m.level_id,
+        COALESCE(pmp.stars_earned, 0) as mission_stars_earned,
+        COALESCE(pmp.is_completed, false) as mission_completed
+      FROM missions m
+      LEFT JOIN participant_mission_progress pmp ON pmp.mission_id = m.id AND pmp.participant_id = $1
+      WHERE m.is_active = true
+      ORDER BY m.level_id, m.order_num
+    `, [participantId]);
+
+    // Obtener preguntas y respuestas de misiones
+    const normalQuestionsData = await this.dataSource.query(`
       SELECT 
         m.id as mission_id,
         q.id as question_id,
@@ -153,19 +163,17 @@ export class ReportsService {
         CASE 
           WHEN pa.id IS NULL THEN NULL
           ELSE ao.is_correct
-        END as is_correct,
-        q.created_at
+        END as is_correct
       FROM missions m
       LEFT JOIN questions q ON q.mission_id = m.id
-      LEFT JOIN participant_answers pa ON pa.question_id = q.id 
-        AND pa.participant_id = $1
+      LEFT JOIN participant_answers pa ON pa.question_id = q.id AND pa.participant_id = $1
       LEFT JOIN answer_options ao ON ao.id = pa.answer_id
       WHERE q.id IS NOT NULL
       ORDER BY m.id, q.created_at
     `, [participantId]);
 
-    // Obtener todas las opciones de respuesta para cada pregunta
-    const allAnswerOptions = await this.dataSource.query(`
+    // Obtener todas las opciones de respuesta para preguntas normales
+    const normalAnswerOptions = await this.dataSource.query(`
       SELECT DISTINCT 
         q.id as question_id,
         ao."text" as answer_text
@@ -175,22 +183,107 @@ export class ReportsService {
       ORDER BY q.id, ao."text"
     `);
 
-    // Agrupar preguntas por misión
-    const questionsByMission = new Map<string, any[]>();
-    const answerOptionsByQuestion = new Map<string, string[]>();
+    // ========== GOLDEN LEVELS ==========
+    // Obtener preguntas de golden levels
+    const goldenQuestionsData = await this.dataSource.query(`
+      SELECT 
+        glq.id as question_id,
+        glq.level_id,
+        glq.content,
+        (SELECT "text" FROM golden_level_answer_options WHERE question_id = glq.id AND is_correct = true LIMIT 1) as correct_answer,
+        COALESCE(glao.text, NULL) as selected_answer,
+        CASE 
+          WHEN pga.id IS NULL THEN NULL
+          ELSE glao.is_correct
+        END as is_correct
+      FROM golden_level_questions glq
+      LEFT JOIN participant_golden_level_answers pga ON pga.question_id = glq.id AND pga.participant_id = $1
+      LEFT JOIN golden_level_answer_options glao ON glao.id = pga.answer_id
+      WHERE glq.is_active = true
+      ORDER BY glq.level_id, glq.order_num
+    `, [participantId]);
 
-    // Agrupar opciones de respuesta por pregunta
-    allAnswerOptions.forEach((row: any) => {
-      const questionId = row.question_id;
-      if (!answerOptionsByQuestion.has(questionId)) {
-        answerOptionsByQuestion.set(questionId, []);
+    // Obtener todas las opciones de respuesta para golden levels
+    const goldenAnswerOptions = await this.dataSource.query(`
+      SELECT DISTINCT 
+        glq.id as question_id,
+        glao."text" as answer_text
+      FROM golden_level_questions glq
+      LEFT JOIN golden_level_answer_options glao ON glao.question_id = glq.id
+      WHERE glao.id IS NOT NULL
+      ORDER BY glq.id, glao."text"
+    `);
+
+    // ========== FINAL LEVELS ==========
+    // Obtener preguntas de final levels
+    const finalQuestionsData = await this.dataSource.query(`
+      SELECT 
+        flq.id as question_id,
+        flq.level_id,
+        flq.content,
+        (SELECT "text" FROM final_level_answer_options WHERE question_id = flq.id AND is_correct = true LIMIT 1) as correct_answer,
+        COALESCE(flao.text, NULL) as selected_answer,
+        CASE 
+          WHEN pfa.id IS NULL THEN NULL
+          ELSE flao.is_correct
+        END as is_correct
+      FROM final_level_questions flq
+      LEFT JOIN participant_final_level_answers pfa ON pfa.question_id = flq.id AND pfa.participant_id = $1
+      LEFT JOIN final_level_answer_options flao ON flao.id = pfa.answer_id
+      WHERE flq.is_active = true
+      ORDER BY flq.level_id, flq.order_num
+    `, [participantId]);
+
+    // Obtener todas las opciones de respuesta para final levels
+    const finalAnswerOptions = await this.dataSource.query(`
+      SELECT DISTINCT 
+        flq.id as question_id,
+        flao."text" as answer_text
+      FROM final_level_questions flq
+      LEFT JOIN final_level_answer_options flao ON flao.question_id = flq.id
+      WHERE flao.id IS NOT NULL
+      ORDER BY flq.id, flao."text"
+    `);
+
+    // ========== ORGANIZE DATA ==========
+    // Mapear opciones de respuesta por pregunta
+    const normalAnswersByQuestion = new Map<string, string[]>();
+    const goldenAnswersByQuestion = new Map<string, string[]>();
+    const finalAnswersByQuestion = new Map<string, string[]>();
+
+    normalAnswerOptions.forEach((row: any) => {
+      if (!normalAnswersByQuestion.has(row.question_id)) {
+        normalAnswersByQuestion.set(row.question_id, []);
       }
       if (row.answer_text) {
-        answerOptionsByQuestion.get(questionId)!.push(row.answer_text);
+        normalAnswersByQuestion.get(row.question_id)!.push(row.answer_text);
       }
     });
 
-    questionsData.forEach((row: any) => {
+    goldenAnswerOptions.forEach((row: any) => {
+      if (!goldenAnswersByQuestion.has(row.question_id)) {
+        goldenAnswersByQuestion.set(row.question_id, []);
+      }
+      if (row.answer_text) {
+        goldenAnswersByQuestion.get(row.question_id)!.push(row.answer_text);
+      }
+    });
+
+    finalAnswerOptions.forEach((row: any) => {
+      if (!finalAnswersByQuestion.has(row.question_id)) {
+        finalAnswersByQuestion.set(row.question_id, []);
+      }
+      if (row.answer_text) {
+        finalAnswersByQuestion.get(row.question_id)!.push(row.answer_text);
+      }
+    });
+
+    // Mapear preguntas por misión (normal) y por nivel (golden/final)
+    const questionsByMission = new Map<string, any[]>();
+    const questionsByGoldenLevel = new Map<string, any[]>();
+    const questionsByFinalLevel = new Map<string, any[]>();
+
+    normalQuestionsData.forEach((row: any) => {
       const missionId = row.mission_id;
       if (!questionsByMission.has(missionId)) {
         questionsByMission.set(missionId, []);
@@ -201,35 +294,51 @@ export class ReportsService {
         selectedAnswer: row.selected_answer,
         correctAnswer: row.correct_answer,
         isCorrect: row.is_correct,
-        answerOptions: answerOptionsByQuestion.get(row.question_id) || []
+        answerOptions: normalAnswersByQuestion.get(row.question_id) || []
       });
     });
 
-    // Calcular estadísticas totales por mundo, nivel y misión
-    const totalStarsData = await this.dataSource.query(`
-      SELECT COALESCE(SUM(pmp.stars_earned), 0) as total_stars
-      FROM participant_mission_progress pmp
-      WHERE pmp.participant_id = $1
-    `, [participantId]);
+    goldenQuestionsData.forEach((row: any) => {
+      const levelId = row.level_id;
+      if (!questionsByGoldenLevel.has(levelId)) {
+        questionsByGoldenLevel.set(levelId, []);
+      }
+      questionsByGoldenLevel.get(levelId)!.push({
+        questionId: row.question_id,
+        questionText: row.content,
+        selectedAnswer: row.selected_answer,
+        correctAnswer: row.correct_answer,
+        isCorrect: row.is_correct,
+        answerOptions: goldenAnswersByQuestion.get(row.question_id) || []
+      });
+    });
 
-    // Calcular máximo de estrellas posibles
-    const maxStarsData = await this.dataSource.query(`
-      SELECT COALESCE(SUM(COALESCE(l.max_stars, 0)), 0) as max_stars
-      FROM levels l
-      WHERE l.is_active = true
-    `);
+    finalQuestionsData.forEach((row: any) => {
+      const levelId = row.level_id;
+      if (!questionsByFinalLevel.has(levelId)) {
+        questionsByFinalLevel.set(levelId, []);
+      }
+      questionsByFinalLevel.get(levelId)!.push({
+        questionId: row.question_id,
+        questionText: row.content,
+        selectedAnswer: row.selected_answer,
+        correctAnswer: row.correct_answer,
+        isCorrect: row.is_correct,
+        answerOptions: finalAnswersByQuestion.get(row.question_id) || []
+      });
+    });
 
-    // Agrupar datos por mundo y nivel
+    // ========== BUILD HIERARCHY ==========
     const worldsMap = new Map();
-    
-    worldsData.forEach((row: any) => {
-      const { world_id, world_name, order_num, level_id, level_name, level_type, max_stars, mission_id, mission_name, mission_stars_earned, mission_completed, level_stars_earned, level_completed } = row;
-      
+
+    levelsData.forEach((row: any) => {
+      const { world_id, world_name, world_order, level_id, level_name, level_type, level_order, max_stars, level_stars_earned, level_completed } = row;
+
       if (!worldsMap.has(world_id)) {
         worldsMap.set(world_id, {
           worldId: world_id,
           worldName: world_name,
-          orderNum: order_num,
+          worldOrder: world_order,
           totalStars: 0,
           maxStars: 0,
           completedLevels: 0,
@@ -237,41 +346,104 @@ export class ReportsService {
           levels: new Map()
         });
       }
-      
+
       const world = worldsMap.get(world_id);
-      
-      if (level_id && !world.levels.has(level_id)) {
+
+      if (level_id) {
+        // Para niveles golden y final: calcular estrellas de las preguntas
+        let calculatedStars = level_stars_earned;
+        
+        if (level_type === 'golden') {
+          const goldenQuestions = questionsByGoldenLevel.get(level_id) || [];
+          const correctAnswers = goldenQuestions.filter((q: any) => q.isCorrect === true).length;
+          calculatedStars = correctAnswers * 2; // 2 estrellas por respuesta correcta
+        } else if (level_type === 'final') {
+          const finalQuestions = questionsByFinalLevel.get(level_id) || [];
+          const correctAnswers = finalQuestions.filter((q: any) => q.isCorrect === true).length;
+          calculatedStars = correctAnswers * 2; // 2 estrellas por respuesta correcta
+        }
+
+        // Determinar si está completado (todas las preguntas respondidas)
+        let isCompleted = level_completed;
+        if (level_type === 'golden') {
+          const goldenQuestions = questionsByGoldenLevel.get(level_id) || [];
+          isCompleted = goldenQuestions.length > 0 && 
+            goldenQuestions.every((q: any) => q.selectedAnswer !== null && q.selectedAnswer !== undefined);
+        } else if (level_type === 'final') {
+          const finalQuestions = questionsByFinalLevel.get(level_id) || [];
+          isCompleted = finalQuestions.length > 0 && 
+            finalQuestions.every((q: any) => q.selectedAnswer !== null && q.selectedAnswer !== undefined);
+        }
+
         world.levels.set(level_id, {
           levelId: level_id,
           levelName: level_name,
           levelType: level_type || 'normal',
-          starsEarned: level_stars_earned || 0,
+          starsEarned: calculatedStars,
           maxStars: max_stars || 0,
-          isCompleted: level_completed || false,
-          missions: []
+          isCompleted: isCompleted,
+          missions: [],
+          levelOrder: level_order
         });
+
         world.totalLevels += 1;
         world.maxStars += (max_stars || 0);
-        if (level_completed) world.completedLevels += 1;
-      }
-      
-      if (level_id && mission_id) {
-        const level = world.levels.get(level_id);
-        level.missions.push({
-          missionId: mission_id,
-          missionName: mission_name,
-          starsEarned: mission_stars_earned || 0,
-          maxStars: level_type === 'golden' ? 5 : level_type === 'final' ? 10 : 3,
-          isCompleted: mission_completed || false,
-          questions: questionsByMission.get(mission_id) || []
-        });
-        world.totalStars += (mission_stars_earned || 0);
+        if (isCompleted) world.completedLevels += 1;
+        world.totalStars += calculatedStars;
       }
     });
 
+    // Agregar misiones a niveles normales
+    missionsData.forEach((row: any) => {
+      const { mission_id, mission_name, level_id, mission_stars_earned, mission_completed } = row;
+      
+      // Encontrar el mundo que contiene este nivel
+      for (const world of worldsMap.values()) {
+        if (world.levels.has(level_id)) {
+          const level = world.levels.get(level_id);
+          if (level.levelType === 'normal') {
+            level.missions.push({
+              missionId: mission_id,
+              missionName: mission_name,
+              starsEarned: mission_stars_earned || 0,
+              maxStars: 3,
+              isCompleted: mission_completed || false,
+              questions: questionsByMission.get(mission_id) || []
+            });
+          }
+          break;
+        }
+      }
+    });
+
+    // Agregar preguntas a niveles golden y final
+    for (const [levelId, questions] of questionsByGoldenLevel.entries()) {
+      for (const world of worldsMap.values()) {
+        if (world.levels.has(levelId)) {
+          const level = world.levels.get(levelId);
+          if (level.levelType === 'golden') {
+            level.questions = questions;
+          }
+          break;
+        }
+      }
+    }
+
+    for (const [levelId, questions] of questionsByFinalLevel.entries()) {
+      for (const world of worldsMap.values()) {
+        if (world.levels.has(levelId)) {
+          const level = world.levels.get(levelId);
+          if (level.levelType === 'final') {
+            level.questions = questions;
+          }
+          break;
+        }
+      }
+    }
+
     // Convertir maps a arrays
     const worlds = Array.from(worldsMap.values())
-      .map(world => ({
+      .map((world: any) => ({
         worldId: world.worldId,
         worldName: world.worldName,
         totalStars: world.totalStars,
@@ -279,12 +451,44 @@ export class ReportsService {
         completedLevels: world.completedLevels,
         totalLevels: world.totalLevels,
         levels: Array.from(world.levels.values())
+          .map((level: any) => {
+            // Para golden y final, retornar questions en lugar de missions
+            if (level.levelType === 'golden' || level.levelType === 'final') {
+              return {
+                levelId: level.levelId,
+                levelName: level.levelName,
+                levelType: level.levelType,
+                starsEarned: level.starsEarned,
+                maxStars: level.maxStars,
+                isCompleted: level.isCompleted,
+                questions: level.questions || []
+              };
+            }
+            return {
+              levelId: level.levelId,
+              levelName: level.levelName,
+              levelType: level.levelType,
+              starsEarned: level.starsEarned,
+              maxStars: level.maxStars,
+              isCompleted: level.isCompleted,
+              missions: level.missions
+            };
+          })
+          .sort((a: any, b: any) => {
+            const aLevel = levelsData.find((l: any) => l.level_id === a.levelId);
+            const bLevel = levelsData.find((l: any) => l.level_id === b.levelId);
+            return (aLevel?.level_order || 0) - (bLevel?.level_order || 0);
+          })
       }))
-      .sort((a, b) => {
-        const aOrder = worldsData.find((w: any) => w.world_id === a.worldId)?.order_num || 0;
-        const bOrder = worldsData.find((w: any) => w.world_id === b.worldId)?.order_num || 0;
+      .sort((a: any, b: any) => {
+        const aOrder = levelsData.find((l: any) => l.world_id === a.worldId)?.world_order || 0;
+        const bOrder = levelsData.find((l: any) => l.world_id === b.worldId)?.world_order || 0;
         return aOrder - bOrder;
       });
+
+    // Calcular totales de estrellas incluyendo golden y final
+    const totalStars = worlds.reduce((sum, world) => sum + world.totalStars, 0);
+    const totalMaxStars = worlds.reduce((sum, world) => sum + world.maxStars, 0);
 
     return {
       participant: {
@@ -293,8 +497,8 @@ export class ReportsService {
         dni: participant.dni
       },
       worlds,
-      totalStars: parseInt(totalStarsData[0]?.total_stars) || 0,
-      totalMaxStars: parseInt(maxStarsData[0]?.max_stars) || 0
+      totalStars,
+      totalMaxStars
     };
   }
 
@@ -302,50 +506,133 @@ export class ReportsService {
     try {
       console.log(`[UpdateAnswer] Starting - Participant: ${participantId}, Question: ${questionId}, Answer: ${selectedAnswer}`);
 
-      // Encontrar el answer_options.id que coincida con el texto
-      const answerOption = await this.dataSource.query(`
-        SELECT id, is_correct
-        FROM answer_options
-        WHERE question_id = $1 AND "text" = $2
-        LIMIT 1
-      `, [questionId, selectedAnswer]);
+      // Determinar el tipo de pregunta (normal, golden, final)
+      const questionTypeRes = await this.dataSource.query(`
+        SELECT 'normal' as type FROM questions WHERE id = $1
+        UNION ALL
+        SELECT 'golden' as type FROM golden_level_questions WHERE id = $1
+        UNION ALL
+        SELECT 'final' as type FROM final_level_questions WHERE id = $1
+      `, [questionId]);
 
-      if (!answerOption || answerOption.length === 0) {
-        throw new Error(`No se encontró la opción de respuesta: "${selectedAnswer}"`);
+      if (!questionTypeRes || questionTypeRes.length === 0) {
+        throw new Error(`No se encontró la pregunta: "${questionId}"`);
       }
 
-      const answerId = answerOption[0].id;
-      const isCorrect = answerOption[0].is_correct;
+      const questionType = questionTypeRes[0].type;
+      console.log(`[UpdateAnswer] Question type: ${questionType}`);
 
-      console.log(`[UpdateAnswer] Found answer option - ID: ${answerId}, IsCorrect: ${isCorrect}`);
+      let answerId: string;
+      let isCorrect: boolean;
 
-      // Usar UPSERT (INSERT ON CONFLICT) para garantizar que se guarda
-      const result = await this.dataSource.query(`
-        INSERT INTO participant_answers (participant_id, question_id, answer_id, is_correct, answered_at)
-        VALUES ($1, $2, $3, $4, NOW())
-        ON CONFLICT (participant_id, question_id) 
-        DO UPDATE SET 
-          answer_id = $3, 
-          is_correct = $4, 
-          answered_at = NOW()
-        RETURNING *
-      `, [participantId, questionId, answerId, isCorrect]);
+      // ========== NORMAL LEVEL QUESTION ==========
+      if (questionType === 'normal') {
+        const answerOption = await this.dataSource.query(`
+          SELECT id, is_correct
+          FROM answer_options
+          WHERE question_id = $1 AND "text" = $2
+          LIMIT 1
+        `, [questionId, selectedAnswer]);
 
-      if (!result || result.length === 0) {
-        throw new Error('Error: La base de datos no devolvió el registro guardado');
+        if (!answerOption || answerOption.length === 0) {
+          throw new Error(`No se encontró la opción de respuesta: "${selectedAnswer}"`);
+        }
+
+        answerId = answerOption[0].id;
+        isCorrect = answerOption[0].is_correct;
+
+        const result = await this.dataSource.query(`
+          INSERT INTO participant_answers (participant_id, question_id, answer_id, is_correct, answered_at)
+          VALUES ($1, $2, $3, $4, NOW())
+          ON CONFLICT (participant_id, question_id) 
+          DO UPDATE SET 
+            answer_id = $3, 
+            is_correct = $4, 
+            answered_at = NOW()
+          RETURNING *
+        `, [participantId, questionId, answerId, isCorrect]);
+
+        if (!result || result.length === 0) {
+          throw new Error('Error: La base de datos no devolvió el registro guardado');
+        }
+
+        console.log(`[UpdateAnswer] Normal level answer saved - ID: ${result[0].id}`);
+        
+        // Recalcular estrellas en cascada: pregunta → misión → nivel → mundo
+        await this.recalculateStarsInCascade(participantId, questionId);
       }
+      // ========== GOLDEN LEVEL QUESTION ==========
+      else if (questionType === 'golden') {
+        const answerOption = await this.dataSource.query(`
+          SELECT id, is_correct
+          FROM golden_level_answer_options
+          WHERE question_id = $1 AND "text" = $2
+          LIMIT 1
+        `, [questionId, selectedAnswer]);
 
-      const savedRecord = result[0];
-      console.log(`[UpdateAnswer] Successfully saved - ID: ${savedRecord.id}, AnswerId: ${savedRecord.answer_id}, IsCorrect: ${savedRecord.is_correct}`);
+        if (!answerOption || answerOption.length === 0) {
+          throw new Error(`No se encontró la opción de respuesta: "${selectedAnswer}"`);
+        }
 
-      // Verificar que el answer_id sea el correcto
-      if (String(savedRecord.answer_id) !== String(answerId)) {
-        throw new Error(`Error crítico: El answer_id no coincide. Esperado: ${answerId}, Guardado: ${savedRecord.answer_id}`);
+        answerId = answerOption[0].id;
+        isCorrect = answerOption[0].is_correct;
+
+        const result = await this.dataSource.query(`
+          INSERT INTO participant_golden_level_answers (participant_id, question_id, answer_id, is_correct, answered_at)
+          VALUES ($1, $2, $3, $4, NOW())
+          ON CONFLICT (participant_id, question_id) 
+          DO UPDATE SET 
+            answer_id = $3, 
+            is_correct = $4, 
+            answered_at = NOW()
+          RETURNING *
+        `, [participantId, questionId, answerId, isCorrect]);
+
+        if (!result || result.length === 0) {
+          throw new Error('Error: La base de datos no devolvió el registro guardado');
+        }
+
+        console.log(`[UpdateAnswer] Golden level answer saved - ID: ${result[0].id}`);
+
+        // Recalcular estrellas para golden level
+        await this.recalculateGoldenLevelStars(participantId, questionId);
       }
+      // ========== FINAL LEVEL QUESTION ==========
+      else if (questionType === 'final') {
+        const answerOption = await this.dataSource.query(`
+          SELECT id, is_correct
+          FROM final_level_answer_options
+          WHERE question_id = $1 AND "text" = $2
+          LIMIT 1
+        `, [questionId, selectedAnswer]);
 
-      // Recalcular estrellas en cascada: pregunta → misión → nivel → mundo
-      console.log(`[UpdateAnswer] Starting star recalculation...`);
-      await this.recalculateStarsInCascade(participantId, questionId);
+        if (!answerOption || answerOption.length === 0) {
+          throw new Error(`No se encontró la opción de respuesta: "${selectedAnswer}"`);
+        }
+
+        answerId = answerOption[0].id;
+        isCorrect = answerOption[0].is_correct;
+
+        const result = await this.dataSource.query(`
+          INSERT INTO participant_final_level_answers (participant_id, question_id, answer_id, is_correct, answered_at)
+          VALUES ($1, $2, $3, $4, NOW())
+          ON CONFLICT (participant_id, question_id) 
+          DO UPDATE SET 
+            answer_id = $3, 
+            is_correct = $4, 
+            answered_at = NOW()
+          RETURNING *
+        `, [participantId, questionId, answerId, isCorrect]);
+
+        if (!result || result.length === 0) {
+          throw new Error('Error: La base de datos no devolvió el registro guardado');
+        }
+
+        console.log(`[UpdateAnswer] Final level answer saved - ID: ${result[0].id}`);
+
+        // Recalcular estrellas para final level
+        await this.recalculateFinalLevelStars(participantId, questionId);
+      }
 
       // Obtener estadísticas actualizadas
       const updatedStats = await this.getUpdatedStars(participantId);
@@ -359,7 +646,7 @@ export class ReportsService {
         updatedStats,
         debug: {
           answerId,
-          savedRecordId: savedRecord.id,
+          questionType,
         }
       };
     } catch (error: any) {
@@ -549,5 +836,208 @@ export class ReportsService {
     return {
       totalStars: parseInt(totalStars.total),
     };
+  }
+
+  private async recalculateGoldenLevelStars(participantId: string, questionId: string) {
+    try {
+      // Obtener levelId de la pregunta golden
+      const [levelRes] = await this.dataSource.query(
+        `SELECT level_id FROM golden_level_questions WHERE id = $1`,
+        [questionId]
+      );
+
+      if (!levelRes) return;
+
+      const levelId = levelRes.level_id;
+
+      // Contar preguntas totales
+      const [totalQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM golden_level_questions WHERE level_id = $1 AND is_active = TRUE`,
+        [levelId]
+      );
+
+      // Contar respuestas correctas
+      const [correctQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM participant_golden_level_answers 
+         WHERE participant_id = $1 AND question_id IN (
+           SELECT id FROM golden_level_questions WHERE level_id = $2 AND is_active = TRUE
+         ) AND is_correct = TRUE`,
+        [participantId, levelId]
+      );
+
+      // Contar respuestas respondidas
+      const [answeredQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM participant_golden_level_answers 
+         WHERE participant_id = $1 AND question_id IN (
+           SELECT id FROM golden_level_questions WHERE level_id = $2 AND is_active = TRUE
+         )`,
+        [participantId, levelId]
+      );
+
+      const totalQuestions = parseInt(totalQ.cnt);
+      const correctCount = parseInt(correctQ.cnt);
+      const answeredCount = parseInt(answeredQ.cnt);
+      
+      const starsEarned = correctCount * 2; // 2 estrellas por respuesta correcta
+      const isCompleted = answeredCount === totalQuestions && totalQuestions > 0;
+
+      // Actualizar progreso de nivel
+      await this.dataSource.query(`
+        INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (participant_id, level_id) DO UPDATE
+        SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_level_progress.completed_at END
+      `, [participantId, levelId, starsEarned, isCompleted, isCompleted ? new Date() : null]);
+
+      // Si el nivel se completó, recalcular mundo
+      if (isCompleted) {
+        const [worldRes] = await this.dataSource.query(
+          `SELECT world_id FROM levels WHERE id = $1`,
+          [levelId]
+        );
+        if (worldRes) {
+          await this.recalculateWorldProgress(participantId, worldRes.world_id);
+        }
+      }
+    } catch (error) {
+      console.error('Error recalculando golden level stars:', error);
+    }
+  }
+
+  private async recalculateFinalLevelStars(participantId: string, questionId: string) {
+    try {
+      // Obtener levelId de la pregunta final
+      const [levelRes] = await this.dataSource.query(
+        `SELECT level_id FROM final_level_questions WHERE id = $1`,
+        [questionId]
+      );
+
+      if (!levelRes) return;
+
+      const levelId = levelRes.level_id;
+
+      // Contar preguntas totales
+      const [totalQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM final_level_questions WHERE level_id = $1 AND is_active = TRUE`,
+        [levelId]
+      );
+
+      // Contar respuestas correctas
+      const [correctQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM participant_final_level_answers 
+         WHERE participant_id = $1 AND question_id IN (
+           SELECT id FROM final_level_questions WHERE level_id = $2 AND is_active = TRUE
+         ) AND is_correct = TRUE`,
+        [participantId, levelId]
+      );
+
+      // Contar respuestas respondidas
+      const [answeredQ] = await this.dataSource.query(
+        `SELECT COUNT(*) as cnt FROM participant_final_level_answers 
+         WHERE participant_id = $1 AND question_id IN (
+           SELECT id FROM final_level_questions WHERE level_id = $2 AND is_active = TRUE
+         )`,
+        [participantId, levelId]
+      );
+
+      const totalQuestions = parseInt(totalQ.cnt);
+      const correctCount = parseInt(correctQ.cnt);
+      const answeredCount = parseInt(answeredQ.cnt);
+      
+      const starsEarned = correctCount * 2; // 2 estrellas por respuesta correcta
+      const isCompleted = answeredCount === totalQuestions && totalQuestions > 0;
+
+      // Actualizar progreso de nivel
+      await this.dataSource.query(`
+        INSERT INTO participant_level_progress (participant_id, level_id, stars_earned, is_completed, completed_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (participant_id, level_id) DO UPDATE
+        SET stars_earned = $3, is_completed = $4, completed_at = CASE WHEN $4 = TRUE THEN NOW() ELSE participant_level_progress.completed_at END
+      `, [participantId, levelId, starsEarned, isCompleted, isCompleted ? new Date() : null]);
+
+      // Si el nivel se completó, recalcular mundo
+      if (isCompleted) {
+        const [worldRes] = await this.dataSource.query(
+          `SELECT world_id FROM levels WHERE id = $1`,
+          [levelId]
+        );
+        if (worldRes) {
+          await this.recalculateWorldProgress(participantId, worldRes.world_id);
+        }
+      }
+    } catch (error) {
+      console.error('Error recalculando final level stars:', error);
+    }
+  }
+
+  async deleteParticipantAnswer(participantId: string, questionId: string) {
+    try {
+      console.log(`[DeleteAnswer] Starting - Participant: ${participantId}, Question: ${questionId}`);
+
+      // Determinar el tipo de pregunta (normal, golden, final)
+      const questionTypeRes = await this.dataSource.query(`
+        SELECT 'normal' as type FROM questions WHERE id = $1
+        UNION ALL
+        SELECT 'golden' as type FROM golden_level_questions WHERE id = $1
+        UNION ALL
+        SELECT 'final' as type FROM final_level_questions WHERE id = $1
+      `, [questionId]);
+
+      if (!questionTypeRes || questionTypeRes.length === 0) {
+        throw new Error(`No se encontró la pregunta: "${questionId}"`);
+      }
+
+      const questionType = questionTypeRes[0].type;
+      console.log(`[DeleteAnswer] Question type: ${questionType}`);
+
+      // Eliminar la respuesta según el tipo
+      if (questionType === 'normal') {
+        await this.dataSource.query(`
+          DELETE FROM participant_answers 
+          WHERE participant_id = $1 AND question_id = $2
+        `, [participantId, questionId]);
+
+        console.log(`[DeleteAnswer] Normal level answer deleted`);
+        
+        // Recalcular estrellas en cascada
+        await this.recalculateStarsInCascade(participantId, questionId);
+      } 
+      else if (questionType === 'golden') {
+        await this.dataSource.query(`
+          DELETE FROM participant_golden_level_answers 
+          WHERE participant_id = $1 AND question_id = $2
+        `, [participantId, questionId]);
+
+        console.log(`[DeleteAnswer] Golden level answer deleted`);
+
+        // Recalcular estrellas para golden level
+        await this.recalculateGoldenLevelStars(participantId, questionId);
+      } 
+      else if (questionType === 'final') {
+        await this.dataSource.query(`
+          DELETE FROM participant_final_level_answers 
+          WHERE participant_id = $1 AND question_id = $2
+        `, [participantId, questionId]);
+
+        console.log(`[DeleteAnswer] Final level answer deleted`);
+
+        // Recalcular estrellas para final level
+        await this.recalculateFinalLevelStars(participantId, questionId);
+      }
+
+      // Obtener estadísticas actualizadas
+      const updatedStats = await this.getUpdatedStars(participantId);
+      console.log(`[DeleteAnswer] Complete - Total stars: ${updatedStats.totalStars}`);
+
+      return {
+        success: true,
+        message: 'Respuesta eliminada correctamente',
+        updatedStats,
+      };
+    } catch (error: any) {
+      console.error('[DeleteAnswer ERROR]:', error.message);
+      console.error('[DeleteAnswer ERROR Stack]:', error.stack);
+      throw error;
+    }
   }
 }

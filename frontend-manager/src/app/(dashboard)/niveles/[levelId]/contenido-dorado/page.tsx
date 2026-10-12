@@ -55,6 +55,7 @@ export default function GoldenLevelContentPage() {
   const [editingQuestion, setEditingQuestion] = useState<GoldenLevelQuestion | null>(null);
   const [formDataQuestion, setFormDataQuestion] = useState<CreateGoldenLevelQuestionDto>({
     levelId: '',
+    title: '',
     content: '',
     orderNum: 1,
   });
@@ -177,6 +178,7 @@ export default function GoldenLevelContentPage() {
     setEditingQuestion(null);
     setFormDataQuestion({
       levelId,
+      title: '',
       content: '',
       orderNum: questions.length + 1,
     });
@@ -192,6 +194,7 @@ export default function GoldenLevelContentPage() {
     setEditingQuestion(question);
     setFormDataQuestion({
       levelId: question.levelId,
+      title: question.title || '',
       content: question.content,
       orderNum: question.orderNum,
     });
@@ -263,6 +266,11 @@ export default function GoldenLevelContentPage() {
     e.preventDefault();
     setError('');
 
+    if (!formDataQuestion.title?.trim()) {
+      setError('El titular de la pregunta es requerido');
+      return;
+    }
+
     if (!formDataQuestion.content.trim()) {
       setError('El contenido de la pregunta es requerido');
       return;
@@ -284,6 +292,7 @@ export default function GoldenLevelContentPage() {
       if (editingQuestion) {
         // Actualizar pregunta sin enviar levelId
         const updateData: UpdateGoldenLevelQuestionDto = {
+          title: formDataQuestion.title,
           content: formDataQuestion.content,
           orderNum: formDataQuestion.orderNum,
         };
@@ -390,6 +399,11 @@ export default function GoldenLevelContentPage() {
       label: '#',
       width: '50px',
       render: (value) => <span className="font-semibold">{value}</span>
+    },
+    { 
+      key: 'title', 
+      label: 'Titular',
+      render: (value) => <div className="line-clamp-2">{stripHtmlTags(value, 100)}</div>
     },
     { 
       key: 'content', 
@@ -634,6 +648,18 @@ export default function GoldenLevelContentPage() {
           <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6 text-black">{editingQuestion ? 'Editar Pregunta' : 'Nueva Pregunta'}</h2>
             <form onSubmit={handleSubmitQuestion} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Titular *</label>
+                <input
+                  type="text"
+                  required
+                  value={formDataQuestion.title || ''}
+                  onChange={(e) => setFormDataQuestion({ ...formDataQuestion, title: e.target.value })}
+                  placeholder="Título de la pregunta"
+                  className="w-full px-3 py-2 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-surface-700 mb-2">Contenido *</label>
                 <textarea

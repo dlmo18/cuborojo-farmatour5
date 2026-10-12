@@ -386,6 +386,7 @@ export interface UpdateGoldenLevelItemDto {
 export interface GoldenLevelQuestion {
   id: string;
   levelId: string;
+  title?: string;
   content: string;
   orderNum: number;
   isActive: boolean;
@@ -395,11 +396,13 @@ export interface GoldenLevelQuestion {
 
 export interface CreateGoldenLevelQuestionDto {
   levelId: string;
+  title: string;
   content: string;
   orderNum: number;
 }
 
 export interface UpdateGoldenLevelQuestionDto {
+  title?: string;
   content?: string;
   orderNum?: number;
   isActive?: boolean;
@@ -930,6 +933,9 @@ export const reportsApi = {
     apiClient.put(`/reports/participant-progress/${participantId}/questions/${questionId}`, {
       selectedAnswer: newAnswer,
     }),
+
+  deleteQuestionAnswer: (participantId: string, questionId: string) =>
+    apiClient.delete(`/reports/participant-progress/${participantId}/questions/${questionId}`),
 
   updateQuestionAnswers: (participantId: string, answers: Record<string, string>) =>
     apiClient.put(`/reports/participant-progress/${participantId}/questions`, {

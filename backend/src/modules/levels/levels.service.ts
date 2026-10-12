@@ -46,11 +46,13 @@ export class UpdateGoldenLevelItemDto {
 
 export class CreateGoldenLevelQuestionDto {
   @ApiProperty() @IsString() @IsNotEmpty() levelId: string;
+  @ApiProperty() @IsString() @IsNotEmpty() title: string;
   @ApiProperty() @IsString() @IsNotEmpty() content: string;
   @ApiProperty() @IsNumber() orderNum: number;
 }
 
 export class UpdateGoldenLevelQuestionDto {
+  @ApiProperty({ required: false }) @IsOptional() title?: string;
   @ApiProperty({ required: false }) @IsOptional() content?: string;
   @ApiProperty({ required: false }) @IsOptional() orderNum?: number;
   @ApiProperty({ required: false }) @IsOptional() isActive?: boolean;
