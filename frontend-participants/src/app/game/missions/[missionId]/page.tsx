@@ -75,7 +75,7 @@ export default function MissionInfoPage() {
 
   // Cargar misión con items
   const fetchMission = useCallback(async () => {
-    if (!missionId) return;
+    if (!missionId || !token) return;
 
     try {
       setLoading(true);
@@ -119,9 +119,9 @@ export default function MissionInfoPage() {
   }, [missionId, token]);
 
   useEffect(() => {
-    if (!isHydrated || !missionId) return;
+    if (!isHydrated || !missionId || !token) return;
     fetchMission();
-  }, [isHydrated, missionId, fetchMission]);
+  }, [isHydrated, missionId, token, fetchMission]);
 
   if (loading) {
     return (

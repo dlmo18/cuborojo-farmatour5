@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axiosInstance';
 import { useAuthCheck } from '@/hooks/useAuthCheck';
+import { useAuthStore } from '@/store/authStore';
 import BottomStats from '@/components/BottomStats';
 import Image from 'next/image';
 
@@ -20,15 +21,22 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 export default function WorldsPage() {
   const router = useRouter();
   const { isHydrated } = useAuthCheck({ redirectTo: '/login' });
+  const token = useAuthStore((state) => state.token);
   const [worlds, setWorlds] = useState<World[]>([]);
+  const dataFetchedRef = useRef(false);
 
   const fetchWorlds = useCallback(async () => {
+    if (dataFetchedRef.current) return; // Evitar múltiples fetches
+    dataFetchedRef.current = true;
+    
     try {
       const res = await axiosInstance.get(`/worlds`);
       const reversedWorlds = res.data.data?.reverse();
       setWorlds(reversedWorlds || res.data);
     } catch (err) {
       console.error('Error fetching worlds:', err);
+      // Si falla, permitir reintentar
+      dataFetchedRef.current = false;
     }
   }, []);
 
@@ -38,10 +46,11 @@ export default function WorldsPage() {
     return `${API_URL}/media/serve/${imageId}`;
   };
 
+  // Efecto principal: fetch cuando está hidratado y autenticado
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isHydrated || !token) return;
     fetchWorlds();
-  }, [isHydrated, fetchWorlds]);
+  }, [isHydrated, token, fetchWorlds]);
 
   return (
     <div className="min-h-screen world-page">

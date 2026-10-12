@@ -85,7 +85,7 @@ export default function MissionQuestionsPage() {
   const token = useAuthStore((state) => state.token);
 
   const fetchData = useCallback(async () => {
-    if (!missionId) {
+    if (!missionId || !token) {
       setError('ID de misión no encontrado.');
       setLoading(false);
       return;
@@ -147,7 +147,7 @@ export default function MissionQuestionsPage() {
   }, [missionId]);
 
   useEffect(() => {
-    if (isHydrated && missionId) {
+    if (isHydrated && missionId && token) {
       fetchData();
     }
   }, [isHydrated, missionId, fetchData]);
