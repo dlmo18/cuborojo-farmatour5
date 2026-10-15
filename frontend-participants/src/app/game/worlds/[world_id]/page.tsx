@@ -302,8 +302,11 @@ export default function WorldLevelsPage() {
                 </div>
                 <h3 className={`text-lg h-[60px] ${!isFinal && !isGolden ? 'pt-2 px-8' : ''} uppercase flex items-center justify-center text-white leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                   <div>
-                    {isGolden ? <span className="block">Nivel Dorado</span> : isFinal ? <span className="block">Role Play</span> : ''} 
-                    <span>{isFinal ? world.name : level.name}</span>
+                    {isGolden ? 
+                      <span className="block">Nivel Dorado <br/> Estrellas x2</span>   
+                    : isFinal ? 
+                      <span className="block">¡Completa y <br/>Conquista!</span> 
+                    : <span>{level.name}</span>} 
                   </div>
                 </h3>
               </div>

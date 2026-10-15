@@ -8,6 +8,7 @@ import Image from 'next/image';
 
 export default function LoginPage() {
   const [dni, setDni] = useState('');
+  const [isStartingAdventure, setIsStartingAdventure] = useState(false);
   const router = useRouter();
   const { login, isLoading, error } = useAuthStore();
   const token = useAuthStore((state) => state.token);
@@ -26,7 +27,14 @@ export default function LoginPage() {
     const success = await login(dni);
     // Solo redirigir si el login fue exitoso
     if (success) {
-      router.push('/game/worlds');
+      setIsStartingAdventure(true);
+
+      // Navegación en dos pasos para evitar quedarse en login
+      // cuando hay latencia de hidratación o validación de middleware.
+      router.replace('/game/worlds');
+      setTimeout(() => {
+        window.location.href = '/game/worlds';
+      }, 300);
     }
   };
 
@@ -114,7 +122,7 @@ export default function LoginPage() {
               <div className="relative w-full h-16 flex items-center justify-start" style={{'marginTop': '1rem'}}>
                 <button
                   type="submit"
-                  disabled={isLoading || !dni || dni.length !== 8}
+                  disabled={isLoading || isStartingAdventure || !dni || dni.length !== 8}
                   className="login-button absolute inset-0 w-[230px] h-[80px]  m-auto flex items-center justify-center focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:scale-105 active:scale-95"
                 >
                   {/* Fondo del botón */}
@@ -129,7 +137,7 @@ export default function LoginPage() {
                     className="absolute text-3xl font-black text-white z-10 drop-shadow-lg top-4"
                     style={{ fontFamily: "'Blinker', sans-serif" }}
                   >
-                    INGRESAR
+                    {isStartingAdventure ? 'INICIANDO...' : 'INGRESAR'}
                   </span>
                 </button>
               </div>
@@ -154,6 +162,24 @@ export default function LoginPage() {
           Copyright &copy; {new Date().getFullYear()} CUBOROJO. Farmacias Peruanas
         </div>
       </div>
+
+      {isStartingAdventure && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="bg-white/95 rounded-2xl shadow-2xl px-8 py-7 text-center max-w-xs w-full">
+            <p
+              className="text-2xl font-black text-[#1e3f2d] tracking-wide"
+              style={{ fontFamily: "'Blinker', sans-serif" }}
+            >
+              Iniciando tu aventura..
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2f6f4e] animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2f6f4e] animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2f6f4e] animate-bounce" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

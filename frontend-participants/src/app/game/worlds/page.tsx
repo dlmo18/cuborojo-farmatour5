@@ -23,7 +23,10 @@ export default function WorldsPage() {
   const { isHydrated } = useAuthCheck({ redirectTo: '/login' });
   const token = useAuthStore((state) => state.token);
   const [worlds, setWorlds] = useState<World[]>([]);
+  const [loadedImages, setLoadedImages] = useState(0);
   const dataFetchedRef = useRef(false);
+  const hasAnimatedScrollRef = useRef(false);
+  const scrollTimerRef = useRef<number | null>(null);
 
   const fetchWorlds = useCallback(async () => {
     if (dataFetchedRef.current) return; // Evitar múltiples fetches
@@ -51,6 +54,46 @@ export default function WorldsPage() {
     if (!isHydrated || !token) return;
     fetchWorlds();
   }, [isHydrated, token, fetchWorlds]);
+
+  // Reiniciar control de carga cuando cambian los mundos
+  useEffect(() => {
+    setLoadedImages(0);
+    hasAnimatedScrollRef.current = false;
+
+    if (scrollTimerRef.current !== null) {
+      window.clearTimeout(scrollTimerRef.current);
+      scrollTimerRef.current = null;
+    }
+  }, [worlds]);
+
+  // Al terminar de cargar el mapa completo, hacer soft scroll al fondo una sola vez
+  useEffect(() => {
+    if (!isHydrated || !token || hasAnimatedScrollRef.current) return;
+
+    const totalImages = worlds.length;
+    if (loadedImages < totalImages) return;
+
+    hasAnimatedScrollRef.current = true;
+    scrollTimerRef.current = window.setTimeout(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+      scrollTimerRef.current = null;
+    }, 2000);
+  }, [loadedImages, worlds.length, isHydrated, token]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimerRef.current !== null) {
+        window.clearTimeout(scrollTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleImageLoaded = useCallback(() => {
+    setLoadedImages((prev) => prev + 1);
+  }, []);
 
   return (
     <div className="min-h-screen world-page">
@@ -121,6 +164,7 @@ export default function WorldsPage() {
                 priority={index === 0}
                 placeholder="blur"
                 blurDataURL="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTYwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE2MCIgZmlsbD0iI2Q1ZDdjZiIvPjwvc3ZnPg=="
+                onLoadingComplete={handleImageLoaded}
               />
             </button>
           ))}
