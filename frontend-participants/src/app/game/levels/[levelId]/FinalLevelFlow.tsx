@@ -106,9 +106,9 @@ export default function FinalLevelFlow({
   return (
     <div className="min-h-screen final-level-page">
       {finalStage === 'intro' && (
-        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 flex items-center justify-center px-4">
+        <div className="min-h-screen  flex items-end justify-center px-4">
           <div className="fixed top-0 left-0 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0 z-20">
-            <div className="mission-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
+            <div className="final-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
               <button onClick={() => router.push(`/game/worlds/${level?.world.id}`)}>
                 <Image
                   src="/images/btn-back.png"
@@ -119,10 +119,6 @@ export default function FinalLevelFlow({
                   priority
                 />
               </button>
-              <h1 className="text-3xl font-bold text-white text-center flex-1 leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                <span className="block text-lg">NIVEL</span>
-                <div className="level-title uppercase font-black text-2xl leading-none">{level?.name}</div>
-              </h1>
               <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
                 <Image
                   src="/images/btn-menu.png"
@@ -136,13 +132,16 @@ export default function FinalLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-sm text-center">
-            <h1 className="text-5xl font-black text-white mb-8" style={{ fontFamily: "'Blinker', sans-serif" }}>
-              Llego el momento de aplicar lo aprendido
+          <div className="max-w-sm text-center font-black pb-10">
+            <h1 className="text-5xl uppercase font-black text-turquoise-600 " style={{ fontFamily: "'Blinker', sans-serif" }}>
+              ¡Llego el momento de aplicar lo aprendido!
             </h1>
+            <p className="text-white text-lg mb-4">
+              Es hora de demostrar tus habilidades y completar el nivel final con éxito.
+            </p>
             <button
               onClick={() => onStageChange('introVideo')}
-              className="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-2xl hover:bg-gray-100 transition"
+               className="button-continue text-3xl uppercase"
               style={{ fontFamily: "'Blinker', sans-serif" }}
             >
               Empezar
