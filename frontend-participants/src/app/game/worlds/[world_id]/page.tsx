@@ -300,7 +300,7 @@ export default function WorldLevelsPage() {
                 <div className={`absolute top-2 right-3 stars text-right ${isCompletedI ? '' : 'opacity-0'}`}>
                   <span className="inline-block align-middle"><FaCheck /></span>
                 </div>
-                <h3 className={`text-lg h-[60px] ${!isFinal && !isGolden ? 'pt-2 px-8' : ''} uppercase flex items-center justify-center text-white leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
+                <h3 className={`text-lg h-[60px] ${!isFinal && !isGolden ? 'pt-3 px-8' : 'pt-1'} uppercase flex items-center justify-center text-white leading-none`} style={{ fontFamily: "'Blinker', sans-serif" }}>
                   <div>
                     {isGolden ? 
                       <span className="block">Nivel Dorado <br/> Estrellas x2</span>   

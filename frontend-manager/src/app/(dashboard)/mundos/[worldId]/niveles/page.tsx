@@ -394,7 +394,7 @@ export default function LevelsPage() {
               </div>
 
               {/* Descripción - Solo para Normal */}
-              {currentLevelType === 'normal' && (
+              {(currentLevelType === 'normal' || currentLevelType === 'final') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                   <RichTextEditor
@@ -406,8 +406,8 @@ export default function LevelsPage() {
                 </div>
               )}
 
-              {/* Imagen - Solo para Golden */}
-              {currentLevelType === 'golden' && (
+              {/* Imagen para niveles Golden y Final */}
+              {(currentLevelType === 'golden' || currentLevelType === 'final') && (
                 <div>
                   <ImageSelector
                     selectedImageId={(formData as any).imageId}
@@ -421,7 +421,7 @@ export default function LevelsPage() {
               {/* Enlace de Video Introductorio - Solo para Final */}
               {currentLevelType === 'final' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Introductorio (URL Vimeo)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Introductorio (URL Video)</label>
                   <input
                     type="url"
                     value={(formData as any).introVideoUrl || ''}

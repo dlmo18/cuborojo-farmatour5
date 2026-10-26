@@ -68,7 +68,17 @@ export class ProgressService {
     const finalLevelData = await this.dataSource.query(
       `SELECT 
         l.id as "levelId",
-        COALESCE(SUM(pfa.stars_earned), 0) as "starsEarned",
+        CASE
+          WHEN COUNT(DISTINCT flq.id) > 0 AND COUNT(DISTINCT pfa.id) = COUNT(DISTINCT flq.id)
+          THEN CASE COUNT(DISTINCT CASE WHEN pfa.is_correct = TRUE THEN flq.id END)
+            WHEN 3 THEN 10
+            WHEN 2 THEN 5
+            WHEN 1 THEN 3
+            ELSE 0
+          END
+          ELSE COALESCE(SUM(pfa.stars_earned), 0)
+        END as "starsEarned",
+        COUNT(DISTINCT CASE WHEN pfa.is_correct = TRUE THEN flq.id END) as "correctAnswersCount",
         CASE 
           WHEN COUNT(DISTINCT flq.id) > 0 AND COUNT(DISTINCT pfa.id) = COUNT(DISTINCT flq.id)
           THEN TRUE 
@@ -85,6 +95,7 @@ export class ProgressService {
       SELECT 
         plp.level_id as "levelId",
         COALESCE(plp.stars_earned, 0) as "starsEarned",
+        0 as "correctAnswersCount",
         COALESCE(plp.is_completed, FALSE) as "isCompleted",
         0 as "answeredCount",
         0 as "totalQuestions"
@@ -116,6 +127,7 @@ export class ProgressService {
       finalLevelProgress[progress.levelId] = {
         levelId: progress.levelId,
         starsEarned: parseInt(progress.starsEarned),
+        correctAnswersCount: parseInt(progress.correctAnswersCount),
         isCompleted: progress.isCompleted,
         answeredCount: parseInt(progress.answeredCount),
         totalQuestions: parseInt(progress.totalQuestions)
@@ -360,22 +372,26 @@ export class ProgressService {
     if (!flq) return;
     const levelId = flq.level_id;
 
-    // Contar preguntas totales del final level vs respondidas correctamente
+    // Completar el nivel cuando todas las preguntas tengan respuesta, correcta o no.
     const [totalQ] = await this.dataSource.query(
       `SELECT COUNT(*) as cnt FROM final_level_questions WHERE level_id = $1 AND is_active = TRUE`, [levelId]
     );
-    const [correctQ] = await this.dataSource.query(
-      `SELECT COUNT(*) as cnt, COALESCE(SUM(pa.stars_earned),0) as stars
+    const [answers] = await this.dataSource.query(
+      `SELECT COUNT(*) as answered_count,
+              COUNT(*) FILTER (WHERE pa.is_correct = TRUE) as correct_count
        FROM participant_final_level_answers pa
        JOIN final_level_questions flq ON flq.id = pa.question_id
-       WHERE pa.participant_id = $1 AND flq.level_id = $2 AND pa.is_correct = TRUE`,
+       WHERE pa.participant_id = $1 AND flq.level_id = $2 AND flq.is_active = TRUE`,
       [participantId, levelId]
     );
 
-    const isCompleted = parseInt(correctQ.cnt) === parseInt(totalQ.cnt);
-    const starsEarned = parseInt(correctQ.stars);
+    const answeredCount = parseInt(answers.answered_count, 10);
+    const correctCount = parseInt(answers.correct_count, 10);
+    const totalQuestions = parseInt(totalQ.cnt, 10);
+    const isCompleted = totalQuestions > 0 && answeredCount === totalQuestions;
+    const starsEarned = correctCount === 3 ? 10 : correctCount === 2 ? 5 : correctCount === 1 ? 3 : 0;
 
-    console.log(`[Final Level Progress] Participant: ${participantId}, Level: ${levelId}, Stars: ${starsEarned}, Completed: ${isCompleted} (${correctQ.cnt}/${totalQ.cnt})`);
+    console.log(`[Final Level Progress] Participant: ${participantId}, Level: ${levelId}, Stars: ${starsEarned}, Completed: ${isCompleted} (${answeredCount}/${totalQuestions}; ${correctCount} correct)`);
 
     if (isCompleted) {
       await this.dataSource.query(`
@@ -486,10 +502,7 @@ export class ProgressService {
       SET answer_id = $3, is_correct = $4, stars_earned = $5
     `, [participantId, questionId, answerId, isCorrect, starsEarned]);
 
-    // Verificar si el nivel está completado
-    if (isCorrect) {
-      await this.checkFinalLevelCompletion(participantId, questionId);
-    }
+    await this.checkFinalLevelCompletion(participantId, questionId);
 
     return { isCorrect, starsEarned };
   }
@@ -523,6 +536,23 @@ export class ProgressService {
       JOIN golden_level_questions glq ON glq.id = pga.question_id
       WHERE pga.participant_id = $1 AND glq.level_id = $2
       ORDER BY glq.order_num ASC
+    `, [participantId, levelId]);
+
+    return answers;
+  }
+
+  /** Obtener respuestas anteriores de un nivel final */
+  async getFinalLevelAnswers(participantId: string, levelId: string) {
+    const answers = await this.dataSource.query(`
+      SELECT
+        pfa.question_id as "questionId",
+        pfa.answer_id as "answerId",
+        pfa.is_correct as "isCorrect",
+        pfa.stars_earned as "starsEarned"
+      FROM participant_final_level_answers pfa
+      JOIN final_level_questions flq ON flq.id = pfa.question_id
+      WHERE pfa.participant_id = $1 AND flq.level_id = $2
+      ORDER BY flq.order_num ASC
     `, [participantId, levelId]);
 
     return answers;

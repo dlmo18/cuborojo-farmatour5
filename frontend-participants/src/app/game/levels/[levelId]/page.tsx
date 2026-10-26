@@ -70,6 +70,8 @@ interface FinalLevelQuestion {
   content: string;
   startVideoUrl?: string;
   startVideoId?: string;
+  endVideoUrl?: string;
+  endVideoId?: string;
   correctMessage?: string;
   incorrectMessage?: string;
   orderNum: number;
@@ -83,6 +85,13 @@ interface FinalLevelAnswerOption {
   imageId?: string;
   isCorrect: boolean;
   orderNum: number;
+}
+
+interface FinalLevelAnswer {
+  questionId: string;
+  answerId: string;
+  isCorrect: boolean;
+  starsEarned: number;
 }
 
 interface MissionProgress {
@@ -118,12 +127,13 @@ export default function LevelMissionsPage() {
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState(false);
 
   // Final level states
-  const [finalStage, setFinalStage] = useState<'intro' | 'introVideo' | 'questionOrder' | 'questionVideo' | 'questionModal' | 'questionOptions' | 'results'>('intro');
+  const [finalStage, setFinalStage] = useState<'intro' | 'introVideo' | 'questionOrder' | 'questionVideo' | 'questionModal' | 'questionOptions' | 'questionEndVideo' | 'results'>('intro');
   const [finalQuestions, setFinalQuestions] = useState<FinalLevelQuestion[]>([]);
   const [currentFinalQuestionIndex, setCurrentFinalQuestionIndex] = useState(0);
   const [finalAnswers, setFinalAnswers] = useState<Record<string, string>>({});
   const [previousFinalAnswers, setPreviousFinalAnswers] = useState<Record<string, string>>({});
   const [totalFinalStars, setTotalFinalStars] = useState(0);
+  const [finalCorrectAnswersCount, setFinalCorrectAnswersCount] = useState(0);
   const [isVideoFinished, setIsVideoFinished] = useState(false);
   const [isQuestionVideoFinished, setIsQuestionVideoFinished] = useState(false);
   const [isFinalValidating, setIsFinalValidating] = useState(false);
@@ -223,12 +233,24 @@ export default function LevelMissionsPage() {
         })
       );
 
+      const answersRes = await axiosInstance.get<FinalLevelAnswer[]>(
+        `/progress/final-level/${levelId}/answers`
+      );
+      const savedAnswers = answersRes.data || [];
+      const savedAnswersByQuestion = Object.fromEntries(
+        savedAnswers.map(answer => [answer.questionId, answer.answerId])
+      );
+
+      setPreviousFinalAnswers(savedAnswersByQuestion);
+      setFinalAnswers(savedAnswersByQuestion);
+      setFinalCorrectAnswersCount(savedAnswers.filter(answer => answer.isCorrect).length);
       setFinalQuestions(questionsWithOptions);
 
       // Verificar si el nivel está completado
       try {
         const progressRes = await axiosInstance.get(`/progress/game-state`);
         const finalProgress = progressRes.data?.finalLevelProgress?.[levelId];
+        setFinalCorrectAnswersCount(finalProgress?.correctAnswersCount || 0);
         if (finalProgress?.isCompleted) {
           setFinalCompleted(true);
           setTotalFinalStars(finalProgress.starsEarned || 0);
@@ -385,8 +407,7 @@ export default function LevelMissionsPage() {
     const currentQuestion = finalQuestions[currentFinalQuestionIndex];
     
     if (previousFinalAnswers[currentQuestion.id]) {
-      setLastFinalAnswerCorrect(true);
-      setShowFinalValidationPanel(true);
+      handleFinalValidationPanelContinue();
       return;
     }
 
@@ -418,6 +439,7 @@ export default function LevelMissionsPage() {
 
       if (isCorrect) {
         setTotalFinalStars(totalFinalStars + 1);
+        setFinalCorrectAnswersCount(count => count + 1);
       }
 
       setLastFinalAnswerCorrect(isCorrect);
@@ -433,6 +455,14 @@ export default function LevelMissionsPage() {
     setShowFinalValidationPanel(false);
     
     if (currentFinalQuestionIndex === finalQuestions.length - 1) {
+      const starsEarned = finalCorrectAnswersCount === 3
+        ? 10
+        : finalCorrectAnswersCount === 2
+          ? 5
+          : finalCorrectAnswersCount === 1
+            ? 3
+            : 0;
+      setTotalFinalStars(starsEarned);
       setFinalStage('results');
     } else {
       setCurrentFinalQuestionIndex(currentFinalQuestionIndex + 1);
@@ -486,7 +516,7 @@ export default function LevelMissionsPage() {
     );
   }
 
-  const handleFinalStageChange = (stage: 'intro' | 'introVideo' | 'questionOrder' | 'questionVideo' | 'questionModal' | 'questionOptions' | 'results') => {
+  const handleFinalStageChange = (stage: 'intro' | 'introVideo' | 'questionOrder' | 'questionVideo' | 'questionModal' | 'questionOptions' | 'questionEndVideo' | 'results') => {
     setFinalStage(stage);
   };
 
@@ -498,7 +528,15 @@ export default function LevelMissionsPage() {
     setIsVideoFinished(true);
   };
 
+  const handleVideoPlaybackReset = () => {
+    setIsVideoFinished(false);
+  };
+
   const handleQuestionVideoFinished = () => {
+    setIsQuestionVideoFinished(true);
+  };
+
+  const handleQuestionVideoPlaybackReset = () => {
     setIsQuestionVideoFinished(false);
   };
 
@@ -513,19 +551,21 @@ export default function LevelMissionsPage() {
           finalAnswers={finalAnswers}
           previousFinalAnswers={previousFinalAnswers}
           totalFinalStars={totalFinalStars}
+          finalCorrectAnswersCount={finalCorrectAnswersCount}
           isVideoFinished={isVideoFinished}
           isQuestionVideoFinished={isQuestionVideoFinished}
           isFinalValidating={isFinalValidating}
           showFinalValidationPanel={showFinalValidationPanel}
           lastFinalAnswerCorrect={lastFinalAnswerCorrect}
-          finalCompleted={finalCompleted}
           onStageChange={handleFinalStageChange}
           onQuestionIndexChange={setCurrentFinalQuestionIndex}
           onAnswerChange={handleFinalAnswerChange}
           onAnswerSubmit={handleFinalAnswerSubmit}
           onValidationPanelContinue={handleFinalValidationPanelContinue}
           onVideoFinished={handleVideoFinished}
+          onVideoPlaybackReset={handleVideoPlaybackReset}
           onQuestionVideoFinished={handleQuestionVideoFinished}
+          onQuestionVideoPlaybackReset={handleQuestionVideoPlaybackReset}
         />
       ) : isGoldenLevel() ? (
         <GoldLevelFlow

@@ -384,7 +384,7 @@ export default function FinalLevelContentPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    🎬 Video de Inicio (URL Vimeo)
+                    🎬 Video de Inicio (URL Video)
                   </label>
                   <input 
                     type="url" 
@@ -397,7 +397,7 @@ export default function FinalLevelContentPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    🎬 Video de Cierre (URL Vimeo)
+                    🎬 Video de Cierre (URL Video)
                   </label>
                   <input 
                     type="url" 

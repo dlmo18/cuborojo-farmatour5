@@ -22,6 +22,8 @@ export default function MediaPreviewModal({
     }
   };
 
+  const itemApiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/media/serve/${item.id}`;
+
   return (
     <div
       onClick={handleBackdropClick}
@@ -45,7 +47,7 @@ export default function MediaPreviewModal({
         <div className="p-6 flex flex-col items-center justify-center">
           {item.type === 'image' && (
             <img
-              src={item.url}
+              src={itemApiUrl}
               alt={item.name}
               className="max-w-full max-h-[60vh] object-contain rounded"
             />
@@ -53,7 +55,7 @@ export default function MediaPreviewModal({
 
           {item.type === 'video' && (
             <video
-              src={item.url}
+              src={itemApiUrl}
               controls
               className="max-w-full max-h-[60vh] rounded"
             />
@@ -62,7 +64,7 @@ export default function MediaPreviewModal({
           {item.type === 'audio' && (
             <div className="w-full max-w-xl">
               <audio
-                src={item.url}
+                src={itemApiUrl}
                 controls
                 className="w-full"
               />

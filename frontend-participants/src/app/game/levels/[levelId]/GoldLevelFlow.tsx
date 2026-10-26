@@ -530,14 +530,14 @@ export default function GoldLevelFlow({
                     {answerIsCorrect ? (
                       <>
                         <h2 className="text-2xl flex gap-2 pb-3 items-center justify-center font-bold text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                          <MdCheckCircle className="text-2xl" />
+                          <MdCheckCircle />
                           ¡BUEN TRABAJO!
                         </h2>
                       </>
                     ) : (
                       <>
                         <h2 className="text-2xl flex gap-2 items-center justify-center font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}>
-                          <MdCancel className="text-2xl" />
+                          <MdCancel />
                           ¡UPS, ESO NO ES CORRECTO!
                         </h2>
                         <p className="mb-2 text-white font-semibold">

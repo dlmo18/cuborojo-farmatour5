@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import type { SyntheticEvent } from 'react';
 
 interface MediaPlayerProps {
-  videoSource: string; // URL MP4, URL Vimeo o ID de Vimeo
+  videoSource: string; // URL MP4, URL Video o ID de Vimeo
   onEnded?: () => void;
   autoplay?: boolean;
   allowFullscreen?: boolean;
   controls?: boolean;
   title?: string;
   muted?: boolean;
+  preload?: 'none' | 'metadata' | 'auto';
+  onReady?: () => void;
+  onLoadError?: (error: unknown) => void;
 }
 
 declare global {
@@ -27,9 +31,12 @@ export default function MediaPlayer({
   onEnded,
   autoplay = false,
   allowFullscreen = true,
-  controls = true,
+  controls = false,
   title = 'Video',
   muted = false,
+  preload = 'auto',
+  onReady,
+  onLoadError,
 }: MediaPlayerProps) {
   const htmlVideoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -75,6 +82,11 @@ export default function MediaPlayer({
           initializeVimeoPlayer(vimeoId);
         }
       };
+      script.onerror = () => {
+        const error = new Error('Could not load the Vimeo Player API');
+        console.error('Error loading Vimeo Player API:', error);
+        onLoadError?.(error);
+      };
 
       document.body.appendChild(script);
 
@@ -98,14 +110,21 @@ export default function MediaPlayer({
 
       playerRef.current.on('loaded', () => {
         setIsLoaded(true);
+        onReady?.();
         if (autoplay) {
           playerRef.current.play().catch((err: any) => {
             console.log('Autoplay blocked:', err);
           });
         }
       });
+
+      playerRef.current.on('error', (error: unknown) => {
+        console.error('Error loading Vimeo video:', error);
+        onLoadError?.(error);
+      });
     } catch (err) {
       console.error('Error initializing Vimeo player:', err);
+      onLoadError?.(err);
     }
   };
 
@@ -123,20 +142,33 @@ export default function MediaPlayer({
     }
   };
 
+  const handleVideoCanPlayThrough = () => {
+    onReady?.();
+  };
+
+  const handleVideoLoadError = (event: SyntheticEvent<HTMLVideoElement>) => {
+    const error = event.currentTarget.error;
+    console.error('Error loading MP4 video:', error);
+    onLoadError?.(error);
+  };
+
   // Renderizar player MP4
   if (isMp4) {
     return (
-      <div className="w-full h-full bg-black overflow-hidden">
+      <div className="w-screen h-screen bg-black overflow-hidden">
         <video
           ref={htmlVideoRef}
-          className="w-full h-full object-contain"
+          className="w-screen min-h-screen object-contain"
           src={videoSource}
           controls={controls}
           autoPlay={autoplay}
           muted={muted}
           controlsList="nodownload"
+          preload={preload}
           onEnded={handleVideoEnded}
           onLoadedMetadata={handleVideoLoadedMetadata}
+          onCanPlayThrough={handleVideoCanPlayThrough}
+          onError={handleVideoLoadError}
           title={title}
           onContextMenu={(e) => e.preventDefault()}
         />
