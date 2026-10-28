@@ -575,6 +575,22 @@ body {
     height: 80px;
 }
 
+.final-level-page {
+  background: center no-repeat;
+  background-size: cover;
+  background-image: url('/images/roleplay-inicio.jpg');
+}
+
+.final-header {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+
 .world-farma {
   .title {
     color: #e87800;

@@ -208,9 +208,9 @@ export default function FinalLevelFlow({
       </div>
 
       {finalStage === 'intro' && (
-        <div className="min-h-screen flex items-end justify-center px-4">
-          <div className="fixed top-0 left-0 w-full pb-10  z-20">
-            <div className="final-header pt-7 max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
+        <div className="min-h-screen  flex items-end justify-center px-4">
+          <div className="fixed top-0 left-0 w-full pb-10 bg-gradient-to-b from-black/80 to-black/0 z-20">
+            <div className="final-header max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
               <button onClick={() => router.push(`/game/worlds/${level?.world.id}`)}>
                 <Image
                   src="/images/btn-back.png"
@@ -235,19 +235,16 @@ export default function FinalLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-sm text-center pb-16 px-5">
-            <div className={`loader-block h-20 ${isPreloadComplete ? 'hidden' : ''}`}>
-              <div className="loader m-auto"></div>
-            </div>
-            <h1 className="text-4xl leading-none  font-black uppercase text-[#079c82] mb-2" style={{ fontFamily: "'Blinker', sans-serif" }}>
+          <div className="max-w-sm text-center font-black pb-10">
+            <h1 className="text-5xl uppercase font-black text-turquoise-600 " style={{ fontFamily: "'Blinker', sans-serif" }}>
               ¡Llego el momento de aplicar lo aprendido!
             </h1>
-            <div className="text-lg text-white mb-8"
-              dangerouslySetInnerHTML={{ __html: level?.description }}
-            />
+            <p className="text-white text-lg mb-4">
+              Es hora de demostrar tus habilidades y completar el nivel final con éxito.
+            </p>
             <button
               onClick={() => onStageChange('introVideo')}
-              className={`button-intro button-continue text-3xl uppercase font-black text-white ${isPreloadComplete ? '' : 'hidden'}`}
+               className="button-continue text-3xl uppercase"
               style={{ fontFamily: "'Blinker', sans-serif" }}
             >
               Empezar
