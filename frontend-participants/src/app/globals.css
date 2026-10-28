@@ -462,11 +462,6 @@ body {
   padding: 11.5rem 0 0 5rem;
 }
 
-.final-level-page {
-  background: center no-repeat;
-  background-size: cover;
-}
-
 .final-question-intro {
   background: center no-repeat;
   background-image: url('/images/level-bg.jpg');

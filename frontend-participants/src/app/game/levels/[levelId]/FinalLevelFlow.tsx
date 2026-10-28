@@ -187,7 +187,7 @@ export default function FinalLevelFlow({
 
   return (
     <div
-      className="min-h-screen final-level-page"
+      className="final-level-page min-h-screen max-w-md m-auto"
       style={levelBackgroundUrl ? { backgroundImage: `url("${levelBackgroundUrl}")` } : undefined}
     >
       <div
@@ -304,7 +304,7 @@ export default function FinalLevelFlow({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="question-video-finished-title"
-                className="w-full bg-white bg-opacity-30 p-8 "
+                className="w-full bg-white bg-opacity-30 p-8 max-w-md m-auto"
               >
                 <div className="flex flex-col gap-4">
                   <button
@@ -444,7 +444,7 @@ export default function FinalLevelFlow({
 
           {isQuestionEndVideoFinished && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-              <div className="w-full bg-white/30 p-8">
+              <div className="w-full bg-white/30 p-8 max-w-md m-auto">
                 <div
                   role="dialog"
                   aria-modal="true"
@@ -483,7 +483,7 @@ export default function FinalLevelFlow({
             role="dialog"
             aria-modal="true"
             aria-labelledby="question-video-finished-title"
-            className="w-full bg-white bg-opacity-30 p-8 "
+            className="w-full bg-white bg-opacity-30 p-8 max-w-md m-auto"
           >
             <div className="max-w-xs m-auto">
               <div
@@ -587,19 +587,16 @@ export default function FinalLevelFlow({
           </div>
 
           {/* Botón Responder en la parte inferior */}
-          <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 pb-10">
+          <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center items-center py-6 pb-10">
             <button
               onClick={handleAnswerSubmit}
               disabled={!getCurrentFinalQuestion() || (!finalAnswers[getCurrentFinalQuestion()!.id] && !previousFinalAnswers[getCurrentFinalQuestion()!.id])}
-              className={`button-answer button-continue text-3xl uppercase font-black text-white
-               ${
-                getCurrentFinalQuestion() && (finalAnswers[getCurrentFinalQuestion()!.id] || previousFinalAnswers[getCurrentFinalQuestion()!.id])
-                  ? 'bg-white text-purple-600 hover:bg-gray-100'
-                  : 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50'
-              }`}
+              className={`button-answer button-continue text-3xl uppercase font-black text-white`}
               style={{ fontFamily: "'Blinker', sans-serif" }}
             >
-              Responder
+              {finalAnswers[getCurrentFinalQuestion()!.id] ? (
+                <span>Siguiente</span>
+              ) : <span>Responder</span>}
             </button>
           </div>
 
@@ -613,7 +610,7 @@ export default function FinalLevelFlow({
           )}
 
           {showFinalValidationPanel && (
-            <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center items-center py-6">
+            <div className="validation-block bg-green-500 h-screen fixed bottom-0 left-0 right-0 z-30 flex justify-center items-center py-6">
               <div className="h-full w-full mx-4 p-8">
                 <div className="text-center mb-6">
                   {lastFinalAnswerCorrect ? (
