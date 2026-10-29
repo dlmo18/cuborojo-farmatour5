@@ -37,7 +37,7 @@ export default function BibliotecaPage() {
         search: search || undefined,
       });
       setMediaFiles(response.data.data);
-      setTotalPages(response.data.page || 1);
+      setTotalPages(response.data.totalPages || 1);
       setTotalItems(response.data.total);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error cargando archivos';
