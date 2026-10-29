@@ -373,11 +373,36 @@ body {
     color: #e87800;
   }
   
+
+  .level-page,
+  .mission-page {
+    background-image: url('/images/level-bg-wellness.jpg');
+  }
+
+
+  .item-normal {
+    background-image: url('/images/level-item-enable_wellness.png');
+  }
 }
 
 .world-care {
   .title {
     color: #e87800;
+  }
+
+
+  .title {
+    color: #8947a8;
+  }
+
+  .level-page,
+  .mission-page {
+    background-image: url('/images/level-bg-care.jpg');
+  }
+
+
+  .item-normal {
+    background-image: url('/images/level-item-enable_care.png');
   }
 }
 
@@ -399,8 +424,19 @@ body {
 }
 
 .world-beauty {
+  
   .title {
-    color: #e87800;
+    color: #8947a8;
+  }
+
+  .level-page,
+  .mission-page {
+    background-image: url('/images/level-bg-beauty.jpg');
+  }
+
+
+  .item-normal {
+    background-image: url('/images/level-item-enable_beauty.png');
   }
 }
 

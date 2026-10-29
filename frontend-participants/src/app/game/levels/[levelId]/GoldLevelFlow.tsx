@@ -74,7 +74,6 @@ interface GoldLevelFlowProps {
   onItemIndexChange: (index: number) => void;
   onQuestionIndexChange: (index: number) => void;
   onAnswerChange: (questionId: string, answerId: string) => void;
-  onAnswerSubmit: () => Promise<void>;
   onValidationPanelContinue: () => void;
 }
 
@@ -96,7 +95,6 @@ export default function GoldLevelFlow({
   onItemIndexChange,
   onQuestionIndexChange,
   onAnswerChange,
-  onAnswerSubmit,
   onValidationPanelContinue,
 }: GoldLevelFlowProps) {
   const router = useRouter();
@@ -439,7 +437,7 @@ export default function GoldLevelFlow({
                       <button
                         key={option.id}
                         onClick={() => onAnswerChange(goldenQuestions[currentQuestionIndex].id, option.id)}
-                        disabled={!!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
+                        disabled={isValidating || !!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
                         className={`relative p-3 rounded-xl transition-all cursor-pointer overflow-hidden group ${
                           isIncorrectSelected
                             ? 'bg-red-500 text-white shadow-lg'
@@ -457,7 +455,7 @@ export default function GoldLevelFlow({
                           checked={isSelected}
                           onChange={() => {}}
                           className="hidden"
-                          disabled={!!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
+                          disabled={isValidating || !!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
                         />
 
                         {option.imageId && getImageUrl(option.imageId) && (
@@ -494,21 +492,6 @@ export default function GoldLevelFlow({
             </div>
           )}
           
-          {!previousAnswers[goldenQuestions[currentQuestionIndex]?.id] && goldenAnswers[goldenQuestions[currentQuestionIndex]?.id] && (
-            <div className="panel-control fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 bg-gradient-to-t from-black to-transparent">
-              <button
-                onClick={() => {
-                  onAnswerSubmit();
-                }}
-                className="button-continue text-3xl uppercase font-black text-white"
-                style={{ fontFamily: "'Blinker', sans-serif" }}
-              >
-                Responder
-              </button>
-            </div>
-          )}
-          
-
           {isValidating && (
             <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
               <div className="text-center">

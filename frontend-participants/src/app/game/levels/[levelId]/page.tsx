@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/authStore';
@@ -116,6 +116,7 @@ export default function LevelMissionsPage() {
   const [goldenCompleted, setGoldenCompleted] = useState(false);
   const [showValidationPanel, setShowValidationPanel] = useState(false);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState(false);
+  const goldenAnswerSubmitInFlight = useRef(false);
 
   // Final level states
   const [finalStage, setFinalStage] = useState<'intro' | 'introVideo' | 'questionOrder' | 'questionVideo' | 'questionModal' | 'questionOptions' | 'results'>('intro');
@@ -305,16 +306,19 @@ export default function LevelMissionsPage() {
 
   // Golden Level Handlers
   const handleGoldenAnswerChange = (questionId: string, answerId: string) => {
-    if (!previousAnswers[questionId]) {
+    if (!previousAnswers[questionId] && !goldenAnswerSubmitInFlight.current) {
       setGoldenAnswers({
         ...goldenAnswers,
         [questionId]: answerId
       });
+      void handleGoldenAnswerSubmit(answerId);
     }
   };
 
-  const handleGoldenAnswerSubmit = async () => {
+  const handleGoldenAnswerSubmit = async (selectedAnswerId?: string) => {
     const currentQuestion = goldenQuestions[currentQuestionIndex];
+
+    if (!currentQuestion || goldenAnswerSubmitInFlight.current) return;
     
     if (previousAnswers[currentQuestion.id]) {
       setLastAnswerCorrect(true);
@@ -322,13 +326,14 @@ export default function LevelMissionsPage() {
       return;
     }
 
-    if (!goldenAnswers[currentQuestion.id]) {
+    const answerId = selectedAnswerId || goldenAnswers[currentQuestion.id];
+    if (!answerId) {
       alert('Por favor selecciona una respuesta');
       return;
     }
 
     try {
-      const answerId = goldenAnswers[currentQuestion.id];
+      goldenAnswerSubmitInFlight.current = true;
       setIsValidating(true);
 
       const responseRes = await axiosInstance.post(
@@ -358,6 +363,8 @@ export default function LevelMissionsPage() {
       console.error('Error:', err);
       setIsValidating(false);
       alert('Error al guardar respuesta: ' + (err.response?.data?.message || err.message));
+    } finally {
+      goldenAnswerSubmitInFlight.current = false;
     }
   };
 
@@ -546,7 +553,6 @@ export default function LevelMissionsPage() {
           onItemIndexChange={setCurrentItemIndex}
           onQuestionIndexChange={setCurrentQuestionIndex}
           onAnswerChange={handleGoldenAnswerChange}
-          onAnswerSubmit={handleGoldenAnswerSubmit}
           onValidationPanelContinue={handleValidationPanelContinue}
         />
       ) : (
