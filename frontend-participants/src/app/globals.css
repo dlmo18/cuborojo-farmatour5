@@ -383,8 +383,19 @@ body {
 
 .world-infant {
   .title {
-    color: #e87800;
+    color: #8947a8;
   }
+
+  .level-page,
+  .mission-page {
+    background-image: url('/images/level-bg-infant.jpg');
+  }
+
+
+  .item-normal {
+    background-image: url('/images/level-item-enable_infant.png');
+  }
+
 }
 
 .world-beauty {
