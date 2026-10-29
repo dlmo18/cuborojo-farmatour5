@@ -9,6 +9,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const getImageUrl = (imageId?: string) => {
   if (!imageId) return null;
+  const mediaId = imageId.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)?.[0];
+  if (mediaId) return `${API_URL}/media/serve/${mediaId}`;
+  if (/^https?:\/\//i.test(imageId)) return imageId;
   return `${API_URL}/media/serve/${imageId}`;
 };
 
@@ -17,6 +20,7 @@ interface GoldenLevelItem {
   levelId: string;
   title: string;
   detail: string;
+  imageId?: string;
   orderNum: number;
 }
 
@@ -70,7 +74,6 @@ interface GoldLevelFlowProps {
   onItemIndexChange: (index: number) => void;
   onQuestionIndexChange: (index: number) => void;
   onAnswerChange: (questionId: string, answerId: string) => void;
-  onAnswerSubmit: () => Promise<void>;
   onValidationPanelContinue: () => void;
 }
 
@@ -92,7 +95,6 @@ export default function GoldLevelFlow({
   onItemIndexChange,
   onQuestionIndexChange,
   onAnswerChange,
-  onAnswerSubmit,
   onValidationPanelContinue,
 }: GoldLevelFlowProps) {
   const router = useRouter();
@@ -147,8 +149,8 @@ export default function GoldLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-xs text-center font-black uppercase pb-24">
-            <h1 className="text-5xl  text-white mb-8" style={{ fontFamily: "'Blinker', sans-serif" }}>
+          <div className="max-w-xs text-center text-white font-black uppercase pb-24">
+            <h1 className="text-5xl   mb-8" style={{ fontFamily: "'Blinker', sans-serif" }}>
               ¡Bienvenido al Nivel Dorado!
             </h1>
             <button
@@ -254,10 +256,10 @@ export default function GoldLevelFlow({
           </div>
 
           <div className="max-w-md mx-auto">
-            {goldenItems[currentItemIndex] && getImageUrl(goldenItems[currentItemIndex].detail) && (
+            {goldenItems[currentItemIndex] && getImageUrl(goldenItems[currentItemIndex].imageId || goldenItems[currentItemIndex].detail) && (
               <div className="w-full">
                 <img
-                  src={goldenItems[currentItemIndex].detail}
+                  src={getImageUrl(goldenItems[currentItemIndex].imageId || goldenItems[currentItemIndex].detail) || ''}
                   alt={goldenItems[currentItemIndex].title}
                   className="w-full h-auto object-cover"
                 />
@@ -435,7 +437,7 @@ export default function GoldLevelFlow({
                       <button
                         key={option.id}
                         onClick={() => onAnswerChange(goldenQuestions[currentQuestionIndex].id, option.id)}
-                        disabled={!!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
+                        disabled={isValidating || !!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
                         className={`relative p-3 rounded-xl transition-all cursor-pointer overflow-hidden group ${
                           isIncorrectSelected
                             ? 'bg-red-500 text-white shadow-lg'
@@ -453,7 +455,7 @@ export default function GoldLevelFlow({
                           checked={isSelected}
                           onChange={() => {}}
                           className="hidden"
-                          disabled={!!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
+                          disabled={isValidating || !!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
                         />
 
                         {option.imageId && getImageUrl(option.imageId) && (
@@ -490,21 +492,6 @@ export default function GoldLevelFlow({
             </div>
           )}
           
-          {!previousAnswers[goldenQuestions[currentQuestionIndex]?.id] && goldenAnswers[goldenQuestions[currentQuestionIndex]?.id] && (
-            <div className="panel-control fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 bg-gradient-to-t from-black to-transparent">
-              <button
-                onClick={() => {
-                  onAnswerSubmit();
-                }}
-                className="button-continue text-3xl uppercase font-black text-white"
-                style={{ fontFamily: "'Blinker', sans-serif" }}
-              >
-                Responder
-              </button>
-            </div>
-          )}
-          
-
           {isValidating && (
             <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
               <div className="text-center">

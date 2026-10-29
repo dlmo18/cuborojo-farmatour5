@@ -246,7 +246,7 @@ export default function ParticipantProgressModal({
           <div className={styles.statLabel}>Total de Estrellas</div>
           <div className={styles.statValue}>
             {data.totalStars} / {calculateTotalMaxStars(data.worlds)}
-            <MdStar className={styles.starIcon} />
+            <MdStar />
           </div>
         </div>
         <div className={styles.statBox}>

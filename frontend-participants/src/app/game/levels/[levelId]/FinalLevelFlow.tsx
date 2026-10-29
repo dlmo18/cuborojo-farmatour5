@@ -235,7 +235,7 @@ export default function FinalLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-sm text-center font-black pb-10">
+          <div className="max-w-sm text-center text-white font-black pb-10">
             <h1 className="text-5xl uppercase font-black text-turquoise-600 " style={{ fontFamily: "'Blinker', sans-serif" }}>
               ¡Llego el momento de aplicar lo aprendido!
             </h1>

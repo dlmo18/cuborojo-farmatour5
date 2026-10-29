@@ -85,7 +85,7 @@ export default function ImageSelector({
 
   const handleImageSelect = (image: MediaFile) => {
     setSelectedImage(image);
-    onImageSelect(image.id, image.url);
+    onImageSelect(image.id, mediaApi.getServeUrl(image.id));
     setShowModal(false);
   };
 
@@ -111,7 +111,7 @@ export default function ImageSelector({
         const response = await mediaApi.upload(fileArray[0]);
         const newImage = response.data;
         setSelectedImage(newImage);
-        onImageSelect(newImage.id, newImage.url);
+        onImageSelect(newImage.id, mediaApi.getServeUrl(newImage.id));
         setShowModal(false);
       } else {
         const response = await mediaApi.uploadMultiple(fileArray);
@@ -119,7 +119,7 @@ export default function ImageSelector({
         if (response.data && response.data.length > 0) {
           const firstImage = response.data[0];
           setSelectedImage(firstImage);
-          onImageSelect(firstImage.id, firstImage.url);
+          onImageSelect(firstImage.id, mediaApi.getServeUrl(firstImage.id));
           setShowModal(false);
         }
       }
@@ -164,7 +164,7 @@ export default function ImageSelector({
         {selectedImage ? (
           <>
             <img
-              src={selectedImage.url}
+              src={mediaApi.getServeUrl(selectedImage.id)}
               alt={selectedImage.name}
               className="w-full h-full object-contain group-hover:opacity-75 transition-opacity"
             />
@@ -281,7 +281,7 @@ export default function ImageSelector({
                           }`}
                         >
                           <img
-                            src={image.url}
+                            src={mediaApi.getServeUrl(image.id)}
                             alt={image.name}
                             className="w-full h-full object-cover"
                           />

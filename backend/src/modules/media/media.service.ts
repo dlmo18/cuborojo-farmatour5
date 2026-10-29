@@ -53,7 +53,7 @@ export class MediaService {
     if (type) qb.andWhere('m.type = :type', { type });
     if (search) qb.andWhere('m.name ILIKE :s', { s: `%${search}%` });
     const [data, total] = await qb.skip((page - 1) * limit).take(limit).getManyAndCount();
-    return { data, total, page, limit, pages: Math.ceil(total / limit) };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async findOne(id: string) {

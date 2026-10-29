@@ -27,22 +27,33 @@ export class GoldenLevelsService {
     const itemsWithImages = await Promise.all(
       items.map(async (item) => {
         let detail = item.detail;
+        let imageId: string | undefined;
         
-        // If detail looks like a UUID (media ID), try to fetch the media item
+        // Keep the legacy detail URL for admin clients, but also expose the media ID
+        // so participant clients can build a URL against their configured API host.
         if (detail && detail.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
           try {
             const media = await this.mediaRepo.findOne({ where: { id: detail } });
             if (media) {
+              imageId = media.id;
               detail = media.url;
             }
           } catch (err) {
             // If media not found, keep the original detail value
+          }
+        } else if (detail && /^https?:\/\//i.test(detail)) {
+          try {
+            const media = await this.mediaRepo.findOne({ where: { url: detail } });
+            imageId = media?.id;
+          } catch (err) {
+            // Legacy or external URLs may not correspond to a library item.
           }
         }
 
         return {
           ...item,
           detail,
+          imageId,
         };
       })
     );

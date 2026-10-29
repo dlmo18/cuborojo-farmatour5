@@ -849,6 +849,8 @@ export interface MediaFile {
 }
 
 export const mediaApi = {
+  getServeUrl: (id: string) => apiClient.getUri({ url: `/media/serve/${id}` }),
+
   getAll: (params?: { page?: number; limit?: number; type?: string; search?: string }) => 
     apiClient.get<PaginatedResponse<MediaFile>>('/media', { params }),
   
