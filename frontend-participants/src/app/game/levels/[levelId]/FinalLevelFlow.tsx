@@ -235,12 +235,11 @@ export default function FinalLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-sm text-center text-white font-black pb-10">
-            <h1 className="text-5xl uppercase font-black text-turquoise-600 " style={{ fontFamily: "'Blinker', sans-serif" }}>
+          <div className="max-w-sm text-white text-center font-black pb-10">
+            <h1 className="text-4xl title uppercase font-black text-turquoise-600 " style={{ fontFamily: "'Blinker', sans-serif" }}>
               ¡Llego el momento de aplicar lo aprendido!
             </h1>
-            <p className="text-white text-lg mb-4">
-              Es hora de demostrar tus habilidades y completar el nivel final con éxito.
+            <p className="text-white text-lg mb-4" dangerouslySetInnerHTML={{ __html: level?.description || 'Es hora de demostrar tus habilidades y completar el nivel final con éxito.' }} >
             </p>
             <button
               onClick={() => onStageChange('introVideo')}
