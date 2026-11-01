@@ -480,10 +480,10 @@ export default function LevelMissionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40 flex items-center justify-center">
+      <div className="min-h-screen item-bg px-8 pb-40 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">Cargando nivel...</p>
+          <p className="text-white font-black">Cargando nivel...</p>
         </div>
       </div>
     );
@@ -491,12 +491,12 @@ export default function LevelMissionsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+      <div className="min-h-screen item-bg px-8 pb-40">
         <div className="max-w-md mx-auto pt-24">
           <p className="text-white text-center mb-4">❌ {error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-primary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700 w-full"
+            className="mt-4 panel-bg text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700 w-full"
             style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
@@ -508,12 +508,12 @@ export default function LevelMissionsPage() {
 
   if (!level) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40">
+      <div className="min-h-screen item-bg px-8 pb-40">
         <div className="max-w-md mx-auto pt-24">
           <p className="text-white text-center">Nivel no encontrado</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-primary-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700"
+            className="mt-4 panel-bg text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-700"
             style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ActivityLog } from '../progress/activity-log.entity';
@@ -968,6 +968,102 @@ export class ReportsService {
     } catch (error) {
       console.error('Error recalculando final level stars:', error);
     }
+  }
+
+  async clearParticipantAnswers(participantId: string, scope: string, scopeId?: string) {
+    if (!['mission', 'level', 'world', 'all'].includes(scope)) {
+      throw new BadRequestException('El alcance debe ser mission, level, world o all');
+    }
+    if (scope !== 'all' && !scopeId) {
+      throw new BadRequestException('Se requiere el identificador del alcance');
+    }
+
+    const filter = scope === 'all'
+      ? 'TRUE'
+      : scope === 'mission'
+        ? 'm.id = $2'
+        : scope === 'level'
+          ? 'l.id = $2'
+          : 'w.id = $2';
+    const levelFilter = scope === 'mission' ? 'FALSE' : filter;
+    const params = scope === 'all' ? [participantId] : [participantId, scopeId];
+    const levelParams = scope === 'mission' ? [participantId] : params;
+
+    const normalAnswers = await this.dataSource.query(`
+      SELECT DISTINCT q.id as question_id, m.id as mission_id, l.id as level_id, w.id as world_id
+      FROM participant_answers pa
+      JOIN questions q ON q.id = pa.question_id
+      JOIN missions m ON m.id = q.mission_id
+      JOIN levels l ON l.id = m.level_id
+      JOIN worlds w ON w.id = l.world_id
+      WHERE pa.participant_id = $1 AND ${filter}
+    `, params);
+    const goldenAnswers = await this.dataSource.query(`
+      SELECT DISTINCT glq.id as question_id, glq.level_id, l.world_id
+      FROM participant_golden_level_answers pga
+      JOIN golden_level_questions glq ON glq.id = pga.question_id
+      JOIN levels l ON l.id = glq.level_id
+      WHERE pga.participant_id = $1 AND ${levelFilter}
+    `, levelParams);
+    const finalAnswers = await this.dataSource.query(`
+      SELECT DISTINCT flq.id as question_id, flq.level_id, l.world_id
+      FROM participant_final_level_answers pfa
+      JOIN final_level_questions flq ON flq.id = pfa.question_id
+      JOIN levels l ON l.id = flq.level_id
+      WHERE pfa.participant_id = $1 AND ${levelFilter}
+    `, levelParams);
+
+    const deleteAnswers = async (table: string, rows: Array<{ question_id: string }>) => {
+      const questionIds = [...new Set(rows.map((row) => row.question_id))];
+      if (questionIds.length > 0) {
+        await this.dataSource.query(
+          `DELETE FROM ${table} WHERE participant_id = $1 AND question_id = ANY($2::uuid[])`,
+          [participantId, questionIds]
+        );
+      }
+      return questionIds.length;
+    };
+
+    const deletedCount =
+      await deleteAnswers('participant_answers', normalAnswers) +
+      await deleteAnswers('participant_golden_level_answers', goldenAnswers) +
+      await deleteAnswers('participant_final_level_answers', finalAnswers);
+
+    const missionIds = [...new Set<string>(normalAnswers.map((row: any) => row.mission_id))];
+    const normalLevelIds = [...new Set<string>(normalAnswers.map((row: any) => row.level_id))];
+    const goldenQuestionByLevel = new Map<string, string>();
+    const finalQuestionByLevel = new Map<string, string>();
+    goldenAnswers.forEach((row: any) => goldenQuestionByLevel.set(row.level_id, row.question_id));
+    finalAnswers.forEach((row: any) => finalQuestionByLevel.set(row.level_id, row.question_id));
+
+    for (const missionId of missionIds) {
+      await this.recalculateMissionProgress(participantId, missionId);
+    }
+    for (const levelId of normalLevelIds) {
+      await this.recalculateLevelProgress(participantId, levelId);
+    }
+    for (const questionId of goldenQuestionByLevel.values()) {
+      await this.recalculateGoldenLevelStars(participantId, questionId);
+    }
+    for (const questionId of finalQuestionByLevel.values()) {
+      await this.recalculateFinalLevelStars(participantId, questionId);
+    }
+
+    const worldIds = new Set<string>([
+      ...normalAnswers.map((row: any) => row.world_id),
+      ...goldenAnswers.map((row: any) => row.world_id),
+      ...finalAnswers.map((row: any) => row.world_id),
+    ]);
+    for (const worldId of worldIds) {
+      await this.recalculateWorldProgress(participantId, worldId);
+    }
+
+    return {
+      success: true,
+      deletedCount,
+      message: `${deletedCount} respuesta(s) eliminada(s) correctamente`,
+      updatedStats: await this.getUpdatedStars(participantId),
+    };
   }
 
   async deleteParticipantAnswer(participantId: string, questionId: string) {

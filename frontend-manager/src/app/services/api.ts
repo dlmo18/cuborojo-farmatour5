@@ -939,6 +939,14 @@ export const reportsApi = {
   deleteQuestionAnswer: (participantId: string, questionId: string) =>
     apiClient.delete(`/reports/participant-progress/${participantId}/questions/${questionId}`),
 
+  clearQuestionAnswers: (
+    participantId: string,
+    scope: 'mission' | 'level' | 'world' | 'all',
+    scopeId?: string
+  ) => apiClient.delete(`/reports/participant-progress/${participantId}/answers`, {
+    params: { scope, ...(scopeId ? { scopeId } : {}) },
+  }),
+
   updateQuestionAnswers: (participantId: string, answers: Record<string, string>) =>
     apiClient.put(`/reports/participant-progress/${participantId}/questions`, {
       answers,

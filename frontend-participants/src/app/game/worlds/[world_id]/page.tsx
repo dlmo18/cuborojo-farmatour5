@@ -200,7 +200,7 @@ export default function WorldLevelsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center level-page">
+      <div className="min-h-screen flex items-center justify-center item-bg text-white font-black">
         <div>Cargando niveles...</div>
       </div>
     );
@@ -208,7 +208,7 @@ export default function WorldLevelsPage() {
 
   if (!world) {
     return (
-      <div className="min-h-screen flex items-center justify-center level-page">
+      <div className="min-h-screen flex items-center justify-center item-bg text-white font-black">
         <div>Mundo no encontrado</div>
       </div>
     );
@@ -233,9 +233,9 @@ export default function WorldLevelsPage() {
                 priority
               />
             </button>
-            <h2 className="text-3xl pt-4 font-bold text-black text-center uppercase leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
+            <h2 className="text-3xl pt-4 text-black font-black text-center uppercase leading-none" style={{ fontFamily: "'Blinker', sans-serif" }}>
               <span className="block text-xl">MUNDO</span>
-              <div className="title font-black">{world.name}</div>
+              <div className="title text-color ">{world.name}</div>
             </h2>
             <button onClick={() => router.push('/game/setting')} className="btn-menu text-2xl">
               <Image
@@ -281,7 +281,7 @@ export default function WorldLevelsPage() {
             return (
               <div
                 key={level.id}
-                className={`level-item relative ${bgColor} block m-auto font-bold p-2 px-3 ${
+                className={`level-item text-white relative ${bgColor} block m-auto font-bold p-2 px-3 ${
                   isLocked ? 'item-locked opacity-60' : 'cursor-pointer'
                 }`}
                 onClick={() => isLocked ? null : router.push(`/game/levels/${level.id}`)}

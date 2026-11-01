@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MdArrowBack, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel, MdDelete, MdAdd } from 'react-icons/md';
+import { MdArrowBack, MdStar, MdCheckCircle, MdEdit, MdSave, MdCancel, MdDelete, MdDeleteSweep, MdAdd } from 'react-icons/md';
 import styles from './ParticipantProgressModal.module.css';
 import { reportsApi } from '@/app/services/api';
 
@@ -102,6 +102,7 @@ export default function ParticipantProgressModal({
   const [editedAnswers, setEditedAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [clearError, setClearError] = useState('');
 
   useEffect(() => {
     fetchProgressData();
@@ -185,6 +186,27 @@ export default function ParticipantProgressModal({
     }
   };
 
+  const handleClearAnswers = async (
+    scope: 'mission' | 'level' | 'world' | 'all',
+    scopeId: string | undefined,
+    scopeLabel: string
+  ) => {
+    if (!confirm(`¿Limpiar todas las respuestas de ${scopeLabel}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setClearError('');
+      await reportsApi.clearQuestionAnswers(participantId, scope, scopeId);
+      await fetchProgressData();
+    } catch (err: any) {
+      setClearError(err.response?.data?.message || err.message || 'Error limpiando respuestas');
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -255,7 +277,18 @@ export default function ParticipantProgressModal({
             {data.worlds.filter((w) => w.completedLevels === w.totalLevels).length} / {data.worlds.length}
           </div>
         </div>
+        <button
+          type="button"
+          className={styles.globalClearBtn}
+          onClick={() => handleClearAnswers('all', undefined, 'todo el progreso del participante')}
+          disabled={saving}
+        >
+          <MdDeleteSweep size={20} />
+          Limpiar todas las respuestas
+        </button>
       </div>
+
+      {clearError && <div className={styles.clearError}>{clearError}</div>}
 
       <div className={styles.content}>
           {data.worlds.map((world) => (
@@ -277,6 +310,19 @@ export default function ParticipantProgressModal({
                 </div>
                 <div className={styles.worldProgress}>
                   <span>Niveles: {world.completedLevels} / {world.totalLevels}</span>
+                  <button
+                    type="button"
+                    className={styles.clearScopeBtn}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleClearAnswers('world', world.worldId, `el mundo "${world.worldName}"`);
+                    }}
+                    disabled={saving}
+                    title="Limpiar respuestas del mundo"
+                  >
+                    <MdDeleteSweep size={16} />
+                    Limpiar mundo
+                  </button>
                   <span className={styles.arrow}>
                     {expandedWorld === world.worldId ? '▼' : '▶'}
                   </span>
@@ -315,6 +361,19 @@ export default function ParticipantProgressModal({
                             {level.starsEarned} / {calculateLevelMaxStars(level)}
                             <MdStar className={styles.smallStar} />
                           </span>
+                          <button
+                            type="button"
+                            className={styles.clearScopeBtn}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleClearAnswers('level', level.levelId, `el nivel "${level.levelName}"`);
+                            }}
+                            disabled={saving}
+                            title="Limpiar respuestas del nivel"
+                          >
+                            <MdDeleteSweep size={16} />
+                            Limpiar nivel
+                          </button>
                           <span className={styles.arrow}>
                             {expandedLevel === level.levelId ? '▼' : '▶'}
                           </span>
@@ -351,6 +410,19 @@ export default function ParticipantProgressModal({
                                   <span className={styles.missionStars}>
                                     {mission.starsEarned} / {mission.maxStars}
                                   </span>
+                                  <button
+                                    type="button"
+                                    className={styles.clearScopeBtn}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleClearAnswers('mission', mission.missionId, `la misión "${mission.missionName}"`);
+                                    }}
+                                    disabled={saving}
+                                    title="Limpiar respuestas de la misión"
+                                  >
+                                    <MdDeleteSweep size={16} />
+                                    Limpiar misión
+                                  </button>
                                   {mission.questions && mission.questions.length > 0 && (
                                     <span className={styles.arrow}>
                                       {expandedMission === mission.missionId ? '▼' : '▶'}

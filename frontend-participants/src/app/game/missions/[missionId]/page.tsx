@@ -125,10 +125,10 @@ export default function MissionInfoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-forest-700 via-primary-700 to-secondary-800 px-8 pb-40 flex items-center justify-center">
+      <div className="min-h-screen item-bg px-8 pb-40 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white text-lg font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}>Cargando misión...</p>
+          <p className="text-white text-lg font-black" style={{ fontFamily: "'Blinker', sans-serif" }}>Cargando misión...</p>
         </div>
       </div>
     );
@@ -143,7 +143,7 @@ export default function MissionInfoPage() {
           </p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
+            className="mt-4 bg-white text-color px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -219,7 +219,7 @@ export default function MissionInfoPage() {
               <h2 className="text-[5rem] mb-4" >
                 ¡WOW!
               </h2>
-              <p className="text-green-600 mb-8 text-2xl">
+              <p className="text-color mb-8 text-2xl">
                 ¡llegaste al final de la misión!
               </p>
               <p className="mb-8 text-xl">
@@ -227,7 +227,7 @@ export default function MissionInfoPage() {
               </p>
               <button
                 onClick={handleConfirmEvaluation}
-                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-bold transition"
+                className="button-continue text-xl uppercase"
               >
                 Continuar
               </button>
@@ -272,7 +272,7 @@ export default function MissionInfoPage() {
           <div className="panel-block max-w-sm mx-auto text-black">
             <div className="panel-top p-4 rounded-2xl bg-[#fff3df]">
               {/* Título */}
-              <h2 className="panel-title rounded-2xl p-4 text-center bg-green-600 text-white text-3xl uppercase font-bold mb-4" style={{ fontFamily: "'Blinker', sans-serif" }}>{currentItem.title}</h2>
+              <h2 className="panel-title rounded-2xl p-4 text-center item-bg text-white text-3xl uppercase font-bold mb-4" style={{ fontFamily: "'Blinker', sans-serif" }}>{currentItem.title}</h2>
               
               {/* Imagen principal */}
               {currentItem.imageId && (
@@ -291,7 +291,7 @@ export default function MissionInfoPage() {
             <div className="panel-benefit">
               {currentItem.benefits && (
                 <div className="overflow-y-scroll h-[180px]">
-                  <div className="text-primary-600 text-center text-lg pr-2 font-black leading-relaxed prose prose-sm max-w-none">
+                  <div className="text-color text-center text-lg pr-2 font-black leading-relaxed prose prose-sm max-w-none">
                     <div dangerouslySetInnerHTML={{ __html: currentItem.benefits }} />
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export default function MissionInfoPage() {
                   {currentItem.variantBadges.map((badge, idx) => (
                     <span
                       key={idx}
-                      className="bg-primary-600 text-white px-3 py-1 rounded-xl text-sm font-bold uppercase"
+                      className="item-bg text-white px-3 py-1 rounded-xl text-sm font-bold uppercase"
                     >
                       {badge}
                     </span>
@@ -370,7 +370,7 @@ export default function MissionInfoPage() {
 
       {/* Navegación y contador - Fijo en la base */}
       {currentItem && (
-        <div className="panel-control fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 bg-gradient-to-t from-green-500 to-transparent">
+        <div className="panel-control fixed bottom-0 left-0 right-0 z-40 flex justify-center items-center py-6 transparent-bg">
           <div className="flex items-center justify-between" style={{ maxWidth: '120px' }}>
             <button
               onClick={() => handleNavigateItem(currentItemIndex - 1)}

@@ -207,7 +207,7 @@ export default function GoldLevelFlow({
             </div>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center items-center py-6 bg-gradient-to-t from-black to-transparent">
+          <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center items-center py-6 transparent-bg">
             <div className="flex gap-8">
               <button
                 onClick={() => {}}
@@ -267,7 +267,7 @@ export default function GoldLevelFlow({
             )}
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center items-center py-6 bg-gradient-to-t from-black to-transparent">
+          <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center items-center py-6 transparent-bg">
             <div className="flex gap-8">
               <button
                 onClick={() => onItemIndexChange(Math.max(0, currentItemIndex - 1))}
@@ -426,7 +426,7 @@ export default function GoldLevelFlow({
                   />
                 </div>
 
-                <div className="max-w-sm mx-auto grid grid-cols-2 gap-4 mb-8">
+                <div className="max-w-sm mx-auto mb-8">
                   {goldenQuestions[currentQuestionIndex].options?.map((option) => {
                     const isSelected = goldenAnswers[goldenQuestions[currentQuestionIndex].id] === option.id;
                     const isCorrect = option.isCorrect;

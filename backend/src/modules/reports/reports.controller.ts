@@ -66,4 +66,14 @@ export class ReportsController {
   ) {
     return this.service.deleteParticipantAnswer(participantId, questionId);
   }
+
+  @Delete('participant-progress/:participantId/answers')
+  @ApiOperation({ summary: 'Limpiar respuestas por misión, nivel, mundo o participante' })
+  clearParticipantAnswers(
+    @Param('participantId') participantId: string,
+    @Query('scope') scope: string,
+    @Query('scopeId') scopeId?: string
+  ) {
+    return this.service.clearParticipantAnswers(participantId, scope, scopeId);
+  }
 }

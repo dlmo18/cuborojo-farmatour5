@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import axiosInstance from '@/lib/axiosInstance';
@@ -154,10 +155,10 @@ export default function MissionQuestionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-500 p-8 pb-40 flex items-center justify-center">
+      <div className="min-h-screen item-bg p-8 pb-40 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">Cargando preguntas...</p>
+          <p className="text-white font-black">Cargando preguntas...</p>
         </div>
       </div>
     );
@@ -170,7 +171,7 @@ export default function MissionQuestionsPage() {
           <p className="text-white text-center mb-4">❌ {error}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 w-full" style={{ fontFamily: "'Blinker', sans-serif" }}
+            className="mt-4 bg-white text-color px-6 py-2 rounded-lg font-bold hover:bg-gray-100 w-full" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -186,7 +187,7 @@ export default function MissionQuestionsPage() {
           <p className="text-white text-center">Misión no encontrada</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 bg-white text-primary-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
+            className="mt-4 bg-white text-color px-6 py-2 rounded-lg font-bold hover:bg-gray-100" style={{ fontFamily: "'Blinker', sans-serif" }}
           >
             ← Volver
           </button>
@@ -222,7 +223,7 @@ export default function MissionQuestionsPage() {
             </div>
             <button
               onClick={() => router.push('/game/setting')}
-              className="bg-white text-primary-600 p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
+              className="bg-white text-color p-3 rounded-lg shadow-lg hover:shadow-2xl transition text-2xl"
             >
               <Image
                 src="/images/btn-menu.png"
@@ -239,7 +240,7 @@ export default function MissionQuestionsPage() {
             <p className="text-white/70 text-lg mb-6">No hay preguntas disponibles para esta misión</p>
             <button
               onClick={() => router.back()}
-              className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}
+              className="item-bg text-white px-6 py-2 rounded-lg hover:bg-primary-700 font-bold" style={{ fontFamily: "'Blinker', sans-serif" }}
             >
               ← Volver al contenido
             </button>
@@ -263,7 +264,7 @@ export default function MissionQuestionsPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (selectedAnswerId?: string) => {
     const currentQuestion = questions[currentQuestionIndex];
     
     // Si ya fue respondida, solo ir a la siguiente
@@ -279,14 +280,15 @@ export default function MissionQuestionsPage() {
     }
 
     // Nueva respuesta - validar que haya seleccionado
-    if (!hasAnswered) {
+    const answerId = selectedAnswerId || answers[currentQuestion.id];
+    if (typeof answerId !== 'string' || !answerId) {
       alert('Por favor selecciona una respuesta');
       return;
     }
+    const submittedAnswerId: string = answerId;
 
     try {
-      const answerId = answers[currentQuestion.id] as string;
-      const selectedOption = currentQuestion.options.find(opt => opt.id === answerId);
+      const selectedOption = currentQuestion.options.find(opt => opt.id === submittedAnswerId);
 
       // Mostrar velo de validación
       setIsValidating(true);
@@ -296,7 +298,7 @@ export default function MissionQuestionsPage() {
         `/progress/answer`,
         {
           questionId: currentQuestion.id,
-          answerId,
+          answerId: submittedAnswerId,
         }
       );
 
@@ -354,7 +356,7 @@ export default function MissionQuestionsPage() {
       // Actualizar respuestas anteriores después de enviar
       setPreviousAnswers({
         ...previousAnswers,
-        [currentQuestion.id]: answerId
+        [currentQuestion.id]: submittedAnswerId
       });
       setPreviousAnswersCorrect({
         ...previousAnswersCorrect,
@@ -432,7 +434,7 @@ export default function MissionQuestionsPage() {
         </div>
         
         {/* Contenedor de pregunta */}
-        <div className="bg-white max-w-sm mx-auto rounded-3xl shadow-lg p-6 mb-4">
+        <div className="panel-bg max-w-sm mx-auto rounded-3xl shadow-lg p-6 mb-4">
           
           {/* Imagen de la pregunta */}
           {currentQuestion.imageId && getImageUrl(currentQuestion.imageId) && (
@@ -447,7 +449,7 @@ export default function MissionQuestionsPage() {
 
           {/* Contenido de la pregunta (HTML) */}
           <div 
-            className="text-xl font-black text-center text-gray-800 prose prose-sm max-w-none"
+            className="text-xl font-black text-center text-color prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: currentQuestion.content }}
             style={{ fontFamily: "'Blinker', sans-serif" }}
           />
@@ -459,7 +461,10 @@ export default function MissionQuestionsPage() {
           {currentQuestion.options.map((option) => (
             <button
               key={option.id}
-              onClick={() => handleAnswerChange(currentQuestion.id, option.id)}
+              onClick={() => {
+                handleAnswerChange(currentQuestion.id, option.id);
+                void handleSubmit(option.id);
+              }}
               disabled={!!previousAnswers[currentQuestion.id]}
               className={`relative p-2 rounded-xl border-2 transition-all cursor-pointer overflow-hidden group ${
                 answers[currentQuestion.id] === option.id
@@ -530,7 +535,7 @@ export default function MissionQuestionsPage() {
               <Image src="/images/content-arrow-left.png" alt="Anterior" width={50} height={50} className="inline-block mr-2" />
             </button>
             <button
-              onClick={handleSubmit}
+              onClick={() => void handleSubmit()}
               disabled={!hasAnswered && !previousAnswers[currentQuestion.id]}
               className="text-black hover:opacity-75 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ fontFamily: "'Blinker', sans-serif" }}
@@ -543,8 +548,8 @@ export default function MissionQuestionsPage() {
 
       {/* Modal de Resultado */}
       {showResultModal && resultData && (
-        <div className={`modal-result modal-result-${resultData.isCorrect ? 'correct' : 'incorrect'} fixed inset-0 bg-black/80 z-50 overflow-auto py-4`}>
-          <div className="w-full relative">
+        <div className={`content-bg modal-result fixed inset-0 bg-black/80 z-50 overflow-auto `}>
+          <div className={`modal-result-${resultData.isCorrect ? 'correct' : 'incorrect'}  w-full relative`}>
             {/* Botón cerrar */}
             <button
               onClick={handleCloseResultModal}
@@ -555,14 +560,8 @@ export default function MissionQuestionsPage() {
 
             {resultData.isCorrect ? (
               // Respuesta Correcta
-              <div className="pt-6 pt-12 text-center">
-                <Image 
-                  src="/images/icon-tick.png"
-                  alt="X"
-                  width={50}
-                  height={50}
-                  className="mx-auto mb-6"
-                />
+              <div className="pt-6 text-center ">
+                <MdCheckCircle size={50} className="mx-auto text-white" />
                 
                 <h2 className="text-5xl font-black mb-6 text-white" style={{ fontFamily: "'Blinker', sans-serif" }}>
                   ¡SIII!<br/>¡CORRECTO!
@@ -587,7 +586,7 @@ export default function MissionQuestionsPage() {
                 </div>
 
                 {/* Bloque de estrellas ganadas */}
-                <div className="question-score p-4 mb-6">
+                <div className="question-score p-4">
                   <div className="text-5xl font-b font-black text-white font-bowlby">
                     {resultData.totalMissionStars || 0}
                   </div>
@@ -595,15 +594,9 @@ export default function MissionQuestionsPage() {
               </div>
             ) : (
               // Respuesta Incorrecta
-              <div className="p-6">
-
-                <Image 
-                  src="/images/icon-cross.png"
-                  alt="X"
-                  width={50}
-                  height={50}
-                  className="mx-auto mb-6"
-                />
+              <div className="p-6 text-center">
+                <MdCancel size={50} className="mx-auto text-white" />
+                
                 <h2 className="text-5xl font-black mb-6 text-white text-center" style={{ fontFamily: "'Blinker', sans-serif" }}>
                   ¡UPS! <br/>INCORRECTO
                 </h2>

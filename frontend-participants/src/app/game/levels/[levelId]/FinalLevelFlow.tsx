@@ -362,7 +362,7 @@ export default function FinalLevelFlow({
             </div>
           </div>
 
-          <div className="title w-full mx-auto flex-1 flex flex-col items-center justify-center">
+          <div className="title text-color w-full mx-auto flex-1 flex flex-col items-center justify-center">
             <div className="text-5xl text-center uppercase text-gray-600 font-black font-blinker" >
               Pedido
               <span className="block text-[#079c82] text-[16rem] font-black font-bowlby leading-none" >
@@ -649,7 +649,7 @@ export default function FinalLevelFlow({
                 </div>
                 <button
                   onClick={handleValidationPanelContinue}
-                  className="w-full bg-[#079c82] hover:bg-[#079c82]/90 text-white font-bold py-3 px-6 rounded-2xl transition-colors"
+                  className="w-full button-continue text-white font-bold py-3 px-6 transition-colors"
                   style={{ fontFamily: "'Blinker', sans-serif" }}
                 >
                   Continuar

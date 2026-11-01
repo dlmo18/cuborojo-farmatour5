@@ -152,6 +152,7 @@ CREATE TABLE "public"."golden_level_questions" (
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "title" text,
     CONSTRAINT "golden_level_questions_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
@@ -403,9 +404,12 @@ CREATE TABLE "public"."participant_golden_level_answers" (
     "answer_id" uuid,
     "is_correct" boolean DEFAULT false NOT NULL,
     "answered_at" timestamptz DEFAULT now() NOT NULL,
+    "stars_earned" integer DEFAULT '0' NOT NULL,
     CONSTRAINT "participant_golden_level_answers_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
+
+COMMENT ON COLUMN "public"."participant_golden_level_answers"."stars_earned" IS 'Stars earned for this question: 2 if correct, 0 if incorrect';
 
 CREATE UNIQUE INDEX participant_golden_level_answers_participant_id_question_id_key ON public.participant_golden_level_answers USING btree (participant_id, question_id);
 
@@ -824,4 +828,4 @@ CREATE VIEW "public"."v_top10_participants" AS SELECT v_participant_ranking.id,
    FROM v_participant_ranking
  LIMIT 10;
 
--- 2026-10-06 15:53:27 UTC
+-- 2026-11-01 19:39:46 UTC
