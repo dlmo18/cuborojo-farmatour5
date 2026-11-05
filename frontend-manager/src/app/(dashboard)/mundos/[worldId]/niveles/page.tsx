@@ -393,26 +393,24 @@ export default function LevelsPage() {
                 />
               </div>
 
-              {/* Descripción - Solo para Normal */}
-              {(currentLevelType === 'normal' || currentLevelType === 'final') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                  <RichTextEditor
-                    value={formData.description || ''}
-                    onChange={(content) => setFormData({ ...formData, description: content })}
-                    placeholder="Escribe la descripción del nivel con formato..."
-                    minHeight="200px"
-                  />
-                </div>
-              )}
-
+              {/* Descripción */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <RichTextEditor
+                  value={formData.description || ''}
+                  onChange={(content) => setFormData({ ...formData, description: content })}
+                  placeholder="Escribe la descripción del contenido con formato..."
+                  minHeight="200px"
+                />
+              </div>
+              
               {/* Imagen para niveles Golden y Final */}
               {(currentLevelType === 'golden' || currentLevelType === 'final') && (
                 <div>
                   <ImageSelector
                     selectedImageId={(formData as any).imageId}
                     onImageSelect={(imageId) => setFormData({ ...formData, imageId })}
-                    label="Imagen del Nivel"
+                    label="Imagen del Contenido (opcional)"
                     required={false}
                   />
                 </div>

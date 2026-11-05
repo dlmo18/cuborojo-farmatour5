@@ -179,7 +179,8 @@ export class LevelsService {
     await this.findOne(id);
     
     // Si se actualiza levelType, sincronizar isGolden
-    const updateData: any = { ...dto };
+    // shortcut: imageId vacío llega como "" y Postgres lo rechaza en columna uuid (500); se normaliza a null
+    const updateData: any = { ...dto, imageId: dto.imageId || null };
     if (dto.levelType) {
       updateData.isGolden = dto.levelType === LevelType.GOLDEN;
     }

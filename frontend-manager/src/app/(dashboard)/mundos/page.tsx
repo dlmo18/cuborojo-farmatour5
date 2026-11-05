@@ -9,7 +9,6 @@ import SearchBar from '@/app/components/SearchBar';
 import ImageSelector from '@/app/components/ImageSelector';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
 import MediaPreviewModal from '@/app/components/MediaPreviewModal';
-import ContentTreeModal from '@/app/components/ContentTreeModal';
 import { worldsApi, levelsApi, mediaApi, World, CreateWorldDto, UpdateWorldDto, Level, MediaFile } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import ProgressModal, { ProgressState } from '@/app/components/ProgressModal';
@@ -35,8 +34,6 @@ export default function WorldsPage() {
   const [exportProgress, setExportProgress] = useState<ProgressState | null>(null);
   const [exportResult, setExportResult] = useState<any>(null);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [showTreeModal, setShowTreeModal] = useState(false);
-  const [selectedWorldForTree, setSelectedWorldForTree] = useState<World | null>(null);
 
   const handleExportContent = async (world: World) => {
     try {
@@ -155,8 +152,7 @@ export default function WorldsPage() {
   };
 
   const handleViewTree = (world: World) => {
-    setSelectedWorldForTree(world);
-    setShowTreeModal(true);
+    window.open(`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/arbol-contenidos/${world.id}`, '_blank');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -336,16 +332,6 @@ export default function WorldsPage() {
         title="Exportar Contenido del Mundo"
       />
 
-      {selectedWorldForTree && (
-        <ContentTreeModal
-          isOpen={showTreeModal}
-          onClose={() => {
-            setShowTreeModal(false);
-            setSelectedWorldForTree(null);
-          }}
-          worldId={selectedWorldForTree.id}
-        />
-      )}
     </div>
   );
 }
