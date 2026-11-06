@@ -497,6 +497,11 @@ body {
   }
 }
 
+.transparent-bg {
+  padding-top: 5rem;
+  background-image:linear-gradient(0deg, #000000ff 0%, #00000000 80%);
+}
+
 /*
 Mundo Wellness = Celeste 
 */
@@ -511,10 +516,6 @@ Mundo Wellness = Celeste
 
   .panel-bg {
     background-color: #f3fffe;
-  }
-
-  .transparent-bg {
-    background-image:linear-gradient(0deg, #059e85ff 0%, #059e8500 50%);
   }
 
   .level-page,
@@ -549,10 +550,6 @@ Mundo Personal Care = Naranja
     background-color: #f3fffe;
   }
 
-  .transparent-bg {
-    background-image:linear-gradient(0deg, #ea7900ff 0%, #ea790000 50%);
-  }
-
   .level-page,
   .mission-page,
   .content-page,
@@ -584,10 +581,6 @@ Mundo infant care = Morado
 
   .panel-bg {
     background-color: #f3fffe;
-  }
-
-  .transparent-bg {
-    background-image:linear-gradient(0deg, #8947a8ff 0%, #8947a800 50%);
   }
 
   .level-page,
@@ -624,10 +617,6 @@ Mundo Beauty = Rosado
     background-color: #f3fffe;
   }
 
-  .transparent-bg {
-    background-image:linear-gradient(0deg, #f98cc5ff 0%, #f98cc500 50%);
-  }
-
   .level-page,
   .mission-page,
   .content-page,
@@ -658,10 +647,6 @@ Mundo Farma = Verde
 
   .panel-bg {
     background-color: #f3fffe;
-  }
-
-  .transparent-bg {
-    background-image:linear-gradient(0deg, #409d73ff 0%, #409d7300 50%);
   }
 
   .level-page,
@@ -744,6 +729,77 @@ Mundo Farma = Verde
 
 .gold-header {
   padding: 2rem 2rem 0;
+}
+
+.gold-item {
+  text-align: center;
+
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    font-weight: 900;
+    margin-bottom: .5rem;
+    color: #fded3c;
+  }
+
+  h2 {
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    color: #fded3c;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    color: #fded3c;
+  }
+
+  p {
+    margin-bottom: .5rem;
+  }
+  
+  ul {
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+
+    li {
+      list-style: disc;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  ol {
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+
+    li {
+      list-style: number;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  div[class*="block-"] {
+    margin: 2rem 0 0;
+    background: #fff;
+    border-radius: 2rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    padding: 1rem 2rem;
+    text-align: left;
+    color: #000;
+    line-height: 1.2rem;
+    
+    p {
+      margin-bottom: .25rem;
+    }
+
+    strong {
+      color: #f62c8c;
+    }
+  }
 }
 
 .button-continue {

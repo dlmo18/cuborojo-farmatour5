@@ -133,6 +133,7 @@ CREATE TABLE "public"."golden_level_items" (
     "order_num" integer NOT NULL,
     "created_at" timestamptz DEFAULT now() NOT NULL,
     "updated_at" timestamptz DEFAULT now() NOT NULL,
+    "image_id" uuid,
     CONSTRAINT "golden_level_items_pkey" PRIMARY KEY ("id")
 )
 WITH (oids = false);
@@ -688,6 +689,8 @@ ALTER TABLE ONLY "public"."final_level_questions" ADD CONSTRAINT "final_level_qu
 ALTER TABLE ONLY "public"."golden_level_answer_options" ADD CONSTRAINT "golden_level_answer_options_question_id_fkey" FOREIGN KEY (question_id) REFERENCES "public".golden_level_questions(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY "public"."golden_level_items" ADD CONSTRAINT "golden_level_items_level_id_fkey" FOREIGN KEY (level_id) REFERENCES "public".levels(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY "public"."golden_level_items" ADD CONSTRAINT "golden_level_items_image_id_fkey" FOREIGN KEY (image_id) REFERENCES "public".media_library(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY "public"."golden_level_questions" ADD CONSTRAINT "golden_level_questions_level_id_fkey" FOREIGN KEY (level_id) REFERENCES "public".levels(id) ON DELETE CASCADE;
 

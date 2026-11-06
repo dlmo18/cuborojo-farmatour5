@@ -35,12 +35,14 @@ export class CreateGoldenLevelItemDto {
   @ApiProperty() @IsString() @IsNotEmpty() levelId: string;
   @ApiProperty() @IsString() @IsNotEmpty() title: string;
   @ApiProperty({ required: false }) @IsOptional() detail?: string;
+  @ApiProperty({ required: false }) @IsOptional() imageId?: string;
   @ApiProperty() @IsNumber() orderNum: number;
 }
 
 export class UpdateGoldenLevelItemDto {
   @ApiProperty({ required: false }) @IsOptional() title?: string;
   @ApiProperty({ required: false }) @IsOptional() detail?: string;
+  @ApiProperty({ required: false }) @IsOptional() imageId?: string;
   @ApiProperty({ required: false }) @IsOptional() orderNum?: number;
 }
 
@@ -180,7 +182,7 @@ export class LevelsService {
     
     // Si se actualiza levelType, sincronizar isGolden
     // shortcut: imageId vacío llega como "" y Postgres lo rechaza en columna uuid (500); se normaliza a null
-    const updateData: any = { ...dto, imageId: dto.imageId || null };
+    const updateData: any = dto.imageId !== undefined ? { ...dto, imageId: dto.imageId || null } : { ...dto };
     if (dto.levelType) {
       updateData.isGolden = dto.levelType === LevelType.GOLDEN;
     }

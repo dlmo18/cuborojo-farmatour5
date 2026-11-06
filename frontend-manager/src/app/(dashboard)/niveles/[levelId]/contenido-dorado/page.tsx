@@ -7,9 +7,10 @@ import DataTable, { Column } from '@/app/components/DataTable';
 import Pagination from '@/app/components/Pagination';
 import SearchBar from '@/app/components/SearchBar';
 import ImageSelector from '@/app/components/ImageSelector';
+import RichTextEditor from '@/app/components/RichTextEditor';
 import ToggleSwitch from '@/app/components/ToggleSwitch';
 import GoldenLevelImportModal from '@/app/components/GoldenLevelImportModal';
-import { levelsApi, goldenLevelsApi, worldsApi, Level, World, GoldenLevelItem, GoldenLevelQuestion, GoldenLevelAnswerOption, CreateGoldenLevelItemDto, UpdateGoldenLevelItemDto, CreateGoldenLevelQuestionDto, UpdateGoldenLevelQuestionDto, CreateGoldenLevelAnswerOptionDto, UpdateGoldenLevelAnswerOptionDto } from '@/app/services/api';
+import { levelsApi, goldenLevelsApi, worldsApi, mediaApi, Level, World, GoldenLevelItem, GoldenLevelQuestion, GoldenLevelAnswerOption, CreateGoldenLevelItemDto, UpdateGoldenLevelItemDto, CreateGoldenLevelQuestionDto, UpdateGoldenLevelQuestionDto, CreateGoldenLevelAnswerOptionDto, UpdateGoldenLevelAnswerOptionDto } from '@/app/services/api';
 import { useManagerAuth } from '@/app/hooks/useManagerAuth';
 import { stripHtmlTags } from '@/app/utils/htmlUtils';
 
@@ -130,9 +131,10 @@ export default function GoldenLevelContentPage() {
       levelId: item.levelId,
       title: item.title,
       detail: item.detail,
+      imageId: item.imageId,
       orderNum: item.orderNum,
     });
-    setSelectedImageId(item.detail || '');
+    setSelectedImageId(item.imageId || '');
     setShowModalItem(true);
     setError('');
   };
@@ -156,6 +158,7 @@ export default function GoldenLevelContentPage() {
         const updateData: UpdateGoldenLevelItemDto = {
           title: formDataItem.title,
           detail: formDataItem.detail,
+          imageId: formDataItem.imageId,
           orderNum: formDataItem.orderNum,
         };
         await goldenLevelsApi.updateItem(editingItem.id, updateData);
@@ -368,27 +371,23 @@ export default function GoldenLevelContentPage() {
       label: 'Título',
       render: (value) => <div className="line-clamp-1 font-semibold">{value}</div>
     },
-    { 
-      key: 'detail', 
+    {
+      key: 'imageId',
       label: 'Imagen',
       width: '120px',
       render: (value) => {
         if (!value) {
           return <div className="text-sm text-surface-500">Sin imagen</div>;
         }
-        // Check if it looks like a URL or an image ID/path
-        if (value.startsWith('http') || value.includes('/')) {
-          return (
-            <div className="w-24 h-24 rounded-lg overflow-hidden border border-surface-200">
-              <img 
-                src={value} 
-                alt="Detalle" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          );
-        }
-        return <div className="text-sm text-surface-500">-</div>;
+        return (
+          <div className="w-24 h-24 rounded-lg overflow-hidden border border-surface-200">
+            <img
+              src={mediaApi.getServeUrl(value)}
+              alt="Imagen"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
       }
     },
   ];
@@ -596,14 +595,25 @@ export default function GoldenLevelContentPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-surface-700 mb-2">Contenido</label>
+                <RichTextEditor
+                  value={formDataItem.detail || ''}
+                  onChange={(content) => setFormDataItem({ ...formDataItem, detail: content })}
+                  placeholder="Escribe el contenido con formato..."
+                  minHeight="200px" 
+                 blocks={{ 'block-a': 'Bloque A', 'block-b': 'Bloque B', 'block-c': 'Bloque C' }}
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-surface-700 mb-2">Imagen</label>
                 <ImageSelector
                   selectedImageId={selectedImageId}
                   onImageSelect={(imageId) => {
                     setSelectedImageId(imageId);
-                    setFormDataItem({ ...formDataItem, detail: imageId });
+                    setFormDataItem({ ...formDataItem, imageId });
                   }}
-                  label="Imagen del Contenido" 
+                  label="Imagen del Contenido"
                   className="h-80"
                 />
               </div>

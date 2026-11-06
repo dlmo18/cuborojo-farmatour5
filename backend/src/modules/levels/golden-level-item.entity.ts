@@ -19,6 +19,9 @@ export class GoldenLevelItem {
   @Column({ nullable: true, type: 'text' })
   detail: string;
 
+  @Column({ name: 'image_id', nullable: true, type: 'uuid' })
+  imageId: string;
+
   @Column({ name: 'order_num' })
   orderNum: number;
 

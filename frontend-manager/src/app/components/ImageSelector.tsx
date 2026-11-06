@@ -31,8 +31,8 @@ export default function ImageSelector({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragActive, setIsDragActive] = useState(false);
 
-  // Load images
-  const loadImages = async (page: number = 1, search?: string) => {
+  // Load images; append=true añade la página a la lista ("Cargar más")
+  const loadImages = async (page: number = 1, search?: string, append = false) => {
     try {
       setIsLoading(true);
       setError('');
@@ -42,8 +42,9 @@ export default function ImageSelector({
         type: 'image',
         search: search || undefined,
       });
-      setImages(response.data.data);
-      setTotalPages(response.data.page || 1);
+      setImages((prev) => (append ? [...prev, ...response.data.data] : response.data.data));
+      setCurrentPage(page);
+      setTotalPages(response.data.totalPages || 1);
     } catch (err) {
       setError('Error cargando imágenes');
       console.error(err);
@@ -258,14 +259,14 @@ export default function ImageSelector({
               </div>
 
               {/* Loading */}
-              {isLoading && (
+              {isLoading && images.length === 0 && (
                 <div className="flex justify-center items-center h-32">
                   <span className="text-gray-500">Cargando imágenes...</span>
                 </div>
               )}
 
               {/* Image Grid */}
-              {!isLoading && (
+              {(!isLoading || images.length > 0) && (
                 <>
                   {images.length > 0 ? (
                     <div className="grid grid-cols-3 gap-4 mb-4">
@@ -304,33 +305,16 @@ export default function ImageSelector({
                     </div>
                   )}
 
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 mt-6">
+                  {/* Cargar más */}
+                  {currentPage < totalPages && (
+                    <div className="flex justify-center mt-6">
                       <button
                         type="button"
-                        onClick={() => {
-                          setCurrentPage((p) => Math.max(1, p - 1));
-                          loadImages(Math.max(1, currentPage - 1), searchTerm);
-                        }}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
+                        onClick={() => loadImages(currentPage + 1, searchTerm, true)}
+                        disabled={isLoading}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 font-semibold disabled:opacity-50"
                       >
-                        Anterior
-                      </button>
-                      <span className="px-3 py-1 text-sm">
-                        {currentPage} de {totalPages}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCurrentPage((p) => Math.min(totalPages, p + 1));
-                          loadImages(Math.min(totalPages, currentPage + 1), searchTerm);
-                        }}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
-                      >
-                        Siguiente
+                        Cargar más
                       </button>
                     </div>
                   )}

@@ -365,6 +365,7 @@ export interface GoldenLevelItem {
   levelId: string;
   title: string;
   detail?: string;
+  imageId?: string;
   orderNum: number;
   createdAt: string;
   updatedAt: string;
@@ -374,12 +375,14 @@ export interface CreateGoldenLevelItemDto {
   levelId: string;
   title: string;
   detail?: string;
+  imageId?: string;
   orderNum: number;
 }
 
 export interface UpdateGoldenLevelItemDto {
   title?: string;
   detail?: string;
+  imageId?: string;
   orderNum?: number;
 }
 

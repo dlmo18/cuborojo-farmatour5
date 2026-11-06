@@ -49,6 +49,7 @@ interface GoldenLevelAnswerOption {
 interface Level {
   id: string;
   name: string;
+  description?: string;
   imageId?: string;
   world: {
     id: string;
@@ -167,7 +168,7 @@ export default function GoldLevelFlow({
         </div>
       )}
 
-      {goldenStage === 'imageIntro' && level?.imageId && (
+      {goldenStage === 'imageIntro' && (
         <div className="content min-h-screen">
           <div className="fixed top-0 left-0 w-full z-10 pb-10 bg-gradient-to-b from-black to-transparent">
             <div className="gold-header  max-w-sm mx-auto flex px-4 pb-6 justify-between items-center">
@@ -195,11 +196,17 @@ export default function GoldLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-md mx-auto">
+          <div className="gold-item min-h-screen max-w-xs mx-auto flex flex-col items-center justify-center text-white pt-24 pb-16">
+            {level?.description && (
+              <div
+                className="p-6 text-center text-white text-lg prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: level.description }}
+              />
+            )}
             <div className="w-full">
-              {getImageUrl(level.imageId) && (
+              {getImageUrl(level?.imageId) && (
                 <img
-                  src={getImageUrl(level.imageId) || ''}
+                  src={getImageUrl(level?.imageId) || ''}
                   alt="Introducción"
                   className="w-full h-auto object-cover"
                 />
@@ -255,15 +262,23 @@ export default function GoldLevelFlow({
             </div>
           </div>
 
-          <div className="max-w-md mx-auto">
-            {goldenItems[currentItemIndex] && getImageUrl(goldenItems[currentItemIndex].imageId || goldenItems[currentItemIndex].detail) && (
+          <div className="h-screen max-w-md mx-auto">
+            {goldenItems[currentItemIndex] && getImageUrl(goldenItems[currentItemIndex].imageId) && (
               <div className="w-full">
                 <img
-                  src={getImageUrl(goldenItems[currentItemIndex].imageId || goldenItems[currentItemIndex].detail) || ''}
+                  src={getImageUrl(goldenItems[currentItemIndex].imageId) || ''}
                   alt={goldenItems[currentItemIndex].title}
                   className="w-full h-auto object-cover"
                 />
               </div>
+            )}
+            {goldenItems[currentItemIndex]?.detail && (
+            <div className="gold-item min-h-screen max-w-xs mx-auto flex flex-col items-center justify-center text-white pt-24 pb-16">
+              <h2>{goldenItems[currentItemIndex].title}</h2>
+              <div
+                dangerouslySetInnerHTML={{ __html: goldenItems[currentItemIndex].detail }}
+              />
+            </div>
             )}
           </div>
 
