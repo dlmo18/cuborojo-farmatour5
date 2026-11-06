@@ -262,7 +262,7 @@ export default function GoldLevelFlow({
             </div>
           </div>
 
-          <div className="h-screen max-w-md mx-auto">
+          <div className="min-h-screen max-w-md mx-auto">
             {goldenItems[currentItemIndex] && getImageUrl(goldenItems[currentItemIndex].imageId) && (
               <div className="w-full">
                 <img
@@ -447,21 +447,23 @@ export default function GoldLevelFlow({
                     const isCorrect = option.isCorrect;
                     const isAnswered = !!previousAnswers[goldenQuestions[currentQuestionIndex].id];
                     const isIncorrectSelected = isSelected && isAnswered && !isCorrect;
+                    const optionLetter = String.fromCharCode(65 + goldenQuestions[currentQuestionIndex].options.indexOf(option)); // A, B, C, D...
+
+                    const buttonClasses = 'px-4 py-2 leading-tight rounded-xl ' + 
+                          (isIncorrectSelected
+                            ? 'bg-red-500 text-white shadow-lg'
+                            : isSelected && isAnswered && isCorrect
+                            ? 'bg-green-500 text-white shadow-lg'
+                            : isSelected
+                            ? 'bg-green-500 text-white shadow-lg'
+                            : 'bg-green-200 text-green-900 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed')
                     
                     return (
                       <button
                         key={option.id}
                         onClick={() => onAnswerChange(goldenQuestions[currentQuestionIndex].id, option.id)}
                         disabled={isValidating || !!previousAnswers[goldenQuestions[currentQuestionIndex].id]}
-                        className={`relative p-3 rounded-xl transition-all cursor-pointer overflow-hidden group ${
-                          isIncorrectSelected
-                            ? 'bg-red-500 text-white shadow-lg'
-                            : isSelected && isAnswered && isCorrect
-                            ? 'bg-green-500 text-white shadow-lg'
-                            : isSelected
-                            ? 'bg-green-500 text-white shadow-lg'
-                            : 'bg-green-200 text-green-900 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed'
-                        }`}
+                        className={`relative py-1 transition-all cursor-pointer block w-full`} 
                       >
                         <input
                           type="radio"
@@ -482,9 +484,14 @@ export default function GoldLevelFlow({
                         )}            
 
                         {!option.imageId && (
-                          <span className="block font-black text-center text-md leading-tight">
-                            {option.text}
-                          </span>
+                          <div className="grid grid-cols-[50px_1fr] gap-4">
+                            <span className={`text-center text-lg font-black ${buttonClasses} `}>
+                              {optionLetter}
+                            </span>
+                            <span className={`font-bold text-md text-left ${buttonClasses}`}>
+                              {option.text}
+                            </span>
+                          </div>
                         )}
 
                       </button>
